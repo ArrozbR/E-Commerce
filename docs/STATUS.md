@@ -4,7 +4,7 @@
 
 **Marco atual:** M0 (esqueleto que anda), em andamento: 8 de 13 itens concluídos, 2 parciais (sem contar o item do M4)
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 2h · total: 2h
+**Horas acumuladas:** M0: 4h · total: 4h
 **Estimativa da v1:** 120–180h (~3 meses a 10–15h/semana). Revisar ao fim do M2.
 
 ## Marcos da v1
@@ -32,7 +32,7 @@
 - [x] Um teste unitário (arquitetura: `Domain` sem dependências proibidas, visto falhando com sabotagem) e dois de integração (`WebApplicationFactory` + PostgreSQL 17 via Testcontainers) passando
 - [x] Workflow de CI com os 5 itens (`.github/workflows/ci.yml`, actions fixadas por hash) + ruleset "Proteger main" (PR obrigatório, 2 checks, branch atualizado, sem bypass). PR #1 juntado com CI verde.
 - [x] Dockerfile multi-stage (usuário sem privilégios) + `compose.yaml` (PostgreSQL sem porta, app em `127.0.0.1`, senha via `.env`). PR #3. Com a Micro (x86_64), o build ARM64 não é necessário por enquanto.
-- [ ] Script de reconstrução da VM `deploy/bootstrap-vm.sh`, idempotente. **Parcial:** ✅ parte 1 swap 2 GB; ✅ parte 2 fuso de Brasília + atualizações + `unattended-upgrades` (reinício às 04:00); ⬜ parte 3 Docker; ⬜ parte 4 firewall e hardening do SSH; ⬜ parte 5 Nginx e Certbot.
+- [ ] Script de reconstrução da VM `deploy/bootstrap-vm.sh`, idempotente. **Parcial (4 de 5), PR #4:** ✅ 1 swap 2 GB; ✅ 2 fuso de Brasília + atualizações + `unattended-upgrades` (reinício às 04:00); ✅ 3 Docker Engine + Compose + rotação de logs; ✅ 4 portas 80/443 no iptables (antes do REJECT), SSH só por chave e sem root, fail2ban; ⬜ 5 Nginx + Certbot (junto com o DuckDNS).
 - [ ] Subdomínio DuckDNS + HTTPS
 - [ ] CD: imagem no GHCR, Environment `production` com aprovação, `deploy.sh` com comando forçado
 - [ ] Página "Olá" publicada via CD
@@ -57,9 +57,9 @@
 
 ## Próximos passos
 
-1. **Parte 3 do bootstrap:** instalar Docker Engine + Compose na VM, pelo script.
-2. **Parte 4 do bootstrap:** firewall (liberar 80/443 no iptables da imagem Oracle) e hardening do SSH.
-3. Tentar a **A1** de vez em quando (stack salvo, ou refazer o formulário) e anotar os horários. Conferir em alguns dias se o kernel "kept back" foi atualizado (`apt list --upgradable`).
+1. **Revisão conceitual do script de bootstrap (30 min), antes de qualquer coisa nova.** Não é para decorar bash: é para conseguir explicar, em uma ou duas frases cada, **o que** cada uma das 4 partes faz e **por quê** (swap, atualizações automáticas, Docker, firewall/SSH/fail2ban). O autor relatou não ter entendido nada dessa parte.
+2. **DuckDNS + parte 5 do bootstrap:** subdomínio novo para a loja, Nginx e Certbot (HTTPS).
+3. Continuar tentando a **A1** de vez em quando; conferir se o kernel "kept back" foi atualizado (`apt list --upgradable`).
 
 ## Bloqueios
 
@@ -74,12 +74,13 @@ _Nenhum._
 
 ## Diário de sessões
 
-### 30/09/2026 (tarde): revisão, Docker, VM e bootstrap (horas a registrar no /encerrar)
+### 30/09/2026 (tarde): revisão, Docker, VM e bootstrap (2h)
 - Revisão guiada: referências entre projetos e fluxo dos testes (5 perguntas; dúvidas esclarecidas).
 - Docker: Dockerfile + compose (PR #3).
 - VM: A1 sem capacidade → E2.1.Micro provisória (ADR 0020). Alias `ssh keycapstore`.
-- Bootstrap partes 1 e 2 rodadas na VM, com idempotência comprovada.
+- Bootstrap partes 1 a 4 rodadas na VM (PR #4): swap, fuso + atualizações, Docker, firewall/SSH/fail2ban. Idempotência comprovada. O fail2ban registrou uma tentativa de login de robô minutos após a VM ser criada.
 - Aprendizado: CRLF quebra scripts bash; `.editorconfig` com `[*.sh] end_of_line = lf` resolve na origem.
+- **Ficou confuso: praticamente toda a parte do script de bootstrap** (conceitos de Linux, firewall, SSH e bash). Causa provável: ritmo rápido demais no fim de uma sessão longa, com muitos conceitos novos. Revisar no início da próxima sessão (passo 1).
 
 ### 30/09/2026: ambiente, spike da Stripe, solution, testes e CI (2h)
 - Ambiente: WSL 2, Docker Desktop, Stripe CLI (winget: o ID é `Stripe.StripeCli`, com "Cli").
