@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build e testes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Instalar o .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Restaurar pacotes
+        run: dotnet restore KeycapStore.slnx
+
+      - name: Verificar formatação
+        run: dotnet format KeycapStore.slnx --verify-no-changes --no-restore
+
+      - name: Compilar
+        run: dotnet build KeycapStore.slnx --no-restore --configuration Release
+
+      - name: Testes unitários
+        run: dotnet test tests/KeycapStore.UnitTests --no-build --configuration Release
+
+      - name: Testes de integração (PostgreSQL via Docker)
+        run: dotnet test tests/KeycapStore.IntegrationTests --no-build --configuration Release
+
+  secrets-scan:
+    name: Busca de segredos (gitleaks)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar o código (histórico completo)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - name: Procurar segredos
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: false
