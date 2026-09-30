@@ -67,6 +67,15 @@ KeycapStore.slnx
 
 As setas apontam para dentro. **Por quê:** as regras de negócio (o centro) não podem mudar quando a tecnologia (a borda) muda, e precisam ser testáveis sem banco, sem rede e sem Stripe. A `Application` define **o que precisa** (`IPaymentGateway`), e a `Infrastructure` **fornece** (`StripePaymentGateway`). Isso é a inversão de dependência.
 
+### Referências dos projetos de teste
+
+| Projeto | Referencia | Por quê |
+|---|---|---|
+| `IntegrationTests` | `Web`, `Infrastructure` | O `WebApplicationFactory` sobe a aplicação a partir do `Program.cs` (no `Web`), e o teste usa o `DbContext` (na `Infrastructure`) para conferir o estado do banco. |
+| `UnitTests` | `Domain`, `Application`, **e também** `Infrastructure` e `Web` | Os testes unitários **usam** só `Domain` e `Application`. `Infrastructure` e `Web` estão referenciados **apenas para os testes de arquitetura** (`UnitTests/Architecture`), que precisam carregar as DLLs de todas as camadas para verificar as dependências entre elas. |
+
+**Regra:** nenhum teste unitário pode usar tipos da `Infrastructure` ou do `Web` (banco, HTTP, Stripe). Se precisar disso, ele é um teste de integração. Separar os testes de arquitetura num projeto próprio foi considerado e adiado: projeto novo exige ADR, e o ganho hoje não compensa. Se essa regra começar a ser violada, é o sinal para separar.
+
 ### Módulos (pastas dentro de cada camada)
 
 | Módulo | Responsabilidade |
