@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/KeycapStore.Application/KeycapStore.Application.csproj" />
+    <Project Path="src/KeycapStore.Domain/KeycapStore.Domain.csproj" />
+    <Project Path="src/KeycapStore.Infrastructure/KeycapStore.Infrastructure.csproj" />
+    <Project Path="src/KeycapStore.Web/KeycapStore.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/KeycapStore.IntegrationTests/KeycapStore.IntegrationTests.csproj" />
+    <Project Path="tests/KeycapStore.UnitTests/KeycapStore.UnitTests.csproj" />
+  </Folder>
+</Solution>
