@@ -94,3 +94,42 @@ systemctl enable --now docker
 log "Parte 3 concluída"
 docker --version
 docker compose version
+
+log "Liberando as portas 80 e 443 no iptables"
+for PORT in 80 443; do
+  if ! iptables -C INPUT -p tcp -m state --state NEW -m tcp --dport "$PORT" -j ACCEPT 2>/dev/null; then
+    REJECT_POS=$(iptables -L INPUT --line-numbers -n | awk '$2 == "REJECT" { print $1; exit }')
+    iptables -I INPUT "$REJECT_POS" -p tcp -m state --state NEW -m tcp --dport "$PORT" -j ACCEPT
+  fi
+
+  RULE="-A INPUT -p tcp -m state --state NEW -m tcp --dport $PORT -j ACCEPT"
+  if ! grep -qxF -- "$RULE" /etc/iptables/rules.v4; then
+    sed -i "/^-A INPUT -j REJECT/i $RULE" /etc/iptables/rules.v4
+  fi
+done
+log "Endurecendo o SSH"
+SSHD_CONF=/etc/ssh/sshd_config.d/01-keycapstore.conf
+cat > /tmp/01-keycapstore.conf <<'EOF'
+# KeycapStore — ADR 0017: login só por chave; root não entra por SSH.
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+EOF
+if ! cmp -s /tmp/01-keycapstore.conf "$SSHD_CONF"; then
+  mv /tmp/01-keycapstore.conf "$SSHD_CONF"
+  if ! sshd -t; then
+    rm -f "$SSHD_CONF"
+    echo "ERRO: configuração do SSH inválida; mudança desfeita." >&2
+    exit 1
+  fi
+  systemctl reload ssh
+else
+  rm /tmp/01-keycapstore.conf
+fi
+
+log "Instalando/garantindo o fail2ban"
+apt-get install -y -q fail2ban
+systemctl enable --now fail2ban
+
+log "Parte 4 concluída"
