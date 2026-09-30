@@ -9,7 +9,7 @@ Loja de kits de keycaps em lotes limitados, com pagamento via Stripe (cartão + 
 
 ## Regras absolutas
 
-1. **Nunca executar `git commit`, `git push`** nem nada que publique no remoto (merge, tag, PR). Comandos git de leitura (`status`, `diff`, `log`) são permitidos. Ao terminar, liste os arquivos alterados e sugira uma mensagem de commit. O autor faz o commit.
+1. **Nunca executar `git commit`, `git push`** nem nada que publique no remoto (merge, tag, PR). Comandos git de leitura (`status`, `diff`, `log`) são permitidos. **Lembre o autor de commitar a cada checkpoint** (tarefa concluída, build ou teste passando, antes de algo arriscado, fim de sessão): liste os arquivos alterados e dê uma mensagem pronta (Conventional Commits, em português). O autor faz o commit.
 2. **Modo aprendizado.** O autor quer entender, não receber pronto:
    - Explique o **porquê** de cada escolha, não só o quê.
    - As peças centrais (`Order`, o caso de uso `ConfirmPayment`, o handler do webhook, a reserva de estoque) são **escritas pelo autor**. Proponha a abordagem, revise e aponte os problemas, mas não escreva a implementação completa sem um pedido explícito.

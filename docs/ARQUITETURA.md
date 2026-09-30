@@ -34,7 +34,7 @@ Visão técnica do sistema. O **porquê** de cada escolha está nos ADRs (`docs/
 ## 2. Solution
 
 ```
-KeycapStore.sln
+KeycapStore.slnx
 ├── src/
 │   ├── KeycapStore.Domain/           regras de negócio puras (sem NuGet)
 │   ├── KeycapStore.Application/      casos de uso + interfaces (portas)

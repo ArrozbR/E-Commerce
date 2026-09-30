@@ -21,7 +21,7 @@ Ordem obrigatória:
    - `checkout.session.async_payment_failed`
    - `checkout.session.expired`
 
-   Qualquer outro tipo recebe **`200`** e é ignorado, com um log de nível Debug. (Q1 em aberto: validar no spike quais eventos o Pix emite de fato. Se `payment_intent.*` precisar ser tratado, o tratamento segue as mesmas regras.)
+   Qualquer outro tipo recebe **`200`** e é ignorado, com um log de nível Debug. (Spike de 30/09/2026: com Pix no Checkout, `checkout.session.completed` chegou só depois do Pix pago, já com `paid`, e nenhum `async_payment_*` apareceu. Esses eventos e o ramo `unpaid` são mantidos como defesa. O caminho de falha e expiração do Pix ainda precisa ser observado: Q1b em `docs/STATUS.md`.)
 4. **Tudo numa única transação no banco:**
    1. `INSERT` do `event.id` em `ProcessedStripeEvents` (restrição **UNIQUE**). Uma violação de unicidade significa duplicata: responder **`200`** sem nenhum efeito.
    2. Carregar o pedido por `metadata.order_id`. Se o pedido não existir, registrar Warning e responder **`200`**.
