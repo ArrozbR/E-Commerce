@@ -1,6 +1,6 @@
 # 0012. Hospedagem na Oracle Always Free, numa VM A1 descartável, com Docker Compose
 
-- **Status:** Aceito
+- **Status:** Aceito (o shape da VM foi alterado provisoriamente pelo ADR 0020)
 - **Data:** 2026-09-29
 - **Relacionado:** `docs/DEFINICOES.md` D20, D21, D33; §10.7
 

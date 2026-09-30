@@ -2,7 +2,7 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** M0 (esqueleto que anda), em andamento: 6 de 13 itens (sem contar o item do M4)
+**Marco atual:** M0 (esqueleto que anda), em andamento: 8 de 13 itens concluídos, 2 parciais (sem contar o item do M4)
 **Data de início da v1:** 30/09/2026
 **Horas acumuladas:** M0: 2h · total: 2h
 **Estimativa da v1:** 120–180h (~3 meses a 10–15h/semana). Revisar ao fim do M2.
@@ -24,15 +24,15 @@
 - [x] Gerar um pagamento Pix de teste e anotar quais eventos de webhook chegam (Q1, caminho de sucesso; ver "Resultado do spike" abaixo)
 - [x] Testar o caminho de **falha do Pix** e anotar os eventos
 - [ ] (M4) Confirmar `checkout.session.expired` com Pix pendente, numa sessão de 30 minutos criada pelo código (Q1b)
-- [ ] Criar a VM Ampere A1 na Oracle (ex.: 1 OCPU / 6 GB) e confirmar a capacidade na região (Q3)
+- [x] Criar a VM na Oracle (Q3 respondida: **sem capacidade A1** em São Paulo em 30/09). Criada a `keycapstore` como **E2.1.Micro** (x86_64, 1 GB), provisória (ADR 0020). Acesso: `ssh keycapstore` (alias em `~/.ssh/config`).
 - [ ] Confirmar os planos gratuitos: runners ARM do GitHub, R2/B2, monitor externo, healthchecks.io (Q4). Já confirmados: gitleaks-action gratuito para conta pessoal; GitHub Actions e rulesets no repositório público.
 
 **Esqueleto:**
 - [x] Solution `KeycapStore.slnx` com os 4 projetos + 2 de testes, `global.json` (SDK 10), `Directory.Build.props`, `.editorconfig` (`insert_final_newline = true`)
 - [x] Um teste unitário (arquitetura: `Domain` sem dependências proibidas, visto falhando com sabotagem) e dois de integração (`WebApplicationFactory` + PostgreSQL 17 via Testcontainers) passando
 - [x] Workflow de CI com os 5 itens (`.github/workflows/ci.yml`, actions fixadas por hash) + ruleset "Proteger main" (PR obrigatório, 2 checks, branch atualizado, sem bypass). PR #1 juntado com CI verde.
-- [ ] Dockerfile ARM64 + `compose.yaml` (PostgreSQL sem porta, app em `127.0.0.1`)
-- [ ] Script de reconstrução da VM (Docker, Nginx, Certbot, usuário `deploy`, hardening, `unattended-upgrades`), executado de verdade
+- [x] Dockerfile multi-stage (usuário sem privilégios) + `compose.yaml` (PostgreSQL sem porta, app em `127.0.0.1`, senha via `.env`). PR #3. Com a Micro (x86_64), o build ARM64 não é necessário por enquanto.
+- [ ] Script de reconstrução da VM `deploy/bootstrap-vm.sh`, idempotente. **Parcial:** ✅ parte 1 swap 2 GB; ✅ parte 2 fuso de Brasília + atualizações + `unattended-upgrades` (reinício às 04:00); ⬜ parte 3 Docker; ⬜ parte 4 firewall e hardening do SSH; ⬜ parte 5 Nginx e Certbot.
 - [ ] Subdomínio DuckDNS + HTTPS
 - [ ] CD: imagem no GHCR, Environment `production` com aprovação, `deploy.sh` com comando forçado
 - [ ] Página "Olá" publicada via CD
@@ -57,9 +57,9 @@
 
 ## Próximos passos
 
-1. **Revisão (20 min):** reler com calma as referências entre projetos (quem referencia quem e por quê, incluindo o motivo do `UnitTests` referenciar todas as camadas) e o código dos 3 testes, **linha por linha** (o que cada linha faz), explicando em voz alta. Foi o ponto confuso da sessão de 30/09.
-2. **Dockerfile ARM64 + `compose.yaml`** local (PostgreSQL sem porta publicada, app só em `127.0.0.1`). Tudo via branch + PR.
-3. **Criar a VM A1 na Oracle** (Q3) e começar o script de reconstrução.
+1. **Parte 3 do bootstrap:** instalar Docker Engine + Compose na VM, pelo script.
+2. **Parte 4 do bootstrap:** firewall (liberar 80/443 no iptables da imagem Oracle) e hardening do SSH.
+3. Tentar a **A1** de vez em quando (stack salvo, ou refazer o formulário) e anotar os horários. Conferir em alguns dias se o kernel "kept back" foi atualizado (`apt list --upgradable`).
 
 ## Bloqueios
 
@@ -68,11 +68,18 @@ _Nenhum._
 ## Questões em aberto
 
 - Q1b: confirmar `checkout.session.expired` com Pix pendente (M4)
-- Q3: capacidade A1 na região
+- Q3: **respondida** (sem capacidade A1 em 30/09); seguir tentando para migrar da Micro
 - Q4: runners ARM do GitHub, R2/B2, monitor externo, healthchecks.io
 - Q5: prazo legal de retenção dos pedidos (produção, não é código)
 
 ## Diário de sessões
+
+### 30/09/2026 (tarde): revisão, Docker, VM e bootstrap (horas a registrar no /encerrar)
+- Revisão guiada: referências entre projetos e fluxo dos testes (5 perguntas; dúvidas esclarecidas).
+- Docker: Dockerfile + compose (PR #3).
+- VM: A1 sem capacidade → E2.1.Micro provisória (ADR 0020). Alias `ssh keycapstore`.
+- Bootstrap partes 1 e 2 rodadas na VM, com idempotência comprovada.
+- Aprendizado: CRLF quebra scripts bash; `.editorconfig` com `[*.sh] end_of_line = lf` resolve na origem.
 
 ### 30/09/2026: ambiente, spike da Stripe, solution, testes e CI (2h)
 - Ambiente: WSL 2, Docker Desktop, Stripe CLI (winget: o ID é `Stripe.StripeCli`, com "Cli").

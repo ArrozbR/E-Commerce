@@ -19,6 +19,11 @@ indent_size = 2
 [*.json]
 indent_size = 2
 
+# Shell scripts rodam no Linux: final de linha LF (o CRLF do Windows quebra o bash)
+[*.sh]
+end_of_line = lf
+indent_size = 2
+
 # C# files
 [*.cs]
 
