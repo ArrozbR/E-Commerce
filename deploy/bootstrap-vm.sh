@@ -54,3 +54,43 @@ Unattended-Upgrade::Remove-Unused-Dependencies "true";
 EOF
 
 log "Parte 2 concluída"
+
+log "Configurando o repositório oficial da Docker"
+apt-get install -y -q ca-certificates curl
+
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+chmod a+r /etc/apt/keyrings/docker.asc
+
+cat > /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+log "Instalando/garantindo o Docker Engine e o Compose"
+apt-get update -q
+apt-get install -y -q docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+cat > /tmp/daemon.json <<'EOF'
+{
+  "log-driver": "json-file",
+  "log-opts": { "max-size": "10m", "max-file": "3" }
+}
+EOF
+if ! cmp -s /tmp/daemon.json /etc/docker/daemon.json; then
+  log "Aplicando a rotação de logs do Docker"
+  mv /tmp/daemon.json /etc/docker/daemon.json
+  systemctl restart docker
+else
+  rm /tmp/daemon.json
+fi
+
+systemctl enable --now docker
+
+log "Parte 3 concluída"
+docker --version
+docker compose version
