@@ -27,3 +27,4 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0017](0017-ci-cd.md) | CI com merge bloqueado; CD com aprovação e SSH restrito |
 | [0018](0018-observabilidade-backups-atualizacoes.md) | Observabilidade externa, backups fora do provedor, atualizações |
 | [0019](0019-codigo-em-ingles.md) | Código em inglês; documentação e interface em português |
+| [0020](0020-vm-e2-micro-provisoria.md) | VM E2.1.Micro provisória, até haver capacidade A1 |
