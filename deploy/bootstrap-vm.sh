@@ -174,6 +174,7 @@ cat > "$SITE_CONF" <<EOF
 server {
     listen 80;
     server_name $DOMAIN;
+    server_tokens off;   # não anuncia a versão do Nginx
     location / { return 301 https://\$host\$request_uri; }
 }
 
@@ -181,6 +182,7 @@ server {
 server {
     listen 443 ssl;
     server_name $DOMAIN;
+    server_tokens off;
 
     ssl_certificate     $CERT_DIR/fullchain.pem;
     ssl_certificate_key $CERT_DIR/privkey.pem;
