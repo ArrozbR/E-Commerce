@@ -201,3 +201,34 @@ nginx -t
 systemctl reload nginx
 
 log "Parte 5b concluída: https://$DOMAIN"
+
+DEPLOY_USER=deploy
+APP_DIR=/opt/keycapstore
+
+if ! id "$DEPLOY_USER" >/dev/null 2>&1; then
+  log "Criando o usuário $DEPLOY_USER"
+  useradd --create-home --shell /bin/bash "$DEPLOY_USER"
+fi
+
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+install -d -m 755 "$APP_DIR"
+install -m 750 -o root -g root "$SCRIPT_DIR/deploy.sh" "$APP_DIR/deploy.sh"
+
+log "Permitindo ao $DEPLOY_USER rodar só o deploy.sh com sudo"
+echo "$DEPLOY_USER ALL=(root) NOPASSWD: $APP_DIR/deploy.sh" > /tmp/keycapstore-deploy
+visudo -cf /tmp/keycapstore-deploy
+install -m 440 /tmp/keycapstore-deploy /etc/sudoers.d/keycapstore-deploy
+rm /tmp/keycapstore-deploy
+
+if [[ -n "${DEPLOY_PUBKEY:-}" ]]; then
+  log "Cadastrando a chave do GitHub com comando forçado"
+  install -d -m 700 -o "$DEPLOY_USER" -g "$DEPLOY_USER" "/home/$DEPLOY_USER/.ssh"
+  printf 'command="sudo %s/deploy.sh \\"$SSH_ORIGINAL_COMMAND\\"",restrict %s\n' \
+    "$APP_DIR" "$DEPLOY_PUBKEY" > "/home/$DEPLOY_USER/.ssh/authorized_keys"
+  chown "$DEPLOY_USER:$DEPLOY_USER" "/home/$DEPLOY_USER/.ssh/authorized_keys"
+  chmod 600 "/home/$DEPLOY_USER/.ssh/authorized_keys"
+elif [[ ! -f "/home/$DEPLOY_USER/.ssh/authorized_keys" ]]; then
+  echo "AVISO: nenhuma chave de deploy cadastrada. Rode com DEPLOY_PUBKEY=\"...\"" >&2
+fi
+
+log "Parte 6 concluída"
