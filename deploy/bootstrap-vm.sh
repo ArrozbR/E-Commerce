@@ -133,3 +133,9 @@ apt-get install -y -q fail2ban
 systemctl enable --now fail2ban
 
 log "Parte 4 concluída"
+
+log "Instalando/garantindo o Nginx"
+apt-get install -y -q nginx
+systemctl enable --now nginx
+
+log "Parte 5 (Nginx) concluída"
