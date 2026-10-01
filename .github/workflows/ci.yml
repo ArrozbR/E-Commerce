@@ -52,3 +52,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_COMMENTS: false
+          
+  publish-image:
+    name: Publicar imagem
+    needs: [build-and-test, secrets-scan]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Entrar no GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Construir a imagem
+        run: docker build -t "ghcr.io/arrozbr/keycapstore-web:${{ github.sha }}" .
+
+      - name: Enviar a imagem para o depósito
+        run: docker push "ghcr.io/arrozbr/keycapstore-web:${{ github.sha }}"
