@@ -2,9 +2,9 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** M0 (esqueleto que anda), em andamento: 8 de 13 itens concluídos, 2 parciais (sem contar o item do M4)
+**Marco atual:** M0 (esqueleto que anda), em andamento: 10 de 13 itens concluídos, 3 parciais (sem contar o item do M4). **A loja está no ar:** https://keycapstore.duckdns.org (deploy ainda manual).
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 4h · total: 4h
+**Horas acumuladas:** M0: 5,5h · total: 5,5h
 **Estimativa da v1:** 120–180h (~3 meses a 10–15h/semana). Revisar ao fim do M2.
 
 ## Marcos da v1
@@ -25,17 +25,17 @@
 - [x] Testar o caminho de **falha do Pix** e anotar os eventos
 - [ ] (M4) Confirmar `checkout.session.expired` com Pix pendente, numa sessão de 30 minutos criada pelo código (Q1b)
 - [x] Criar a VM na Oracle (Q3 respondida: **sem capacidade A1** em São Paulo em 30/09). Criada a `keycapstore` como **E2.1.Micro** (x86_64, 1 GB), provisória (ADR 0020). Acesso: `ssh keycapstore` (alias em `~/.ssh/config`).
-- [ ] Confirmar os planos gratuitos: runners ARM do GitHub, R2/B2, monitor externo, healthchecks.io (Q4). Já confirmados: gitleaks-action gratuito para conta pessoal; GitHub Actions e rulesets no repositório público.
+- [ ] Confirmar os planos gratuitos: runners ARM do GitHub, R2/B2, monitor externo, healthchecks.io (Q4). Já confirmados: gitleaks-action gratuito para conta pessoal; GitHub Actions e rulesets no repositório público; GHCR gratuito ("currently free"). Runners ARM não são mais necessários enquanto durar a Micro (x86_64).
 
 **Esqueleto:**
 - [x] Solution `KeycapStore.slnx` com os 4 projetos + 2 de testes, `global.json` (SDK 10), `Directory.Build.props`, `.editorconfig` (`insert_final_newline = true`)
 - [x] Um teste unitário (arquitetura: `Domain` sem dependências proibidas, visto falhando com sabotagem) e dois de integração (`WebApplicationFactory` + PostgreSQL 17 via Testcontainers) passando
 - [x] Workflow de CI com os 5 itens (`.github/workflows/ci.yml`, actions fixadas por hash) + ruleset "Proteger main" (PR obrigatório, 2 checks, branch atualizado, sem bypass). PR #1 juntado com CI verde.
 - [x] Dockerfile multi-stage (usuário sem privilégios) + `compose.yaml` (PostgreSQL sem porta, app em `127.0.0.1`, senha via `.env`). PR #3. Com a Micro (x86_64), o build ARM64 não é necessário por enquanto.
-- [ ] Script de reconstrução da VM `deploy/bootstrap-vm.sh`, idempotente. **Parcial (4 de 5), PR #4:** ✅ 1 swap 2 GB; ✅ 2 fuso de Brasília + atualizações + `unattended-upgrades` (reinício às 04:00); ✅ 3 Docker Engine + Compose + rotação de logs; ✅ 4 portas 80/443 no iptables (antes do REJECT), SSH só por chave e sem root, fail2ban; ⬜ 5 Nginx + Certbot (junto com o DuckDNS).
-- [ ] Subdomínio DuckDNS + HTTPS
-- [ ] CD: imagem no GHCR, Environment `production` com aprovação, `deploy.sh` com comando forçado
-- [ ] Página "Olá" publicada via CD
+- [x] Script de reconstrução da VM `deploy/bootstrap-vm.sh`, idempotente, 5 de 5 partes (PRs #4 e #6): swap 2 GB; fuso de Brasília + atualizações + `unattended-upgrades` (reinício às 04:00); Docker + rotação de logs; portas 80/443 no iptables, SSH só por chave e sem root, fail2ban; Nginx + HTTPS (Let's Encrypt, `certonly` com configuração escrita pelo script, renovação testada com `--dry-run`, `server_tokens off`). Primeira execução exige `LETSENCRYPT_EMAIL`.
+- [x] Subdomínio DuckDNS (`keycapstore.duckdns.org` → VM) + HTTPS com redirecionamento de http para https
+- [ ] CD. **Parcial:** ✅ job `publish-image` publica `ghcr.io/arrozbr/keycapstore-web:<hash do commit>` após os testes na `main` (PR #7; imagem pública); ✅ `deploy/compose.prod.yaml` usando `image:` (PR #8), com `.env` (senha do banco + `APP_TAG`) em `/opt/keycapstore` na VM; ⬜ `deploy.sh` + usuário `deploy` com comando forçado; ⬜ job de deploy com Environment `production` e aprovação manual.
+- [ ] Página "Olá" publicada **via CD** (já publicada **manualmente** em 01/10)
 
 ### Resultado do spike da Stripe (30/09/2026, Payment Link no sandbox)
 
@@ -57,9 +57,9 @@
 
 ## Próximos passos
 
-1. **Revisão conceitual do script de bootstrap (30 min), antes de qualquer coisa nova.** Não é para decorar bash: é para conseguir explicar, em uma ou duas frases cada, **o que** cada uma das 4 partes faz e **por quê** (swap, atualizações automáticas, Docker, firewall/SSH/fail2ban). O autor relatou não ter entendido nada dessa parte.
-2. **DuckDNS + parte 5 do bootstrap:** subdomínio novo para a loja, Nginx e Certbot (HTTPS).
-3. Continuar tentando a **A1** de vez em quando; conferir se o kernel "kept back" foi atualizado (`apt list --upgradable`).
+1. **Conferir se a loja sobreviveu ao reinício automático das 04:00** (havia "System restart required"): abrir o site e rodar `sudo docker compose ps` em `/opt/keycapstore`.
+2. **CD, parte A:** `deploy.sh` (troca o `APP_TAG`, faz `pull` e `up -d`) e o usuário `deploy` com comando forçado, criados pelo bootstrap.
+3. **CD, parte B:** job de deploy no GitHub Actions, com Environment `production` (aprovação manual) e a chave SSH guardada só no Environment. Aproveitar para fixar o runner em `ubuntu-24.04` e ligar "Automatically delete head branches".
 
 ## Bloqueios
 
@@ -69,10 +69,19 @@ _Nenhum._
 
 - Q1b: confirmar `checkout.session.expired` com Pix pendente (M4)
 - Q3: **respondida** (sem capacidade A1 em 30/09); seguir tentando para migrar da Micro
-- Q4: runners ARM do GitHub, R2/B2, monitor externo, healthchecks.io
+- Q4: R2/B2, monitor externo, healthchecks.io (para o M6)
+- O `ubuntu-latest` dos runners do GitHub migra para o Ubuntu 26 a partir de 19/10/2026: avaliar fixar `ubuntu-24.04`
 - Q5: prazo legal de retenção dos pedidos (produção, não é código)
 
 ## Diário de sessões
+
+### 01/10/2026: revisão do bootstrap, DuckDNS, HTTPS, imagem no GHCR e loja no ar (1,5h)
+- Revisão conceitual do bootstrap (swap, atualizações, Docker, firewall): o autor explicou as 4 partes, com correções pontuais.
+- DuckDNS `keycapstore.duckdns.org`; Nginx + Let's Encrypt pelo script (partes 5a e 5b), redirecionamento para https e renovação testada (PR #6).
+- CI publica a imagem no GHCR com a etiqueta do hash do commit (PR #7). A imagem nasceu pública (a documentação dizia "privada por padrão"; o teste mostrou o contrário).
+- Compose de produção (PR #8) e primeiro deploy manual: a loja está no ar com HTTPS. Memória com tudo rodando: ~434 MB disponíveis + swap.
+- Nova prática: uma pergunta de verificação a cada passo. Funcionou; ficaram poucas dúvidas.
+- Lição de git: voltar para a `main` e dar `git pull` logo após cada merge.
 
 ### 30/09/2026 (tarde): revisão, Docker, VM e bootstrap (2h)
 - Revisão guiada: referências entre projetos e fluxo dos testes (5 perguntas; dúvidas esclarecidas).
