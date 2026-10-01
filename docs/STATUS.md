@@ -2,14 +2,14 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** M0 (esqueleto que anda), em andamento: 10 de 13 itens concluídos, 3 parciais (sem contar o item do M4). **A loja está no ar:** https://keycapstore.duckdns.org (deploy ainda manual).
+**Marco atual:** **M1** (catálogo + Identity + `create-admin`), ainda não iniciado. **M0 concluído em 01/10/2026.** A loja está no ar em https://keycapstore.duckdns.org, com deploy contínuo e aprovação manual.
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 5,5h · total: 5,5h
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 0h · total: 7h
 **Estimativa da v1:** 120–180h (~3 meses a 10–15h/semana). Revisar ao fim do M2.
 
 ## Marcos da v1
 
-- [ ] **M0: esqueleto que anda** (25–35h, timebox de 2 semanas)
+- [x] **M0: esqueleto que anda** (25–35h estimadas; **7h reais**, concluído em 01/10/2026)
 - [ ] **M1:** catálogo (seed) + Identity + `create-admin` (15–25h)
 - [ ] **M2:** carrinho, pedido, reserva atômica + testes de concorrência (20–30h)
 - [ ] **M3:** Stripe Checkout com cartão + webhook idempotente + página de retorno (20–30h)
@@ -25,7 +25,7 @@
 - [x] Testar o caminho de **falha do Pix** e anotar os eventos
 - [ ] (M4) Confirmar `checkout.session.expired` com Pix pendente, numa sessão de 30 minutos criada pelo código (Q1b)
 - [x] Criar a VM na Oracle (Q3 respondida: **sem capacidade A1** em São Paulo em 30/09). Criada a `keycapstore` como **E2.1.Micro** (x86_64, 1 GB), provisória (ADR 0020). Acesso: `ssh keycapstore` (alias em `~/.ssh/config`).
-- [ ] Confirmar os planos gratuitos: runners ARM do GitHub, R2/B2, monitor externo, healthchecks.io (Q4). Já confirmados: gitleaks-action gratuito para conta pessoal; GitHub Actions e rulesets no repositório público; GHCR gratuito ("currently free"). Runners ARM não são mais necessários enquanto durar a Micro (x86_64).
+- [x] Confirmar os planos gratuitos do que o M0 usa. O restante (R2/B2, monitor externo, healthchecks.io) **passou para o M6**, onde é usado (Q4). Já confirmados: gitleaks-action gratuito para conta pessoal; GitHub Actions e rulesets no repositório público; GHCR gratuito ("currently free"). Runners ARM não são mais necessários enquanto durar a Micro (x86_64).
 
 **Esqueleto:**
 - [x] Solution `KeycapStore.slnx` com os 4 projetos + 2 de testes, `global.json` (SDK 10), `Directory.Build.props`, `.editorconfig` (`insert_final_newline = true`)
@@ -34,8 +34,8 @@
 - [x] Dockerfile multi-stage (usuário sem privilégios) + `compose.yaml` (PostgreSQL sem porta, app em `127.0.0.1`, senha via `.env`). PR #3. Com a Micro (x86_64), o build ARM64 não é necessário por enquanto.
 - [x] Script de reconstrução da VM `deploy/bootstrap-vm.sh`, idempotente, 5 de 5 partes (PRs #4 e #6): swap 2 GB; fuso de Brasília + atualizações + `unattended-upgrades` (reinício às 04:00); Docker + rotação de logs; portas 80/443 no iptables, SSH só por chave e sem root, fail2ban; Nginx + HTTPS (Let's Encrypt, `certonly` com configuração escrita pelo script, renovação testada com `--dry-run`, `server_tokens off`). Primeira execução exige `LETSENCRYPT_EMAIL`.
 - [x] Subdomínio DuckDNS (`keycapstore.duckdns.org` → VM) + HTTPS com redirecionamento de http para https
-- [ ] CD. **Parcial:** ✅ job `publish-image` publica `ghcr.io/arrozbr/keycapstore-web:<hash do commit>` após os testes na `main` (PR #7; imagem pública); ✅ `deploy/compose.prod.yaml` usando `image:` (PR #8), com `.env` (senha do banco + `APP_TAG`) em `/opt/keycapstore` na VM; ⬜ `deploy.sh` + usuário `deploy` com comando forçado; ⬜ job de deploy com Environment `production` e aprovação manual.
-- [ ] Página "Olá" publicada **via CD** (já publicada **manualmente** em 01/10)
+- [x] CD completo: `publish-image` → GHCR com a etiqueta do hash do commit (PR #7); `compose.prod.yaml` com `image:` (PR #8); `deploy.sh` com validação do hash, pull antes de trocar, verificação do site e rollback (PR #10); usuário `deploy` com `sudo` só para o `deploy.sh` e chave com comando forçado + `restrict` (PR #11, testado: `ls /` recusado, sem terminal); job `deploy` com Environment `production` (revisor obrigatório, sem bypass de admin, só `main`, chave e `known_hosts` no cofre) (PR #12).
+- [x] Página publicada **via CD com aprovação**: `APP_TAG=47591507...` (merge do PR #12) na VM. Reinício manual da VM testado: a loja volta sozinha.
 
 ### Resultado do spike da Stripe (30/09/2026, Payment Link no sandbox)
 
@@ -57,9 +57,15 @@
 
 ## Próximos passos
 
-1. **Conferir se a loja sobreviveu ao reinício automático das 04:00** (havia "System restart required"): abrir o site e rodar `sudo docker compose ps` em `/opt/keycapstore`.
-2. **CD, parte A:** `deploy.sh` (troca o `APP_TAG`, faz `pull` e `up -d`) e o usuário `deploy` com comando forçado, criados pelo bootstrap.
-3. **CD, parte B:** job de deploy no GitHub Actions, com Environment `production` (aprovação manual) e a chave SSH guardada só no Environment. Aproveitar para fixar o runner em `ubuntu-24.04` e ligar "Automatically delete head branches".
+1. **Revisão guiada (20–30 min), pedida pelo autor.** Refazer, uma por vez, as perguntas da sessão de 01/10 (deploy):
+   - Por que o `deploy.sh` baixa a imagem **antes** de trocar o `APP_TAG` no `.env`? *(o autor respondeu "não sei")*
+   - No teste com a chave do GitHub, por que o `ls /` **não rodou**, se a conexão SSH funcionou? *(respondeu "ele não tem acesso à VM", o que está incorreto)*
+   - Por que a chave de deploy **não tem passphrase**, e o que a protege então?
+   - O que é o Environment `production` (o "cofre com porteiro"), e por que desligamos o bypass de administrador?
+   - Para que serve o segredo `DEPLOY_KNOWN_HOSTS`?
+   - Por que a etiqueta da imagem é o hash do commit, e não `latest`?
+2. **M1, parte 1:** a entidade `Product` no `Domain` (com testes unitários) e o primeiro `DbContext` + migration na `Infrastructure`. Primeiro código da loja.
+3. **Pequenos ajustes:** fixar o runner em `ubuntu-24.04` **antes de 19/10**; ligar "Automatically delete head branches"; apagar os branches antigos no GitHub; tentar a A1 de vez em quando.
 
 ## Bloqueios
 
@@ -69,11 +75,20 @@ _Nenhum._
 
 - Q1b: confirmar `checkout.session.expired` com Pix pendente (M4)
 - Q3: **respondida** (sem capacidade A1 em 30/09); seguir tentando para migrar da Micro
-- Q4: R2/B2, monitor externo, healthchecks.io (para o M6)
+- Q4: R2/B2, monitor externo, healthchecks.io (M6)
+- Entender por que o reinício automático das 04:00 ainda não aconteceu (o `uptime` mostrava a VM ligada desde a criação). O reinício manual já foi testado.
 - O `ubuntu-latest` dos runners do GitHub migra para o Ubuntu 26 a partir de 19/10/2026: avaliar fixar `ubuntu-24.04`
 - Q5: prazo legal de retenção dos pedidos (produção, não é código)
 
 ## Diário de sessões
+
+### 01/10/2026 (2ª sessão): deploy contínuo completo e M0 concluído (1,5h)
+- Reinício manual da VM: a loja voltou sozinha (Docker habilitado + `restart: unless-stopped`).
+- `deploy.sh` (PR #10): subir de versão, rollback e recusa de valor inválido testados. Erro no caminho: faltava o `#!/usr/bin/env bash` e o arquivo estava em CRLF.
+- Usuário `deploy` + comando forçado (PR #11): o teste com `ls /` foi recusado e nenhum terminal foi aberto.
+- Job `deploy` com Environment `production` (PR #12). Na primeira vez, o revisor obrigatório não tinha sido salvo, e o deploy rodou sem aprovação; corrigido (revisor obrigatório, sem bypass de admin) e testado com "Re-run": parou em "waiting for review" e funcionou após a aprovação.
+- **Ficou para revisar:** as perguntas da sessão (ver Próximos passos, item 1). O autor pediu para repassá-las.
+- M0 fechado com 7h, bem abaixo da estimativa de 25–35h. Reavaliar a estimativa da v1 ao fim do M2, como planejado.
 
 ### 01/10/2026: revisão do bootstrap, DuckDNS, HTTPS, imagem no GHCR e loja no ar (1,5h)
 - Revisão conceitual do bootstrap (swap, atualizações, Docker, firewall): o autor explicou as 4 partes, com correções pontuais.
