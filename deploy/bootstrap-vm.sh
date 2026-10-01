@@ -139,3 +139,63 @@ apt-get install -y -q nginx
 systemctl enable --now nginx
 
 log "Parte 5 (Nginx) concluída"
+
+DOMAIN=keycapstore.duckdns.org
+SITE_CONF=/etc/nginx/sites-available/keycapstore
+CERT_DIR=/etc/letsencrypt/live/$DOMAIN
+
+log "Instalando/garantindo o Certbot"
+apt-get install -y -q certbot python3-certbot-nginx
+
+rm -f /etc/nginx/sites-enabled/default
+ln -sf "$SITE_CONF" /etc/nginx/sites-enabled/keycapstore
+
+if [[ ! -f "$CERT_DIR/fullchain.pem" ]]; then
+  : "${LETSENCRYPT_EMAIL:?Rode assim: sudo LETSENCRYPT_EMAIL=seu@email bash bootstrap-vm.sh}"
+
+  log "Configuração temporária só na porta 80, para o Let's Encrypt validar o domínio"
+  cat > "$SITE_CONF" <<EOF
+server {
+    listen 80;
+    server_name $DOMAIN;
+    location / { return 200 "KeycapStore: emitindo certificado"; }
+}
+EOF
+  nginx -t && systemctl reload nginx
+
+  log "Pedindo o certificado HTTPS para $DOMAIN"
+  certbot certonly --nginx -d "$DOMAIN" --non-interactive --agree-tos \
+    -m "$LETSENCRYPT_EMAIL" --deploy-hook "systemctl reload nginx"
+fi
+
+log "Configuração definitiva do Nginx (HTTPS + encaminhamento para o site)"
+cat > "$SITE_CONF" <<EOF
+# Porta 80 (HTTP, sem cadeado): manda todo mundo para a versão HTTPS.
+server {
+    listen 80;
+    server_name $DOMAIN;
+    location / { return 301 https://\$host\$request_uri; }
+}
+
+# Porta 443 (HTTPS, com cadeado): a "recepção" que encaminha para o site.
+server {
+    listen 443 ssl;
+    server_name $DOMAIN;
+
+    ssl_certificate     $CERT_DIR/fullchain.pem;
+    ssl_certificate_key $CERT_DIR/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;   # o container do site (só acessível de dentro da VM)
+        proxy_set_header Host \$host;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+EOF
+
+nginx -t
+systemctl reload nginx
+
+log "Parte 5b concluída: https://$DOMAIN"
