@@ -75,3 +75,28 @@ jobs:
 
       - name: Enviar a imagem para o depósito
         run: docker push "ghcr.io/arrozbr/keycapstore-web:${{ github.sha }}"
+        
+  deploy:
+    name: Deploy em produção
+    needs: publish-image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+
+    steps:
+      - name: Preparar a chave SSH e a identidade da VM
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Rodar o deploy na VM
+        run: >
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes
+          deploy@${{ vars.DEPLOY_HOST }} "${{ github.sha }}"
