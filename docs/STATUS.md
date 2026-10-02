@@ -2,9 +2,9 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** **M1** (catálogo + Identity + `create-admin`), ainda não iniciado. **M0 concluído em 01/10/2026.** A loja está no ar em https://keycapstore.duckdns.org, com deploy contínuo e aprovação manual.
+**Marco atual:** **M1** (catálogo + Identity + `create-admin`), em andamento. **M0 concluído em 01/10/2026.** A loja está no ar em https://keycapstore.duckdns.org, com deploy contínuo e aprovação manual.
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 0h · total: 7h
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 1,5h · total: 8,5h
 **Estimativa da v1:** 120–180h (~3 meses a 10–15h/semana). Revisar ao fim do M2.
 
 ## Marcos da v1
@@ -16,6 +16,17 @@
 - [ ] **M4:** Pix, expiração, falha, reembolso por falta de estoque (15–25h)
 - [ ] **M5:** endpoints de admin para o envio (8–12h)
 - [ ] **M6:** backups, monitoramento, checklist de go-live (15–20h)
+
+## Checklist do M1
+
+- [x] Entidade `Product` (`Domain/Catalog`): `private set`, construtor valida nome, preço > 0 e estoque ≥ 0; 9 testes unitários (PR #14)
+- [x] `AppDbContext` + `ProductConfiguration` (Npgsql, EF Core 10.0.12 alinhado), migration `InitialCatalog`, `dotnet-ef` como ferramenta local (`dotnet-tools.json`), migrations marcadas como código gerado no `.editorconfig`; teste de integração salva e lê um `Product` (PR #15)
+- [ ] Consulta do catálogo: `ICatalogQueries` + `ProductSummary` (Application) e `CatalogQueries` (Infrastructure), com teste de integração da ordenação. **Commits feitos no branch `feat/catalog-query`; falta push + PR.**
+- [ ] Seed dos kits de keycaps (via migration)
+- [ ] PostgreSQL de desenvolvimento no PC (o `compose.yaml` não publica porta) + conexão com user-secrets
+- [ ] Controller + página do catálogo (preço em reais, "esgotado" / "últimas unidades")
+- [ ] Produção: string de conexão vinda do `.env` da VM + aplicar migrations no `deploy.sh` (comando explícito, nunca na inicialização)
+- [ ] Identity (cadastro e login) + comando `create-admin`
 
 ## Checklist do M0
 
@@ -57,15 +68,12 @@
 
 ## Próximos passos
 
-1. **Revisão guiada (20–30 min), pedida pelo autor.** Refazer, uma por vez, as perguntas da sessão de 01/10 (deploy):
-   - Por que o `deploy.sh` baixa a imagem **antes** de trocar o `APP_TAG` no `.env`? *(o autor respondeu "não sei")*
-   - No teste com a chave do GitHub, por que o `ls /` **não rodou**, se a conexão SSH funcionou? *(respondeu "ele não tem acesso à VM", o que está incorreto)*
-   - Por que a chave de deploy **não tem passphrase**, e o que a protege então?
-   - O que é o Environment `production` (o "cofre com porteiro"), e por que desligamos o bypass de administrador?
-   - Para que serve o segredo `DEPLOY_KNOWN_HOSTS`?
-   - Por que a etiqueta da imagem é o hash do commit, e não `latest`?
-2. **M1, parte 1:** a entidade `Product` no `Domain` (com testes unitários) e o primeiro `DbContext` + migration na `Infrastructure`. Primeiro código da loja.
-3. **Pequenos ajustes:** fixar o runner em `ubuntu-24.04` **antes de 19/10**; ligar "Automatically delete head branches"; apagar os branches antigos no GitHub; tentar a A1 de vez em quando.
+1. **Revisão (20 min):**
+   - **O que é um DTO e por que a consulta devolve `ProductSummary`, e não `Product`.** O autor relatou que não entendeu bem; explicar do zero, com analogia, antes de usar na página.
+   - Por que o teste lê o produto com um `DbContext` **novo** (ficou sem resposta).
+   - Antes: fazer push + PR do `feat/catalog-query`, se ainda não foi feito.
+2. **Catálogo na tela, parte A:** seed dos kits + PostgreSQL de desenvolvimento + página listando os produtos (rodando no PC). A parte B (produção: conexão + migrations no deploy) vem em seguida, **no mesmo PR ou antes do merge**, para o deploy não publicar uma página quebrada.
+3. **Até 19/10:** fixar o runner do CI em `ubuntu-24.04`. Depois: ligar "Automatically delete head branches" e investigar o reinício automático das 04:00.
 
 ## Bloqueios
 
@@ -79,8 +87,17 @@ _Nenhum._
 - Entender por que o reinício automático das 04:00 ainda não aconteceu (o `uptime` mostrava a VM ligada desde a criação). O reinício manual já foi testado.
 - O `ubuntu-latest` dos runners do GitHub migra para o Ubuntu 26 a partir de 19/10/2026: avaliar fixar `ubuntu-24.04`
 - Q5: prazo legal de retenção dos pedidos (produção, não é código)
+- "Nome com no máximo 150 caracteres" é regra de negócio? Se sim, validar também no construtor do `Product` (hoje só o banco limita).
 
 ## Diário de sessões
+
+### 02/10/2026: revisão do deploy, Product, persistência e consulta do catálogo (1,5h)
+- Revisão das 6 perguntas do deploy: acertou com ajuda as do comando forçado e da chave sem senha; as outras ficaram com correções.
+- `Product` com invariantes e testes (PR #14). O primeiro teste do estoque zero estava com a regra invertida, e rodar o teste revelou o erro.
+- `AppDbContext`, mapeamento, migration `InitialCatalog`, teste de integração que salva e lê (PR #15). Corrigidos: conflito de versões do EF Core (MSB3277) e o `dotnet format` reclamando das migrations.
+- Consulta do catálogo (porta + DTO + teste de integração), commits no branch `feat/catalog-query`.
+- Tropeços de editor: modelo do Visual Studio colado junto com o código (usar Ctrl+A antes de colar); arquivo com nome `FileName.cs` e depois `.cs.cs`.
+- **Ficou confuso:** o que é um DTO. Revisar na próxima sessão.
 
 ### 01/10/2026 (2ª sessão): deploy contínuo completo e M0 concluído (1,5h)
 - Reinício manual da VM: a loja voltou sozinha (Docker habilitado + `restart: unless-stopped`).
