@@ -1,0 +1,35 @@
+﻿@model IReadOnlyList<KeycapStore.Application.Catalog.ProductSummary>
+@{
+    ViewData["Title"] = "Catálogo";
+    // Formata preços como dinheiro brasileiro: R$ 349,90
+    var brl = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+}
+
+<h1 class="mb-4">Catálogo</h1>
+
+<div class="row">
+    @foreach (var product in Model)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@product.Name</h5>
+                    <p class="card-text fs-4">@product.Price.ToString("C", brl)</p>
+
+                    @if (product.Stock == 0)
+                    {
+                        <span class="badge bg-secondary">Esgotado</span>
+                    }
+                    else if (product.Stock <= 3)
+                    {
+                        <span class="badge bg-warning text-dark">Últimas @product.Stock unidades</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Em estoque</span>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
