@@ -18,6 +18,8 @@ echo "==> Nova versão:  $NEW_TAG"
 
 docker pull "$IMAGE:$NEW_TAG"
 
+APP_TAG="$NEW_TAG" docker compose run --rm -T app migrate
+
 sed -i "s/^APP_TAG=.*/APP_TAG=$NEW_TAG/" .env
 
 docker compose up -d app
