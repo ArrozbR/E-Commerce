@@ -21,9 +21,9 @@ public class CatalogQueriesTests(PostgresFixture postgres) : IClassFixture<Postg
         {
             await db.Database.MigrateAsync();
             db.Products.AddRange(
-                new Product("Kit Zéfiro (base)", 299.90m, 10),
-                new Product("Kit Aurora (base)", 349.90m, 0),
-                new Product("Kit Maré (novelties)", 129.90m, 3));
+                new Product("Test Kit Zéfiro (base)", 299.90m, 10),
+                new Product("Test Kit Aurora (base)", 349.90m, 0),
+                new Product("Test Kit Maré (novelties)", 129.90m, 3));
             await db.SaveChangesAsync();
         }
 
@@ -31,12 +31,16 @@ public class CatalogQueriesTests(PostgresFixture postgres) : IClassFixture<Postg
         {
             var products = await new CatalogQueries(db).ListProductsAsync();
 
-            Assert.Equal(
-                new[] { "Kit Aurora (base)", "Kit Maré (novelties)", "Kit Zéfiro (base)" },
-                products.Select(p => p.Name));
+            var testProducts = products
+                .Where(p => p.Name.StartsWith("Test", StringComparison.Ordinal))
+                .ToList();
 
-            Assert.Equal(349.90m, products[0].Price);
-            Assert.Equal(0, products[0].Stock);
+            Assert.Equal(
+                new[] { "Test Kit Aurora (base)", "Test Kit Maré (novelties)", "Test Kit Zéfiro (base)" },
+                testProducts.Select(p => p.Name));
+
+            Assert.Equal(349.90m, testProducts[0].Price);
+            Assert.Equal(0, testProducts[0].Stock);
         }
     }
 }
