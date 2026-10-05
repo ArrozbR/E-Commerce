@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -euo pipefail
 
 if [[ $EUID -ne 0 ]]; then
