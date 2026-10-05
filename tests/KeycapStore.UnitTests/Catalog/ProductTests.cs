@@ -53,4 +53,22 @@ public class ProductTests
         var product = new Product("Kit", 100, 0);
         Assert.Equal(0, product.Stock);
     }
+
+    [Fact]
+    public void Constructor_WithNameAt150Characters_CreatesProduct()
+    {
+        var name = new string('a', 150);
+
+        var product = new Product(name, 100, 10);
+
+        Assert.Equal(150, product.Name.Length);
+    }
+
+    [Fact]
+    public void Constructor_WithNameOver150Characters_Throws()
+    {
+        var name = new string('a', 151);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Product(name, 100, 10));
+    }
 }
