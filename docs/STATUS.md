@@ -2,9 +2,9 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** **M1** (catálogo + Identity + `create-admin`), em andamento. **M0 concluído em 01/10/2026.** A loja está no ar em https://keycapstore.duckdns.org, com deploy contínuo e aprovação manual.
+**Marco atual:** **M1** (catálogo + Identity + `create-admin`), em andamento: **catálogo concluído e no ar** (https://keycapstore.duckdns.org/Catalog); falta Identity + `create-admin`. **M0 concluído em 01/10/2026.**
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 1,5h · total: 8,5h
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 2,5h · total: 9,5h
 **Estimativa da v1:** 120–180h (~3 meses a 10–15h/semana). Revisar ao fim do M2.
 
 ## Marcos da v1
@@ -21,11 +21,11 @@
 
 - [x] Entidade `Product` (`Domain/Catalog`): `private set`, construtor valida nome, preço > 0 e estoque ≥ 0; 9 testes unitários (PR #14)
 - [x] `AppDbContext` + `ProductConfiguration` (Npgsql, EF Core 10.0.12 alinhado), migration `InitialCatalog`, `dotnet-ef` como ferramenta local (`dotnet-tools.json`), migrations marcadas como código gerado no `.editorconfig`; teste de integração salva e lê um `Product` (PR #15)
-- [ ] Consulta do catálogo: `ICatalogQueries` + `ProductSummary` (Application) e `CatalogQueries` (Infrastructure), com teste de integração da ordenação. **Commits feitos no branch `feat/catalog-query`; falta push + PR.**
-- [ ] Seed dos kits de keycaps (via migration)
-- [ ] PostgreSQL de desenvolvimento no PC (o `compose.yaml` não publica porta) + conexão com user-secrets
-- [ ] Controller + página do catálogo (preço em reais, "esgotado" / "últimas unidades")
-- [ ] Produção: string de conexão vinda do `.env` da VM + aplicar migrations no `deploy.sh` (comando explícito, nunca na inicialização)
+- [x] Consulta do catálogo: `ICatalogQueries` + `ProductSummary` (DTO, na Application) e `CatalogQueries` (Infrastructure), com teste de integração independente do seed (PR #16)
+- [x] Seed dos 6 kits (migration `SeedCatalog`, Ids fixos) + teste que garante o seed (PR #18)
+- [x] PostgreSQL de desenvolvimento: `compose.override.yaml` publica `127.0.0.1:5432` só no PC; conexão em user-secrets (`ConnectionStrings:Default`) (PR #18)
+- [x] `AddInfrastructure` (DI, conexão obrigatória) + `CatalogController` fino + página `/Catalog` (preço em pt-BR, "Esgotado" / "Últimas N unidades") (PR #18)
+- [x] Produção: `ConnectionStrings__Default` no `compose.prod.yaml` (senha do `.env`); comando `migrate` (`dotnet KeycapStore.Web.dll migrate`); `deploy.sh` roda `APP_TAG=<novo> docker compose run --rm -T app migrate` **antes** de trocar a versão. Primeiro deploy aplicou `InitialCatalog` + `SeedCatalog` na VM (PR #18)
 - [ ] Identity (cadastro e login) + comando `create-admin`
 
 ## Checklist do M0
@@ -68,12 +68,9 @@
 
 ## Próximos passos
 
-1. **Revisão (20 min):**
-   - **O que é um DTO e por que a consulta devolve `ProductSummary`, e não `Product`.** O autor relatou que não entendeu bem; explicar do zero, com analogia, antes de usar na página.
-   - Por que o teste lê o produto com um `DbContext` **novo** (ficou sem resposta).
-   - Antes: fazer push + PR do `feat/catalog-query`, se ainda não foi feito.
-2. **Catálogo na tela, parte A:** seed dos kits + PostgreSQL de desenvolvimento + página listando os produtos (rodando no PC). A parte B (produção: conexão + migrations no deploy) vem em seguida, **no mesmo PR ou antes do merge**, para o deploy não publicar uma página quebrada.
-3. **Até 19/10:** fixar o runner do CI em `ubuntu-24.04`. Depois: ligar "Automatically delete head branches" e investigar o reinício automático das 04:00.
+1. **Revisão rápida (10 min):** o que o `AddScoped<ICatalogQueries, CatalogQueries>()` diz ao contêiner de DI (a resposta da sessão de 05/10 foi "consultar o CatalogQueries", que não está correta).
+2. **M1, Identity (parte 1):** ASP.NET Core Identity com cookies (ADR 0013): tabelas via migration, cadastro e login. Depois, o comando `create-admin`.
+3. **Até 19/10:** fixar o runner do CI em `ubuntu-24.04`. Depois: o deploy contínuo não atualiza o `compose.yaml` nem o `deploy.sh` da VM (copiados à mão em 05/10), automatizar; ligar "Automatically delete head branches"; investigar o reinício automático das 04:00.
 
 ## Bloqueios
 
@@ -90,6 +87,14 @@ _Nenhum._
 - "Nome com no máximo 150 caracteres" é regra de negócio? Se sim, validar também no construtor do `Product` (hoje só o banco limita).
 
 ## Diário de sessões
+
+### 05/10/2026: catálogo completo, do banco até a produção (1h)
+- Revisão: DTO (explicado do zero com a analogia do documento original × cópia) e o `DbContext` novo no teste; o autor respondeu bem às verificações.
+- Seed dos 6 kits; o teste da consulta quebrou por depender de banco vazio e foi corrigido (filtra só os dados do próprio teste); teste novo para o seed.
+- PostgreSQL de desenvolvimento (`compose.override.yaml`), user-secrets, `dotnet ef database update`, `psql` (o PowerShell 5.1 remove as aspas duplas de argumentos: usar o `psql` interativo).
+- Injeção de dependência (`AddInfrastructure`), `SmokeTests` entregando a conexão do container (no CI não há user-secrets), `CatalogController` fino e a página.
+- Produção: conexão via variável de ambiente, comando `migrate`, `deploy.sh` com migration antes da troca. **Catálogo no ar** (PR #18, deploy aprovado em 49 s).
+- O autor apagava o `#!/usr/bin/env bash` achando que era comentário (3 vezes); explicado. Atenção a isso em todo script.
 
 ### 02/10/2026: revisão do deploy, Product, persistência e consulta do catálogo (1,5h)
 - Revisão das 6 perguntas do deploy: acertou com ajuda as do comando forçado e da chave sem senha; as outras ficaram com correções.
