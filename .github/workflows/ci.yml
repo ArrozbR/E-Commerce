@@ -11,7 +11,7 @@ permissions:
 jobs:
   build-and-test:
     name: Build e testes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Baixar o código
@@ -39,7 +39,7 @@ jobs:
 
   secrets-scan:
     name: Busca de segredos (gitleaks)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Baixar o código (histórico completo)
@@ -57,7 +57,7 @@ jobs:
     name: Publicar imagem
     needs: [build-and-test, secrets-scan]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     permissions:
       contents: read
@@ -80,7 +80,7 @@ jobs:
     name: Deploy em produção
     needs: publish-image
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
     permissions:
       contents: read
