@@ -35,7 +35,7 @@ timedatectl set-timezone America/Sao_Paulo
 
 log "Atualizando a lista de pacotes e o sistema"
 apt-get update -q
-apt-get upgrade -y -q
+apt-get upgrade -y -q --with-new-pkgs
 
 log "Instalando/garantindo o unattended-upgrades"
 apt-get install -y -q unattended-upgrades
@@ -52,7 +52,28 @@ Unattended-Upgrade::Automatic-Reboot "true";
 Unattended-Upgrade::Automatic-Reboot-Time "04:00";
 // Remove dependências que ficaram sem uso (economiza disco).
 Unattended-Upgrade::Remove-Unused-Dependencies "true";
+// Além das de segurança (padrão), instala também as atualizações comuns do Ubuntu e as do Docker.
+Unattended-Upgrade::Allowed-Origins {
+    "${distro_id}:${distro_codename}-updates";
+    "Docker:${distro_codename}";
+};
 EOF
+
+mkdir -p /etc/systemd/system/apt-daily.timer.d /etc/systemd/system/apt-daily-upgrade.timer.d
+cat > /etc/systemd/system/apt-daily.timer.d/keycapstore.conf <<'EOF'
+[Timer]
+OnCalendar=
+OnCalendar=*-*-* 03:00
+RandomizedDelaySec=0
+EOF
+cat > /etc/systemd/system/apt-daily-upgrade.timer.d/keycapstore.conf <<'EOF'
+[Timer]
+OnCalendar=
+OnCalendar=*-*-* 03:30
+RandomizedDelaySec=0
+EOF
+systemctl daemon-reload
+systemctl restart apt-daily.timer apt-daily-upgrade.timer
 
 log "Parte 2 concluída"
 
