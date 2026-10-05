@@ -3,6 +3,7 @@ using KeycapStore.Infrastructure.Catalog;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,6 +20,11 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
         services.AddScoped<ICatalogQueries, CatalogQueries>();
+
+        services.AddIdentityCore<IdentityUser>(options =>
+                options.User.RequireUniqueEmail = true)
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<AppDbContext>();
 
         return services;
     }
