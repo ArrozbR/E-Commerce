@@ -43,4 +43,27 @@ public class CatalogQueriesTests(PostgresFixture postgres) : IClassFixture<Postg
             Assert.Equal(0, testProducts[0].Stock);
         }
     }
+
+    [Fact]
+    public async Task Seed_ContainsInitialKits()
+    {
+        await using (var db = CreateContext())
+        {
+            await db.Database.MigrateAsync();
+        }
+
+        await using (var db = CreateContext())
+        {
+            var products = await new CatalogQueries(db).ListProductsAsync();
+
+            var seedProducts = products
+                .Where(p => !p.Name.StartsWith("Test", StringComparison.Ordinal))
+                .ToList();
+
+            Assert.Equal(6, seedProducts.Count);
+
+            var mare = seedProducts.Single(p => p.Name == "Kit Maré (modificadores)");
+            Assert.Equal(0, mare.Stock);
+        }
+    }
 }
