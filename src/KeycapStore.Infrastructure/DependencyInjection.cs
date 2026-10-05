@@ -2,8 +2,8 @@
 using KeycapStore.Infrastructure.Catalog;
 using KeycapStore.Infrastructure.Persistence;
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
