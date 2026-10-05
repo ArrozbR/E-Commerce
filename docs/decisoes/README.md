@@ -28,3 +28,4 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0018](0018-observabilidade-backups-atualizacoes.md) | Observabilidade externa, backups fora do provedor, atualizações |
 | [0019](0019-codigo-em-ingles.md) | Código em inglês; documentação e interface em português |
 | [0020](0020-vm-e2-micro-provisoria.md) | VM E2.1.Micro provisória, até haver capacidade A1 |
+| [0021](0021-atualizacoes-automaticas-diarias.md) | Atualizações automáticas diárias (comuns + Docker) às 03:30 |
