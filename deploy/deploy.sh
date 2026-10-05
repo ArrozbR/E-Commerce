@@ -18,6 +18,13 @@ echo "==> Nova versão:  $NEW_TAG"
 
 docker pull "$IMAGE:$NEW_TAG"
 
+RAW_URL="https://raw.githubusercontent.com/ArrozbR/E-Commerce/$NEW_TAG/deploy"
+TMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TMP_DIR"' EXIT
+curl -fsSL "$RAW_URL/compose.prod.yaml" -o "$TMP_DIR/compose.yaml"
+curl -fsSL "$RAW_URL/deploy.sh" -o "$TMP_DIR/deploy.sh"
+install -m 640 "$TMP_DIR/compose.yaml" compose.yaml
+
 APP_TAG="$NEW_TAG" docker compose run --rm -T app migrate
 
 sed -i "s/^APP_TAG=.*/APP_TAG=$NEW_TAG/" .env
@@ -26,6 +33,8 @@ docker compose up -d app
 
 for i in $(seq 1 30); do
   if curl -fsS -o /dev/null http://127.0.0.1:8080/; then
+    install -m 750 "$TMP_DIR/deploy.sh" deploy.sh.new
+    mv deploy.sh.new deploy.sh
     echo "==> Deploy concluído: $NEW_TAG está no ar."
     echo "    Para voltar à versão anterior: sudo $0 $OLD_TAG"
     exit 0
