@@ -24,7 +24,7 @@ Um sistema não consegue reportar a própria falha: se a VM cair, o disco encher
 - Cópias locais na VM só como restauração rápida complementar.
 
 **Atualizações**
-- `unattended-upgrades` para as atualizações de segurança do sistema, com reinício na madrugada quando necessário.
+- `unattended-upgrades` para as atualizações de segurança do sistema, com reinício na madrugada quando necessário. **Ampliado pelo ADR 0021:** também as atualizações comuns e as do Docker, todo dia às 03:30.
 - Dependabot para as imagens Docker, pacotes NuGet e actions (tudo via PR e CI).
 
 ## Alternativas consideradas

@@ -2,9 +2,9 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** **M1** (catálogo + Identity + `create-admin`), em andamento: **catálogo concluído e no ar** (https://keycapstore.duckdns.org/Catalog); falta Identity + `create-admin`. **M0 concluído em 01/10/2026.**
+**Marco atual:** **M1** (catálogo + Identity + `create-admin`), em andamento: **catálogo concluído e no ar** (https://keycapstore.duckdns.org/Catalog); **Identity parte 1 concluída** (tabelas em produção); falta cadastro/login, `create-admin` e a regra dos 150 caracteres. **M0 concluído em 01/10/2026.**
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 2,5h · total: 9,5h
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 4,5h · total: 11,5h
 **Estimativa da v1:** 120–180h (~3 meses a 10–15h/semana). Revisar ao fim do M2.
 
 ## Marcos da v1
@@ -26,7 +26,10 @@
 - [x] PostgreSQL de desenvolvimento: `compose.override.yaml` publica `127.0.0.1:5432` só no PC; conexão em user-secrets (`ConnectionStrings:Default`) (PR #18)
 - [x] `AddInfrastructure` (DI, conexão obrigatória) + `CatalogController` fino + página `/Catalog` (preço em pt-BR, "Esgotado" / "Últimas N unidades") (PR #18)
 - [x] Produção: `ConnectionStrings__Default` no `compose.prod.yaml` (senha do `.env`); comando `migrate` (`dotnet KeycapStore.Web.dll migrate`); `deploy.sh` roda `APP_TAG=<novo> docker compose run --rm -T app migrate` **antes** de trocar a versão. Primeiro deploy aplicou `InitialCatalog` + `SeedCatalog` na VM (PR #18)
-- [ ] Identity (cadastro e login) + comando `create-admin`
+- [x] Identity parte 1: `AppDbContext` herda de `IdentityDbContext<IdentityUser>` (`base.OnModelCreating` primeiro), migration `AddIdentity` (7 tabelas `AspNet...`, aplicada em produção pelo deploy), `AddIdentityCore` + `AddRoles` + `AddEntityFrameworkStores` no `AddInfrastructure` (e-mail único), teste de integração que prova o hash da senha (visto falhando com sabotagem) (PR #22)
+- [ ] Nome do `Product` com no máximo 150 caracteres como **regra de negócio** (decidido em 05/10): validar no construtor + teste
+- [ ] Identity parte 2: cadastro, login e logout (cookies `HttpOnly`/`Secure`/`SameSite`, camada Web)
+- [ ] Comando `create-admin` + seed de admin de teste só em `Development` (ADR 0013)
 
 ## Checklist do M0
 
@@ -68,9 +71,9 @@
 
 ## Próximos passos
 
-1. **Revisão rápida (10 min):** o que o `AddScoped<ICatalogQueries, CatalogQueries>()` diz ao contêiner de DI (a resposta da sessão de 05/10 foi "consultar o CatalogQueries", que não está correta).
-2. **M1, Identity (parte 1):** ASP.NET Core Identity com cookies (ADR 0013): tabelas via migration, cadastro e login. Depois, o comando `create-admin`.
-3. **Até 19/10:** fixar o runner do CI em `ubuntu-24.04`. Depois: o deploy contínuo não atualiza o `compose.yaml` nem o `deploy.sh` da VM (copiados à mão em 05/10), automatizar; ligar "Automatically delete head branches"; investigar o reinício automático das 04:00.
+1. **Aquecimento (30 min):** nome do `Product` com no máximo 150 caracteres no construtor (`ArgumentException` acima disso) + testes no limite (150 passa, 151 falha).
+2. **M1, Identity parte 2:** páginas de cadastro, login e logout com cookie (camada Web, `AddSignInManager` + cookie de autenticação), com teste de integração do fluxo.
+3. **M1, `create-admin`:** comando `dotnet KeycapStore.Web.dll create-admin --email ...` (senha interativa ou gerada e exibida uma vez) + seed de admin só em `Development` (ADR 0013).
 
 ## Bloqueios
 
@@ -81,12 +84,20 @@ _Nenhum._
 - Q1b: confirmar `checkout.session.expired` com Pix pendente (M4)
 - Q3: **respondida** (sem capacidade A1 em 30/09); seguir tentando para migrar da Micro
 - Q4: R2/B2, monitor externo, healthchecks.io (M6)
-- Entender por que o reinício automático das 04:00 ainda não aconteceu (o `uptime` mostrava a VM ligada desde a criação). O reinício manual já foi testado.
-- O `ubuntu-latest` dos runners do GitHub migra para o Ubuntu 26 a partir de 19/10/2026: avaliar fixar `ubuntu-24.04`
 - Q5: prazo legal de retenção dos pedidos (produção, não é código)
-- "Nome com no máximo 150 caracteres" é regra de negócio? Se sim, validar também no construtor do `Product` (hoje só o banco limita).
+- O `migrate` no deploy mostra `libgssapi_krb5.so.2: cannot open shared object file` (aviso do driver do PostgreSQL; já aparecia antes; a migration roda normalmente). Investigar no M6.
+
+**Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 05/10/2026 (2ª sessão): Identity parte 1, deploy que se atualiza, atualizações automáticas (2h)
+- Runner do CI fixado em `ubuntu-24.04` (PR #20); shebang que faltava no `bootstrap-vm.sh` (PR #21, inserido pelo Claude e conferido: sem BOM, LF, diff de 1 linha).
+- Identity parte 1 (PR #22): `IdentityDbContext`, migration `AddIdentity` (aplicada na VM pelo deploy), `AddIdentityCore` no DI, teste do hash da senha com sabotagem. O `dotnet format` pegou um `using` fora de ordem antes do CI. Primeiro "Update branch" por causa da regra de branch atualizado.
+- `deploy.sh` agora baixa o `compose.prod.yaml` e o próprio `deploy.sh` do GitHub, na mesma versão da imagem (depois do `docker pull`, em pasta temporária; o `deploy.sh` é trocado com `mv` só no final e só se o site responder) (PR #23). Ovo e galinha resolvido com uma última cópia manual; o deploy seguinte se atualizou sozinho.
+- Reinício das 04:00 investigado: o robô só instalava segurança, e o kernel novo estava em `noble-updates`. Agora instala tudo (comuns + Docker) às 03:30, com horários fixos; o kernel `7.0.0-1013` está no ar após um reinício manual (PR #24, ADR 0021). O Claude tinha concluído errado de primeira ("nada pendente"); o banner do SSH mostrou o contrário.
+- Git: rodou a rotina pós-merge antes do push (o `-d` recusou apagar, corretamente); explicado `-d` × `-D` e o `push -u`.
+- Verificações: Scoped (errou, depois acertou com a analogia do carrinho), memória × banco (errou, depois acertou com o "Salvar" do Word), `mv` no final do `deploy.sh` (acertou depois da explicação). O autor diz que nada ficou confuso.
 
 ### 05/10/2026: catálogo completo, do banco até a produção (1h)
 - Revisão: DTO (explicado do zero com a analogia do documento original × cópia) e o `DbContext` novo no teste; o autor respondeu bem às verificações.
