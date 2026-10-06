@@ -2,15 +2,15 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** **M1** (catálogo + Identity + `create-admin`), em andamento: **catálogo concluído e no ar** (https://keycapstore.duckdns.org/Catalog); **cadastro de clientes no ar** (https://keycapstore.duckdns.org/Account/Register); falta login/logout (com as chaves do Data Protection no banco) e o `create-admin`. **M0 concluído em 01/10/2026.**
+**Marco atual:** **M2** (carrinho, pedido, reserva atômica + testes de concorrência), a começar. **M1 concluído em 06/10/2026** (catálogo, cadastro, login/logout, admin; tudo no ar em https://keycapstore.duckdns.org). **M0 concluído em 01/10/2026.**
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 6,5h · total: 13,5h
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · total: 15,5h
 **Estimativa da v1:** 120–180h (~3 meses a 10–15h/semana). Revisar ao fim do M2.
 
 ## Marcos da v1
 
 - [x] **M0: esqueleto que anda** (25–35h estimadas; **7h reais**, concluído em 01/10/2026)
-- [ ] **M1:** catálogo (seed) + Identity + `create-admin` (15–25h)
+- [x] **M1:** catálogo (seed) + Identity + `create-admin` (15–25h estimadas; **8,5h reais**, concluído em 06/10/2026)
 - [ ] **M2:** carrinho, pedido, reserva atômica + testes de concorrência (20–30h)
 - [ ] **M3:** Stripe Checkout com cartão + webhook idempotente + página de retorno (20–30h)
 - [ ] **M4:** Pix, expiração, falha, reembolso por falta de estoque (15–25h)
@@ -29,9 +29,10 @@
 - [x] Identity parte 1: `AppDbContext` herda de `IdentityDbContext<IdentityUser>` (`base.OnModelCreating` primeiro), migration `AddIdentity` (7 tabelas `AspNet...`, aplicada em produção pelo deploy), `AddIdentityCore` + `AddRoles` + `AddEntityFrameworkStores` no `AddInfrastructure` (e-mail único), teste de integração que prova o hash da senha (visto falhando com sabotagem) (PR #22)
 - [x] Nome do `Product` com no máximo 150 caracteres (`Product.MaxNameLength`, usada também no `ProductConfiguration`); testes de borda 150/151 escritos antes da regra (PR #26)
 - [x] Cadastro (PR #27): porta `IAccountService` + `AccountResult` (Application), `AccountService` com `UserManager` (Infrastructure), `PortugueseIdentityErrorDescriber` (e-mail duplicado com mensagem única, sem repetir o e-mail), `AccountController` + `RegisterViewModel` + `Views/Account/Register.cshtml`, antiforgery global (`AutoValidateAntiforgeryTokenAttribute`). Testes: serviço (válido, duplicado, senha fraca) e página (POST com token → 302 `/Catalog`; sem token → 400), com sabotagens. Primeira conta criada em produção.
-- [ ] Login: `SignInManager` + cookie (`HttpOnly`/`Secure`/`SameSite`) + `UseAuthentication`; **chaves do Data Protection no PostgreSQL** (hoje ficam dentro do container e mudam a cada deploy; ADR); página de login com bloqueio após 5 tentativas + testes
-- [ ] Logout (POST com antiforgery) + menu conforme o estado de login
-- [ ] Comando `create-admin` + seed de admin de teste só em `Development` (ADR 0013); criar o admin real na VM
+- [x] Chaves do Data Protection no PostgreSQL (`IDataProtectionKeyContext`, migration `AddDataProtectionKeys`, `SetApplicationName`); teste que simula um deploy e confere a chave no banco; aviso `may not be persisted` sumiu da produção e a chave sobreviveu a um deploy (PR #29, ADR 0022 no PR #30)
+- [x] Login (PR #31): `FrameworkReference` do ASP.NET na Infrastructure, `SignInManager`, `SignInAsync`/`SignOutAsync` na porta, bloqueio após **3** tentativas (5 min), mensagem genérica "E-mail ou senha inválidos.", cookie `HttpOnly` + `Secure` + `SameSite=Lax` (8h, renovável), `UseAuthentication`; testes de cookie e senha errada
+- [x] Logout por POST + menu "Olá, e-mail"/"Sair" (PR #32); testes do bloqueio (2 erros, 3º bloqueia, senha certa barrada) e do ciclo login → menu → logout (cliente de teste em `https` por causa do `Secure`), com sabotagens
+- [x] Comando `create-admin --email` (PR #33, ADR 0023): papel `Admin`, senha de 20 caracteres com `RandomNumberGenerator` mostrada uma vez, conta existente promovida sem trocar a senha, idempotente; 3 testes. Sem seed de admin (no PC usa-se o mesmo comando). Admin real criado na VM com e-mail separado (`+admin`)
 
 ## Checklist do M0
 
@@ -73,9 +74,9 @@
 
 ## Próximos passos
 
-1. **Chaves do Data Protection no banco (~1h):** pacote `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore`, migration, `PersistKeysToDbContext`; ADR. Pronto quando: o aviso `Storing keys in a directory ... may not be persisted` some do log de produção, e um cookie continua válido depois de um deploy.
-2. **Login (~2h):** `SignInManager` + cookie seguro + `UseAuthentication`, página de login com bloqueio após 5 tentativas, testes de integração (login certo gera cookie, senha errada recusada, bloqueio).
-3. **Logout + menu, depois `create-admin` (~2,5h)**, fechando o M1 (estimativa: M1 em ~14–15h).
+1. **Aquecimento (~30 min):** juntar o `CreateFactoryAsync` (hoje copiado em 6 classes de teste de integração) num lugar só (ex.: classe base ou método na `PostgresFixture`). Pronto quando: nenhuma classe de teste monta a `WebApplicationFactory` por conta própria e os 32 testes passam.
+2. **M2, desenho:** reler `docs/DEFINICOES.md` (carrinho, pedido, reserva) + ADRs 0005, 0006 e 0008 e `.claude/rules/pagamentos.md` §4–§5; o autor propõe o `Order` (estados, `private set`, transições) e o Claude revisa. **O `Order` e a reserva são escritos pelo autor.**
+3. **M2, carrinho:** carrinho no banco, por cliente, exige login (D34), com testes.
 
 ## Bloqueios
 
@@ -87,12 +88,23 @@ _Nenhum._
 - Q3: **respondida** (sem capacidade A1 em 30/09); seguir tentando para migrar da Micro
 - Q4: R2/B2, monitor externo, healthchecks.io (M6)
 - Q5: prazo legal de retenção dos pedidos (produção, não é código)
-- `CreateFactoryAsync` repetido em 3 classes de teste de integração (`UserPasswordTests`, `AccountServiceTests`, `RegisterPageTests`): juntar num lugar só quando houver a 4ª.
+- Cookie do antiforgery sem `Secure` (o de login tem). Risco baixo; endurecer exige que os testes de página usem `https`.
+- Senha do admin de produção apareceu no chat em 06/10; o autor optou por não trocar agora. **Trocar antes do go-live (checklist do M6).**
 - O `migrate` no deploy mostra `libgssapi_krb5.so.2: cannot open shared object file` (aviso do driver do PostgreSQL; já aparecia antes; a migration roda normalmente). Investigar no M6.
+
+**Decisões de 06/10:** bloqueio após **3** tentativas (não 5), ciente de que facilita bloquear a conta de outra pessoa (5 min); chaves no PostgreSQL (ADR 0022); admin pelo comando também no PC e conta existente promovida (ADR 0023).
 
 **Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 06/10/2026: Data Protection, login, logout, `create-admin` e **M1 concluído** (2h)
+- Chaves do Data Protection no PostgreSQL (PR #29) + ADR 0022 (PR #30). A sabotagem mostrou que, no PC, as chaves também vão para `%LOCALAPPDATA%\ASP.NET\DataProtection-Keys`: por isso o teste confere o **banco**. A chave `key-2d5f...` sobreviveu a um deploy.
+- Login (PR #31), logout + menu (PR #32), `create-admin` (PR #33, ADR 0023). O Claude passou a testar cada passo numa cópia separada (scratchpad) antes de entregar as instruções.
+- Tropeços: banco do PC sem a migration nova (`relation "DataProtectionKeys" does not exist`; resolvido com `-- migrate`); CI do PR #32 nunca disparou (resolvido fechando e reabrindo o PR).
+- Decisões do autor: bloqueio em 3 tentativas; sem seed de admin; promover conta existente.
+- **Segurança:** a senha do admin de produção foi colada no chat (texto + print); o autor decidiu não trocar agora. Fica no checklist do M6.
+- Verificações: chave no banco × cookie no navegador (acertou com ajuste), "e-mail ou senha" genérico (acertou), POST no logout (sem resposta). O autor diz que nada ficou confuso.
 
 ### 05/10/2026 (3ª sessão): 150 caracteres e cadastro de clientes no ar (2h)
 - Regra dos 150 caracteres no `Product` com TDD (vermelho → verde), constante `MaxNameLength` como fonte única (PR #26). Erros no caminho: `Name` (propriedade) em vez de `name.Length`; um `migrations remove` sem `add` antes, que só não apagou a `AddIdentity` porque não conectou no banco (usar `has-pending-model-changes` para conferir o modelo).
