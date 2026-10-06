@@ -30,3 +30,4 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0020](0020-vm-e2-micro-provisoria.md) | VM E2.1.Micro provisória, até haver capacidade A1 |
 | [0021](0021-atualizacoes-automaticas-diarias.md) | Atualizações automáticas diárias (comuns + Docker) às 03:30 |
 | [0022](0022-chaves-data-protection-no-postgresql.md) | Chaves do Data Protection no PostgreSQL |
+| [0023](0023-admin-pelo-comando-tambem-no-pc.md) | Admin pelo comando também no PC (sem seed); conta existente é promovida |

@@ -13,7 +13,7 @@ A loja tem muitos clientes (cadastro, login, bloqueio por tentativas, recuperaç
 - **ASP.NET Core Identity com cookies** (`HttpOnly`, `Secure`, `SameSite`), com armazenamento no PostgreSQL via EF Core, na `Infrastructure`. O `Domain` conhece o cliente só pelo ID.
 - O admin é um usuário do Identity com o **papel `Admin`**, sem tabela separada e sem flag `IsAdmin`.
 - **Primeiro admin por comando administrativo:** `docker compose exec app dotnet KeycapStore.Web.dll create-admin --email ...`, com a senha pedida de forma interativa ou gerada e exibida uma única vez. **Nenhuma senha fica guardada.**
-- Em `Development`, um seed cria um admin de teste. Em nenhum outro ambiente isso roda.
+- ~~Em `Development`, um seed cria um admin de teste. Em nenhum outro ambiente isso roda.~~ **Substituído pelo ADR 0023:** no PC também se usa o comando `create-admin`; não há seed.
 - **Nenhuma rota atribui o papel de admin.**
 
 ## Alternativas consideradas
