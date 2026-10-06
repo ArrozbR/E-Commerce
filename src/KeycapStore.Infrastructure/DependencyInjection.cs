@@ -29,10 +29,15 @@ public static class DependencyInjection
         services.AddScoped<ICatalogQueries, CatalogQueries>();
 
         services.AddIdentityCore<IdentityUser>(options =>
-                options.User.RequireUniqueEmail = true)
-            .AddRoles<IdentityRole>()
-            .AddErrorDescriber<PortugueseIdentityErrorDescriber>()
-            .AddEntityFrameworkStores<AppDbContext>();
+        {
+            options.User.RequireUniqueEmail = true;
+            options.Lockout.MaxFailedAccessAttempts = 3;
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+        })
+        .AddRoles<IdentityRole>()
+        .AddErrorDescriber<PortugueseIdentityErrorDescriber>()
+        .AddSignInManager()
+        .AddEntityFrameworkStores<AppDbContext>();
 
         services.AddScoped<IAccountService, AccountService>();
 
