@@ -4,6 +4,7 @@ using KeycapStore.Infrastructure.Catalog;
 using KeycapStore.Infrastructure.Identity;
 using KeycapStore.Infrastructure.Persistence;
 
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +21,10 @@ public static class DependencyInjection
                 "Falta a configuração 'ConnectionStrings:Default' (conexão com o PostgreSQL).");
 
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+
+        services.AddDataProtection()
+            .PersistKeysToDbContext<AppDbContext>()
+            .SetApplicationName("KeycapStore");
 
         services.AddScoped<ICatalogQueries, CatalogQueries>();
 
