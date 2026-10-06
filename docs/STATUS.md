@@ -2,9 +2,9 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** **M1** (catálogo + Identity + `create-admin`), em andamento: **catálogo concluído e no ar** (https://keycapstore.duckdns.org/Catalog); **Identity parte 1 concluída** (tabelas em produção); falta cadastro/login, `create-admin` e a regra dos 150 caracteres. **M0 concluído em 01/10/2026.**
+**Marco atual:** **M1** (catálogo + Identity + `create-admin`), em andamento: **catálogo concluído e no ar** (https://keycapstore.duckdns.org/Catalog); **cadastro de clientes no ar** (https://keycapstore.duckdns.org/Account/Register); falta login/logout (com as chaves do Data Protection no banco) e o `create-admin`. **M0 concluído em 01/10/2026.**
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 4,5h · total: 11,5h
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 6,5h · total: 13,5h
 **Estimativa da v1:** 120–180h (~3 meses a 10–15h/semana). Revisar ao fim do M2.
 
 ## Marcos da v1
@@ -27,9 +27,11 @@
 - [x] `AddInfrastructure` (DI, conexão obrigatória) + `CatalogController` fino + página `/Catalog` (preço em pt-BR, "Esgotado" / "Últimas N unidades") (PR #18)
 - [x] Produção: `ConnectionStrings__Default` no `compose.prod.yaml` (senha do `.env`); comando `migrate` (`dotnet KeycapStore.Web.dll migrate`); `deploy.sh` roda `APP_TAG=<novo> docker compose run --rm -T app migrate` **antes** de trocar a versão. Primeiro deploy aplicou `InitialCatalog` + `SeedCatalog` na VM (PR #18)
 - [x] Identity parte 1: `AppDbContext` herda de `IdentityDbContext<IdentityUser>` (`base.OnModelCreating` primeiro), migration `AddIdentity` (7 tabelas `AspNet...`, aplicada em produção pelo deploy), `AddIdentityCore` + `AddRoles` + `AddEntityFrameworkStores` no `AddInfrastructure` (e-mail único), teste de integração que prova o hash da senha (visto falhando com sabotagem) (PR #22)
-- [ ] Nome do `Product` com no máximo 150 caracteres como **regra de negócio** (decidido em 05/10): validar no construtor + teste
-- [ ] Identity parte 2: cadastro, login e logout (cookies `HttpOnly`/`Secure`/`SameSite`, camada Web)
-- [ ] Comando `create-admin` + seed de admin de teste só em `Development` (ADR 0013)
+- [x] Nome do `Product` com no máximo 150 caracteres (`Product.MaxNameLength`, usada também no `ProductConfiguration`); testes de borda 150/151 escritos antes da regra (PR #26)
+- [x] Cadastro (PR #27): porta `IAccountService` + `AccountResult` (Application), `AccountService` com `UserManager` (Infrastructure), `PortugueseIdentityErrorDescriber` (e-mail duplicado com mensagem única, sem repetir o e-mail), `AccountController` + `RegisterViewModel` + `Views/Account/Register.cshtml`, antiforgery global (`AutoValidateAntiforgeryTokenAttribute`). Testes: serviço (válido, duplicado, senha fraca) e página (POST com token → 302 `/Catalog`; sem token → 400), com sabotagens. Primeira conta criada em produção.
+- [ ] Login: `SignInManager` + cookie (`HttpOnly`/`Secure`/`SameSite`) + `UseAuthentication`; **chaves do Data Protection no PostgreSQL** (hoje ficam dentro do container e mudam a cada deploy; ADR); página de login com bloqueio após 5 tentativas + testes
+- [ ] Logout (POST com antiforgery) + menu conforme o estado de login
+- [ ] Comando `create-admin` + seed de admin de teste só em `Development` (ADR 0013); criar o admin real na VM
 
 ## Checklist do M0
 
@@ -71,9 +73,9 @@
 
 ## Próximos passos
 
-1. **Aquecimento (30 min):** nome do `Product` com no máximo 150 caracteres no construtor (`ArgumentException` acima disso) + testes no limite (150 passa, 151 falha).
-2. **M1, Identity parte 2:** páginas de cadastro, login e logout com cookie (camada Web, `AddSignInManager` + cookie de autenticação), com teste de integração do fluxo.
-3. **M1, `create-admin`:** comando `dotnet KeycapStore.Web.dll create-admin --email ...` (senha interativa ou gerada e exibida uma vez) + seed de admin só em `Development` (ADR 0013).
+1. **Chaves do Data Protection no banco (~1h):** pacote `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore`, migration, `PersistKeysToDbContext`; ADR. Pronto quando: o aviso `Storing keys in a directory ... may not be persisted` some do log de produção, e um cookie continua válido depois de um deploy.
+2. **Login (~2h):** `SignInManager` + cookie seguro + `UseAuthentication`, página de login com bloqueio após 5 tentativas, testes de integração (login certo gera cookie, senha errada recusada, bloqueio).
+3. **Logout + menu, depois `create-admin` (~2,5h)**, fechando o M1 (estimativa: M1 em ~14–15h).
 
 ## Bloqueios
 
@@ -85,11 +87,20 @@ _Nenhum._
 - Q3: **respondida** (sem capacidade A1 em 30/09); seguir tentando para migrar da Micro
 - Q4: R2/B2, monitor externo, healthchecks.io (M6)
 - Q5: prazo legal de retenção dos pedidos (produção, não é código)
+- `CreateFactoryAsync` repetido em 3 classes de teste de integração (`UserPasswordTests`, `AccountServiceTests`, `RegisterPageTests`): juntar num lugar só quando houver a 4ª.
 - O `migrate` no deploy mostra `libgssapi_krb5.so.2: cannot open shared object file` (aviso do driver do PostgreSQL; já aparecia antes; a migration roda normalmente). Investigar no M6.
 
 **Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 05/10/2026 (3ª sessão): 150 caracteres e cadastro de clientes no ar (2h)
+- Regra dos 150 caracteres no `Product` com TDD (vermelho → verde), constante `MaxNameLength` como fonte única (PR #26). Erros no caminho: `Name` (propriedade) em vez de `name.Length`; um `migrations remove` sem `add` antes, que só não apagou a `AddIdentity` porque não conectou no banco (usar `has-pending-model-changes` para conferir o modelo).
+- Cadastro completo em 5 passos (PR #27): porta na Application, `AccountService`, página MVC com ViewModel, mensagens em pt-BR, teste da página com antiforgery. Arquivos `.cshtml.cs` de Razor Page que sobravam do modelo do VS foram apagados (usar "Razor View - Empty").
+- Sabotagens: `RequireUniqueEmail = false` **não** fez o teste falhar, porque `UserName = email` tem índice **único** no banco (o `EmailIndex` não é único): é essa a garantia real. Sem o filtro de antiforgery, o POST sem token virou 302 (conta criada).
+- Incidente do GitHub Actions travou o CI do PR #26 por horas; resolvido com "Re-run failed jobs" depois.
+- Achado nos logs de produção: chaves do Data Protection dentro do container (mudam a cada deploy). Entra antes do login.
+- Verificações: porta na Application (acertou depois do cardápio), `UserName` fixo (não sabia), navegador × servidor (parcial), 302 × 400 (trocou; o print mostrou `Found`). O autor diz que ficou sem dúvidas.
 
 ### 05/10/2026 (2ª sessão): Identity parte 1, deploy que se atualiza, atualizações automáticas (2h)
 - Runner do CI fixado em `ubuntu-24.04` (PR #20); shebang que faltava no `bootstrap-vm.sh` (PR #21, inserido pelo Claude e conferido: sem BOM, LF, diff de 1 linha).
