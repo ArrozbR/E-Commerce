@@ -26,6 +26,7 @@ public static class DependencyInjection
         services.AddIdentityCore<IdentityUser>(options =>
                 options.User.RequireUniqueEmail = true)
             .AddRoles<IdentityRole>()
+            .AddErrorDescriber<PortugueseIdentityErrorDescriber>()
             .AddEntityFrameworkStores<AppDbContext>();
 
         services.AddScoped<IAccountService, AccountService>();

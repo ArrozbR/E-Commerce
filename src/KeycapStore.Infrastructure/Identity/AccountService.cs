@@ -14,6 +14,6 @@ internal sealed class AccountService(UserManager<IdentityUser> userManager) : IA
 
         return result.Succeeded
             ? AccountResult.Success()
-            : AccountResult.Failure(result.Errors.Select(e => e.Description));
+            : AccountResult.Failure(result.Errors.Select(e => e.Description).Distinct());
     }
 }

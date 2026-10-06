@@ -47,6 +47,22 @@ public class AccountServiceTests(PostgresFixture postgres) : IClassFixture<Postg
         var result = await accounts.RegisterAsync("ana@example.com", Password);
 
         Assert.False(result.Succeeded);
-        Assert.NotEmpty(result.Errors);
+
+        var error = Assert.Single(result.Errors);
+
+        Assert.Equal("Este e-mail já está cadastrado.", error);
+    }
+
+    [Fact]
+    public async Task Register_WithWeakPassword_ReturnsErrorsInPortuguese()
+    {
+        await using var factory = await CreateFactoryAsync();
+        await using var scope = factory.Services.CreateAsyncScope();
+        var accounts = scope.ServiceProvider.GetRequiredService<IAccountService>();
+
+        var result = await accounts.RegisterAsync("fraca@example.com", "123456");
+
+        Assert.False(result.Succeeded);
+        Assert.Contains("A senha precisa ter pelo menos uma letra maiúscula (A-Z).", result.Errors);
     }
 }
