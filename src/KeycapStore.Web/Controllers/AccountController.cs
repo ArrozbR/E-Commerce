@@ -32,4 +32,31 @@ public sealed class AccountController(IAccountService accounts) : Controller
 
         return RedirectToAction("Index", "Catalog");
     }
+
+
+    [HttpGet]
+    public IActionResult Login() => View();
+
+    [HttpPost]
+    public async Task<IActionResult> Login(LoginViewModel model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var result = await accounts.SignInAsync(model.Email, model.Password, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error);
+            }
+
+            return View(model);
+        }
+
+        return RedirectToAction("Index", "Catalog");
+    }
 }
