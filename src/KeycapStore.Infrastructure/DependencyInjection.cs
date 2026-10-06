@@ -1,5 +1,7 @@
 ﻿using KeycapStore.Application.Catalog;
+using KeycapStore.Application.Identity;
 using KeycapStore.Infrastructure.Catalog;
+using KeycapStore.Infrastructure.Identity;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.AspNetCore.Identity;
@@ -24,7 +26,10 @@ public static class DependencyInjection
         services.AddIdentityCore<IdentityUser>(options =>
                 options.User.RequireUniqueEmail = true)
             .AddRoles<IdentityRole>()
+            .AddErrorDescriber<PortugueseIdentityErrorDescriber>()
             .AddEntityFrameworkStores<AppDbContext>();
+
+        services.AddScoped<IAccountService, AccountService>();
 
         return services;
     }
