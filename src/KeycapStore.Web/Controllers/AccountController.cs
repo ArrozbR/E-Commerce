@@ -59,4 +59,12 @@ public sealed class AccountController(IAccountService accounts) : Controller
 
         return RedirectToAction("Index", "Catalog");
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Logout(CancellationToken cancellationToken)
+    {
+        await accounts.SignOutAsync(cancellationToken);
+
+        return RedirectToAction("Index", "Catalog");
+    }
 }
