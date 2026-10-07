@@ -74,4 +74,40 @@ public class CartPageTests(PostgresFixture postgres) : IClassFixture<PostgresFix
         Assert.Contains("Kit Aurora (base)", cart);
         Assert.Contains("R$ 349,90", cart);
     }
+
+    [Fact]
+    public async Task ChangeQuantityAndRemove_UpdateTheCartPage()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var client = await LoggedInClientAsync(factory, "editar@example.com");
+
+        var token = TokenFrom(await client.GetStringAsync("/Catalog"));
+        await client.PostAsync("/Cart/Add", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["productId"] = KitAurora,
+            ["__RequestVerificationToken"] = token,
+        }));
+
+        token = TokenFrom(await client.GetStringAsync("/Cart"));
+        var change = await client.PostAsync("/Cart/ChangeQuantity", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["productId"] = KitAurora,
+            ["quantity"] = "3",
+            ["__RequestVerificationToken"] = token,
+        }));
+        Assert.Equal(HttpStatusCode.Redirect, change.StatusCode);
+
+        var cart = WebUtility.HtmlDecode(await client.GetStringAsync("/Cart"));
+        Assert.Contains("R$ 1.049,70", cart);
+
+        token = TokenFrom(cart);
+        var remove = await client.PostAsync("/Cart/Remove", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["productId"] = KitAurora,
+            ["__RequestVerificationToken"] = token,
+        }));
+        Assert.Equal(HttpStatusCode.Redirect, remove.StatusCode);
+
+        Assert.Contains("Seu carrinho está vazio.", WebUtility.HtmlDecode(await client.GetStringAsync("/Cart")));
+    }
 }

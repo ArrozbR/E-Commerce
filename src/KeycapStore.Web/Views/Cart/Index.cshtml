@@ -19,6 +19,7 @@ else
                 <th class="text-end">Preço</th>
                 <th class="text-end">Quantidade</th>
                 <th class="text-end">Subtotal</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -27,8 +28,20 @@ else
                 <tr>
                     <td>@line.ProductName</td>
                     <td class="text-end">@line.UnitPrice.ToString("C", brl)</td>
-                    <td class="text-end">@line.Quantity</td>
+                    <td class="text-end">
+                        <form asp-action="ChangeQuantity" method="post" class="d-inline-flex gap-2">
+                            <input type="hidden" name="productId" value="@line.ProductId" />
+                            <input type="number" name="quantity" value="@line.Quantity" min="1" class="form-control form-control-sm" style="width: 5rem" />
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">Atualizar</button>
+                        </form>
+                    </td>
                     <td class="text-end">@line.LineTotal.ToString("C", brl)</td>
+                    <td class="text-end">
+                        <form asp-action="Remove" method="post">
+                            <input type="hidden" name="productId" value="@line.ProductId" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Remover</button>
+                        </form>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -36,6 +49,7 @@ else
             <tr>
                 <th colspan="3" class="text-end">Total</th>
                 <th class="text-end">@Model.Total.ToString("C", brl)</th>
+                <th></th>
             </tr>
         </tfoot>
     </table>
