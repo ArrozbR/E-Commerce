@@ -27,4 +27,21 @@ public sealed class CartController(ICartService carts) : Controller
 
         return RedirectToAction(nameof(Index));
     }
+
+
+    [HttpPost]
+    public async Task<IActionResult> ChangeQuantity(Guid productId, int quantity, CancellationToken cancellationToken)
+    {
+        await carts.ChangeQuantityAsync(CustomerId, productId, quantity, cancellationToken);
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Remove(Guid productId, CancellationToken cancellationToken)
+    {
+        await carts.RemoveItemAsync(CustomerId, productId, cancellationToken);
+
+        return RedirectToAction(nameof(Index));
+    }
 }
