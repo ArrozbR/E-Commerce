@@ -2,9 +2,9 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** **M2** (carrinho, pedido, reserva atômica + testes de concorrência), a começar. **M1 concluído em 06/10/2026** (catálogo, cadastro, login/logout, admin; tudo no ar em https://keycapstore.duckdns.org). **M0 concluído em 01/10/2026.**
+**Marco atual:** **M2** (carrinho, pedido, reserva atômica + testes de concorrência), em andamento: `Order` e carrinho completos; falta o pedido no banco e o "Finalizar" com reserva. **M1 concluído em 06/10/2026** (catálogo, cadastro, login/logout, admin; tudo no ar em https://keycapstore.duckdns.org). **M0 concluído em 01/10/2026.**
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · total: 15,5h
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 3h até agora (estimativa 20–30h) · total: 18,5h
 **Estimativa da v1:** 120–180h (~3 meses a 10–15h/semana). Revisar ao fim do M2.
 
 ## Marcos da v1
@@ -16,6 +16,19 @@
 - [ ] **M4:** Pix, expiração, falha, reembolso por falta de estoque (15–25h)
 - [ ] **M5:** endpoints de admin para o envio (8–12h)
 - [ ] **M6:** backups, monitoramento, checklist de go-live (15–20h)
+
+## Checklist do M2
+
+- [x] Aquecimento: `PostgresFixture.CreateFactory()` / `CreateMigratedFactoryAsync()` substituem as 7 cópias da montagem da `WebApplicationFactory` (PR #35)
+- [x] Entidade `Order` (`Domain/Orders`), escrita pelo autor: `OrderStatus` com os 10 estados, `private set`, `InvalidOrderTransitionException(from, to)`, transições `ConfirmPayment`, `MarkAwaitingConfirmation`, `Expire`, `MarkFailed`; 12 testes unitários (PR #36)
+- [x] Entidade `Cart` (`AddItem` soma, `ChangeQuantity` lança `CartItemNotFoundException`, `RemoveItem`), `CartItem` com construtor `internal`; 7 testes (PR #37)
+- [x] Módulo renomeado `Cart` → `Carts`; tabelas `carts` (índice **único** em `CustomerId`) e `cart_items` (chave `CartId` + `ProductId`, FK para `products` com `Restrict`), migration `AddCarts`; 3 testes de persistência (PR #38)
+- [x] `ICartService` + `CartView` (Application) e `CartService` (Infrastructure): adicionar e ver o carrinho com **preços do catálogo** (o carrinho não guarda preço); 3 testes (PR #39)
+- [x] Página do carrinho (`[Authorize]`, cliente pelo claim `NameIdentifier`, nunca pelo formulário), botão "Adicionar ao carrinho" no catálogo (some quando esgotado), link no menu; testes de página com sabotagem (PR #40)
+- [x] Mudar a quantidade e remover itens (serviço + página; remover é idempotente); testes com sabotagem (`SaveChangesAsync`, somar × trocar) (PR #41). **62 testes.**
+- [ ] Pedido no banco: itens com snapshot de nome e preço + endereço de entrega + mapeamento + migration
+- [ ] "Finalizar": cria o pedido e **reserva o estoque** de forma atômica (`UPDATE ... WHERE stock >= qty`), tudo numa transação. **Escrito pelo autor.**
+- [ ] Testes de concorrência (`Task.WhenAll`): dois clientes disputando o último item; só um consegue
 
 ## Checklist do M1
 
@@ -74,9 +87,9 @@
 
 ## Próximos passos
 
-1. **Aquecimento (~30 min):** juntar o `CreateFactoryAsync` (hoje copiado em 6 classes de teste de integração) num lugar só (ex.: classe base ou método na `PostgresFixture`). Pronto quando: nenhuma classe de teste monta a `WebApplicationFactory` por conta própria e os 32 testes passam.
-2. **M2, desenho:** reler `docs/DEFINICOES.md` (carrinho, pedido, reserva) + ADRs 0005, 0006 e 0008 e `.claude/rules/pagamentos.md` §4–§5; o autor propõe o `Order` (estados, `private set`, transições) e o Claude revisa. **O `Order` e a reserva são escritos pelo autor.**
-3. **M2, carrinho:** carrinho no banco, por cliente, exige login (D34), com testes.
+1. **Revisão rápida (~15 min):** o autor explica com as próprias palavras (a) por que o carrinho **não** reserva estoque e onde fica a proteção de verdade, e (b) por que os testes usam escopos separados para conferir o banco (as duas verificações de 07/10 ficaram em "não sei" e foram explicadas pelo Claude).
+2. **M2, pedido no banco:** o autor propõe como o `Order` guarda os itens (snapshot de nome + preço unitário + quantidade) e o endereço de entrega (`ShippingAddress`); o Claude revisa; mapeamento + migration + teste de persistência. Pronto quando: um pedido com 2 itens é salvo e lido de volta com os preços do momento da compra.
+3. **M2, "Finalizar":** o autor escreve a reserva atômica (`ExecuteUpdateAsync` com `WHERE stock >= qty`) + criação do pedido numa transação. Pronto quando: o estoque cai, o carrinho esvazia, e com estoque insuficiente nada muda (teste).
 
 ## Bloqueios
 
@@ -90,6 +103,9 @@ _Nenhum._
 - Q5: prazo legal de retenção dos pedidos (produção, não é código)
 - Cookie do antiforgery sem `Secure` (o de login tem). Risco baixo; endurecer exige que os testes de página usem `https`.
 - Senha do admin de produção apareceu no chat em 06/10; o autor optou por não trocar agora. **Trocar antes do go-live (checklist do M6).**
+- **Corrida no primeiro carrinho:** duas abas criando o primeiro carrinho do mesmo cliente ao mesmo tempo → o índice único recusa o segundo (correto), mas aquele clique vê uma página de erro. Melhoria: tentar de novo uma vez. Baixa prioridade.
+- Entrada adulterada no carrinho (quantidade 0 ou produto inexistente pelo F12) vira página de erro **500**. Nada errado entra no banco; falta traduzir as exceções de domínio para 400/404/409 (filtro de exceção, junto com o `409` do `InvalidOrderTransitionException`).
+- O login ignora o `ReturnUrl` (quem tenta abrir `/Cart` sem login cai no catálogo depois de entrar, e não no carrinho).
 - O `migrate` no deploy mostra `libgssapi_krb5.so.2: cannot open shared object file` (aviso do driver do PostgreSQL; já aparecia antes; a migration roda normalmente). Investigar no M6.
 
 **Decisões de 06/10:** bloqueio após **3** tentativas (não 5), ciente de que facilita bloquear a conta de outra pessoa (5 min); chaves no PostgreSQL (ADR 0022); admin pelo comando também no PC e conta existente promovida (ADR 0023).
@@ -97,6 +113,13 @@ _Nenhum._
 **Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 07/10/2026: `Order`, carrinho completo do domínio à página (3h)
+- Aquecimento: fábrica de testes num lugar só (PR #35). `Order` escrito pelo autor, com 12 testes (PR #36); o arquivo de teste estava no projeto de integração e foi movido para o de unidade.
+- Carrinho em 6 PRs (#37 a #41): entidade (o `RemoveItem` saiu primeiro com a lógica invertida; o teste pegou), banco com índice único por cliente, serviço com preços do catálogo, página com `[Authorize]`, mudar a quantidade e remover. **62 testes.** Módulo renomeado para `Carts` por conflito de nome com a classe.
+- Sabotagens: sem `[Authorize]` a página abriu com 200 e "carrinho vazio" (o `!` escondeu o `null`); sem `SaveChangesAsync` o item continuou no banco.
+- Tropeços: `CartService` criado primeiro na Application (movido para a Infrastructure); uma linha de teste colada dentro do teste errado (instrução ambígua do Claude; resolvido trocando o arquivo inteiro).
+- Verificações: carrinho sem estoque (parcial: "ainda não verificamos"; explicado que é de propósito e que a proteção é a reserva no "Finalizar"); `SaveChangesAsync` (não sabia); somar × trocar (não sabia). O autor diz que nada ficou confuso, mas as duas últimas respostas foram "não sei" no fim de 3h: revisar no início da próxima sessão.
 
 ### 06/10/2026: Data Protection, login, logout, `create-admin` e **M1 concluído** (2h)
 - Chaves do Data Protection no PostgreSQL (PR #29) + ADR 0022 (PR #30). A sabotagem mostrou que, no PC, as chaves também vão para `%LOCALAPPDATA%\ASP.NET\DataProtection-Keys`: por isso o teste confere o **banco**. A chave `key-2d5f...` sobreviveu a um deploy.
@@ -170,11 +193,8 @@ _Nenhum._
 - Aprendizados: `TreatWarningsAsErrors` pegou um construtor obsoleto do Testcontainers; `git restore` recuperou um `.csproj` que perdeu as referências; o workflow só roda dentro de `.github/workflows/`.
 - **Ficou confuso:** as referências entre projetos e o que o código dos testes faz linha a linha (os conceitos ficaram claros). Revisar no início da próxima sessão.
 
-### 29/09/2026: definição do projeto
-- Entrevista de arquitetura concluída; `docs/DEFINICOES.md` gerado.
-- Estrutura de contexto criada: `CLAUDE.md`, `.claude/rules/`, `/retomar`, `/encerrar`, subagente `revisor`, `ARQUITETURA.md`, ADRs.
-- Nenhum código ainda.
-
 ## Histórico
 
 _(sessões antigas resumidas em uma linha cada)_
+
+- **29/09/2026:** definição do projeto (entrevista de arquitetura, `DEFINICOES.md`, `CLAUDE.md`, regras, comandos, ADRs). Nenhum código.
