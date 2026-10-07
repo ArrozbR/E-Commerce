@@ -22,6 +22,30 @@ internal sealed class CartService(AppDbContext db) : ICartService
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task ChangeQuantityAsync(string customerId, Guid productId, int quantity, CancellationToken cancellationToken = default)
+    {
+        var cart = await db.Carts.SingleOrDefaultAsync(c => c.CustomerId == customerId, cancellationToken)
+            ?? throw new CartItemNotFoundException(productId);
+
+        cart.ChangeQuantity(productId, quantity);
+
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task RemoveItemAsync(string customerId, Guid productId, CancellationToken cancellationToken = default)
+    {
+        var cart = await db.Carts.SingleOrDefaultAsync(c => c.CustomerId == customerId, cancellationToken);
+        if (cart is null)
+        {
+            return;
+        }
+
+        cart.RemoveItem(productId);
+
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+
     public async Task<CartView> GetAsync(string customerId, CancellationToken cancellationToken = default)
     {
         var cart = await db.Carts.AsNoTracking()

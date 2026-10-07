@@ -52,6 +52,51 @@ public class CartServiceTests(PostgresFixture postgres) : IClassFixture<Postgres
     }
 
     [Fact]
+    public async Task ChangeQuantity_ReplacesTheQuantity()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<ICartService>().AddItemAsync("customer-change", KitAurora, 3);
+        }
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<ICartService>().ChangeQuantityAsync("customer-change", KitAurora, 1);
+        }
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var view = await scope.ServiceProvider.GetRequiredService<ICartService>().GetAsync("customer-change");
+            Assert.Equal(1, Assert.Single(view.Lines).Quantity);
+        }
+    }
+
+    [Fact]
+    public async Task RemoveItem_DeletesTheLineFromTheDatabase()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<ICartService>().AddItemAsync("customer-remove", KitAurora, 2);
+        }
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<ICartService>().RemoveItemAsync("customer-remove", KitAurora);
+        }
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var view = await scope.ServiceProvider.GetRequiredService<ICartService>().GetAsync("customer-remove");
+            Assert.Empty(view.Lines);
+        }
+    }
+
+
+    [Fact]
     public async Task Get_WithoutCart_ReturnsEmpty()
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
