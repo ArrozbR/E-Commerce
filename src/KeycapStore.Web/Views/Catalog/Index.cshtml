@@ -28,6 +28,15 @@
                     {
                         <span class="badge bg-success">Em estoque</span>
                     }
+
+                    
+                    @if (product.Stock > 0)
+                    {
+                        <form asp-controller="Cart" asp-action="Add" method="post" class="mt-3">
+                            <input type="hidden" name="productId" value="@product.Id" />
+                            <button type="submit" class="btn btn-primary btn-sm">Adicionar ao carrinho</button>
+                        </form>
+                    }
                 </div>
             </div>
         </div>
