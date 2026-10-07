@@ -14,16 +14,6 @@ public class RegisterPageTests(PostgresFixture postgres) : IClassFixture<Postgre
 {
     private const string Password = "Senha#Forte123";
 
-    private async Task<WebApplicationFactory<Program>> CreateFactoryAsync()
-    {
-        var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-                builder.UseSetting("ConnectionStrings:Default", postgres.Container.GetConnectionString()));
-
-        await factory.Services.MigrateDatabaseAsync();
-        return factory;
-    }
-
     private static async Task<string> GetAntiforgeryTokenAsync(HttpClient client)
     {
         var html = await client.GetStringAsync("/Account/Register");
@@ -36,7 +26,7 @@ public class RegisterPageTests(PostgresFixture postgres) : IClassFixture<Postgre
     [Fact]
     public async Task Post_WithValidData_CreatesUserAndRedirectsToCatalog()
     {
-        await using var factory = await CreateFactoryAsync();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
         var token = await GetAntiforgeryTokenAsync(client);
 
@@ -59,7 +49,7 @@ public class RegisterPageTests(PostgresFixture postgres) : IClassFixture<Postgre
     [Fact]
     public async Task Post_WithoutAntiforgeryToken_IsRejected()
     {
-        await using var factory = await CreateFactoryAsync();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
         var response = await client.PostAsync("/Account/Register", new FormUrlEncodedContent(new Dictionary<string, string>

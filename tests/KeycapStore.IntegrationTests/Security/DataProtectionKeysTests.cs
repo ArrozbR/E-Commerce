@@ -11,23 +11,19 @@ namespace KeycapStore.IntegrationTests.Security;
 
 public class DataProtectionKeysTests(PostgresFixture postgres) : IClassFixture<PostgresFixture>
 {
-    private WebApplicationFactory<Program> CreateFactory() => new WebApplicationFactory<Program>()
-        .WithWebHostBuilder(builder =>
-            builder.UseSetting("ConnectionStrings:Default", postgres.Container.GetConnectionString()));
-
     [Fact]
     public async Task ProtectedData_CanBeReadByANewContainer()
     {
         string locked;
 
-        await using (var oldContainer = CreateFactory())
+        await using (var oldContainer = postgres.CreateFactory())
         {
             await oldContainer.Services.MigrateDatabaseAsync();
             var protector = oldContainer.Services.GetRequiredService<IDataProtectionProvider>().CreateProtector("teste");
             locked = protector.Protect("Maria está logada");
         }
 
-        await using (var newContainer = CreateFactory())
+        await using (var newContainer = postgres.CreateFactory())
         {
             await using var scope = newContainer.Services.CreateAsyncScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

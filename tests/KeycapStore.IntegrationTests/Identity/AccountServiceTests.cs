@@ -12,20 +12,10 @@ public class AccountServiceTests(PostgresFixture postgres) : IClassFixture<Postg
 {
     private const string Password = "Senha#Forte123";
 
-    private async Task<WebApplicationFactory<Program>> CreateFactoryAsync()
-    {
-        var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-                builder.UseSetting("ConnectionStrings:Default", postgres.Container.GetConnectionString()));
-
-        await factory.Services.MigrateDatabaseAsync();
-        return factory;
-    }
-
     [Fact]
     public async Task Register_WithValidData_CreatesUser()
     {
-        await using var factory = await CreateFactoryAsync();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
         await using var scope = factory.Services.CreateAsyncScope();
         var accounts = scope.ServiceProvider.GetRequiredService<IAccountService>();
 
@@ -39,7 +29,7 @@ public class AccountServiceTests(PostgresFixture postgres) : IClassFixture<Postg
     [Fact]
     public async Task Register_WithDuplicateEmail_Fails()
     {
-        await using var factory = await CreateFactoryAsync();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
         await using var scope = factory.Services.CreateAsyncScope();
         var accounts = scope.ServiceProvider.GetRequiredService<IAccountService>();
         await accounts.RegisterAsync("ana@example.com", Password);
@@ -56,7 +46,7 @@ public class AccountServiceTests(PostgresFixture postgres) : IClassFixture<Postg
     [Fact]
     public async Task Register_WithWeakPassword_ReturnsErrorsInPortuguese()
     {
-        await using var factory = await CreateFactoryAsync();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
         await using var scope = factory.Services.CreateAsyncScope();
         var accounts = scope.ServiceProvider.GetRequiredService<IAccountService>();
 

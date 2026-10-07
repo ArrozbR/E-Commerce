@@ -14,9 +14,7 @@ public class UserPasswordTests(PostgresFixture postgres) : IClassFixture<Postgre
     [Fact]
     public async Task CreateUser_StoresPasswordAsHash()
     {
-        await using var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-                builder.UseSetting("ConnectionStrings:Default", postgres.Container.GetConnectionString()));
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
 
         await factory.Services.MigrateDatabaseAsync();
 
