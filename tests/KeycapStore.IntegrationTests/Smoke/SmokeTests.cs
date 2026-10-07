@@ -11,9 +11,7 @@ public class SmokeTests(PostgresFixture postgres) : IClassFixture<PostgresFixtur
     [Fact]
     public async Task HomePage_ShouldRespondOk()
     {
-        await using var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-                builder.UseSetting("ConnectionStrings:Default", postgres.Container.GetConnectionString()));
+        await using var factory = postgres.CreateFactory();
 
         var client = factory.CreateClient();
 

@@ -11,20 +11,10 @@ namespace KeycapStore.IntegrationTests.Identity;
 
 public class AdminCommandTests(PostgresFixture postgres) : IClassFixture<PostgresFixture>
 {
-    private async Task<WebApplicationFactory<Program>> CreateFactoryAsync()
-    {
-        var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-                builder.UseSetting("ConnectionStrings:Default", postgres.Container.GetConnectionString()));
-
-        await factory.Services.MigrateDatabaseAsync();
-        return factory;
-    }
-
     [Fact]
     public async Task CreateAdmin_WithNewEmail_CreatesAdminWithWorkingPassword()
     {
-        await using var factory = await CreateFactoryAsync();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
 
         var result = await factory.Services.CreateAdminAsync("admin@example.com");
 
@@ -42,7 +32,7 @@ public class AdminCommandTests(PostgresFixture postgres) : IClassFixture<Postgre
     [Fact]
     public async Task CreateAdmin_WithExistingAccount_PromotesAndKeepsPassword()
     {
-        await using var factory = await CreateFactoryAsync();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
         await using (var registerScope = factory.Services.CreateAsyncScope())
         {
             var accounts = registerScope.ServiceProvider.GetRequiredService<IAccountService>();
@@ -65,7 +55,7 @@ public class AdminCommandTests(PostgresFixture postgres) : IClassFixture<Postgre
     [Fact]
     public async Task CreateAdmin_RunTwice_DoesNotDuplicate()
     {
-        await using var factory = await CreateFactoryAsync();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
 
         var first = await factory.Services.CreateAdminAsync("duas-vezes@example.com");
         var second = await factory.Services.CreateAdminAsync("duas-vezes@example.com");

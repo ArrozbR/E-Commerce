@@ -14,16 +14,6 @@ public class LoginPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
 {
     private const string Password = "Senha#Forte123";
 
-    private async Task<WebApplicationFactory<Program>> CreateFactoryAsync()
-    {
-        var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-                builder.UseSetting("ConnectionStrings:Default", postgres.Container.GetConnectionString()));
-
-        await factory.Services.MigrateDatabaseAsync();
-        return factory;
-    }
-
     private static async Task RegisterAsync(WebApplicationFactory<Program> factory, string email)
     {
         await using var scope = factory.Services.CreateAsyncScope();
@@ -48,7 +38,7 @@ public class LoginPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
     [Fact]
     public async Task Post_WithValidCredentials_SetsSecureCookieAndRedirects()
     {
-        await using var factory = await CreateFactoryAsync();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
         await RegisterAsync(factory, "login@example.com");
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
@@ -66,7 +56,7 @@ public class LoginPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
     [Fact]
     public async Task Post_WithWrongPassword_ShowsGenericError()
     {
-        await using var factory = await CreateFactoryAsync();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
         await RegisterAsync(factory, "errada@example.com");
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
@@ -80,7 +70,7 @@ public class LoginPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
     [Fact]
     public async Task Post_ThirdWrongPassword_LocksAccountEvenForTheRightPassword()
     {
-        await using var factory = await CreateFactoryAsync();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
         await RegisterAsync(factory, "bloqueio@example.com");
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
@@ -101,7 +91,7 @@ public class LoginPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
     [Fact]
     public async Task LoginThenLogout_MenuFollowsTheSession()
     {
-        await using var factory = await CreateFactoryAsync();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
         await RegisterAsync(factory, "menu@example.com");
         var client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
