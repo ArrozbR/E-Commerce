@@ -1,15 +1,13 @@
-using KeycapStore.Domain.Cart;
+using KeycapStore.Domain.Carts;
 
-using CartEntity = KeycapStore.Domain.Cart.Cart;
-
-namespace KeycapStore.UnitTests.Cart;
+namespace KeycapStore.UnitTests.Carts;
 
 public class CartTests
 {
     private static readonly Guid KitA = Guid.NewGuid();
     private static readonly Guid KitB = Guid.NewGuid();
 
-    private static CartEntity NewCart() => new("customer-1");
+    private static Cart NewCart() => new("customer-1");
 
     [Fact]
     public void AddItem_WithNewProduct_AddsOneLine()

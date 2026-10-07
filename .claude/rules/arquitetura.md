@@ -19,7 +19,7 @@ src/KeycapStore.Domain         → (nada)
 
 ## Módulos
 
-Os módulos são **pastas** dentro de cada camada (não projetos): `Catalog`, `Cart`, `Orders`, `Payments`, `Identity`.
+Os módulos são **pastas** dentro de cada camada (não projetos): `Catalog`, `Carts`, `Orders`, `Payments`, `Identity`. (`Carts` no plural para o namespace não ter o mesmo nome da classe `Cart`.)
 
 - Um módulo não acessa tipos internos de outro módulo. A comunicação passa pela `Application`.
 - As fronteiras entre camadas e módulos são verificadas por **testes de arquitetura** em `tests/KeycapStore.UnitTests/Architecture`.
