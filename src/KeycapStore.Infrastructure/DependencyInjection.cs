@@ -1,5 +1,7 @@
-﻿using KeycapStore.Application.Catalog;
+﻿using KeycapStore.Application.Carts;
+using KeycapStore.Application.Catalog;
 using KeycapStore.Application.Identity;
+using KeycapStore.Infrastructure.Carts;
 using KeycapStore.Infrastructure.Catalog;
 using KeycapStore.Infrastructure.Identity;
 using KeycapStore.Infrastructure.Persistence;
@@ -27,6 +29,7 @@ public static class DependencyInjection
             .SetApplicationName("KeycapStore");
 
         services.AddScoped<ICatalogQueries, CatalogQueries>();
+        services.AddScoped<ICartService, CartService>();
 
         services.AddIdentityCore<IdentityUser>(options =>
         {
