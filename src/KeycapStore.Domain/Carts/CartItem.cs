@@ -1,4 +1,4 @@
-﻿namespace KeycapStore.Domain.Cart;
+﻿namespace KeycapStore.Domain.Carts;
 
 public sealed class CartItem
 {
