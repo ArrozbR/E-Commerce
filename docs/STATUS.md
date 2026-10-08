@@ -2,16 +2,16 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** **M2** (carrinho, pedido, reserva atômica + testes de concorrência), em andamento: `Order` e carrinho completos; falta o pedido no banco e o "Finalizar" com reserva. **M1 concluído em 06/10/2026** (catálogo, cadastro, login/logout, admin; tudo no ar em https://keycapstore.duckdns.org). **M0 concluído em 01/10/2026.**
+**Marco atual:** **M3** (Stripe Checkout com cartão + webhook idempotente + página de retorno), a começar. **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 3h até agora (estimativa 20–30h) · total: 18,5h
-**Estimativa da v1:** 120–180h (~3 meses a 10–15h/semana). Revisar ao fim do M2.
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · total: 21,5h
+**Estimativa da v1:** ~~120–180h~~ → **revisada em 08/10 para 55–85h** (21,5h feitas + 35–60h para M3–M6). Os 3 primeiros marcos saíram com cerca de 25–35% do estimado, mas o M3 e o M4 têm mais incerteza (Stripe, webhook, Pix, eventos fora de ordem), por isso a revisão não aplica a mesma proporção. Revisar de novo ao fim do M3.
 
 ## Marcos da v1
 
 - [x] **M0: esqueleto que anda** (25–35h estimadas; **7h reais**, concluído em 01/10/2026)
 - [x] **M1:** catálogo (seed) + Identity + `create-admin` (15–25h estimadas; **8,5h reais**, concluído em 06/10/2026)
-- [ ] **M2:** carrinho, pedido, reserva atômica + testes de concorrência (20–30h)
+- [x] **M2:** carrinho, pedido, reserva atômica + testes de concorrência (20–30h estimadas; **6h reais**, concluído em 08/10/2026)
 - [ ] **M3:** Stripe Checkout com cartão + webhook idempotente + página de retorno (20–30h)
 - [ ] **M4:** Pix, expiração, falha, reembolso por falta de estoque (15–25h)
 - [ ] **M5:** endpoints de admin para o envio (8–12h)
@@ -26,9 +26,10 @@
 - [x] `ICartService` + `CartView` (Application) e `CartService` (Infrastructure): adicionar e ver o carrinho com **preços do catálogo** (o carrinho não guarda preço); 3 testes (PR #39)
 - [x] Página do carrinho (`[Authorize]`, cliente pelo claim `NameIdentifier`, nunca pelo formulário), botão "Adicionar ao carrinho" no catálogo (some quando esgotado), link no menu; testes de página com sabotagem (PR #40)
 - [x] Mudar a quantidade e remover itens (serviço + página; remover é idempotente); testes com sabotagem (`SaveChangesAsync`, somar × trocar) (PR #41). **62 testes.**
-- [ ] Pedido no banco: itens com snapshot de nome e preço + endereço de entrega + mapeamento + migration
-- [ ] "Finalizar": cria o pedido e **reserva o estoque** de forma atômica (`UPDATE ... WHERE stock >= qty`), tudo numa transação. **Escrito pelo autor.**
-- [ ] Testes de concorrência (`Task.WhenAll`): dois clientes disputando o último item; só um consegue
+- [x] Pedido no banco (PR #43): `OrderItem` com snapshot de nome e preço (8 testes); `Order` com itens (vazio e produto repetido são recusados), `ShippingAddress` (UF entre as 27, CEP só com 8 dígitos; 15 testes), frete por estado com `ShippingPolicy` (ADR 0024; 11 testes) guardado no pedido, `Total` = itens + frete; tabelas `orders` (endereço em colunas `Shipping*`, `CustomerId` com índice **não** único e sem FK para `AspNetUsers`) e `order_items` (FK para `products` com `Restrict`), migration `AddOrders`; 2 testes de persistência (o preço do pedido não muda quando o catálogo muda)
+- [x] "Finalizar" (`CheckoutService`, PR #44), **escrito pelo autor** com lacunas guiadas: transação, carrinho vazio → falha, reserva por `ExecuteUpdateAsync` com `WHERE Id = @id AND Stock >= @qty` (0 linhas → falha e tudo é desfeito), itens em ordem de `ProductId` (evita deadlock), `TimeProvider` para a data, cria o pedido e apaga o carrinho; `PlaceOrderResult` (falha de negócio é resultado, não exceção). Testes: caminho feliz, "tudo ou nada", carrinho vazio
+- [x] Teste de concorrência (`Task.WhenAll`): dois clientes disputando a última unidade, só um consegue e o estoque fica em 0. Sabotagem (sem o `Stock >= qty`) → estoque -1 e o teste falha
+- [x] Página de checkout (`CheckoutViewModel` com os mesmos limites das colunas, UF por lista, CEP com ou sem traço; botão "Finalizar compra" no carrinho) e página do pedido criado, **só para o dono** (`IOrderQueries` filtra por `Id` **e** `CustomerId`; outro cliente recebe **404**). Sabotagens: sem `ModelState.IsValid` o CEP "123" vira 500; sem o filtro por cliente, um curioso vê o pedido alheio (PR #44). **116 testes.**
 
 ## Checklist do M1
 
@@ -87,9 +88,9 @@
 
 ## Próximos passos
 
-1. **Revisão rápida (~15 min):** o autor explica com as próprias palavras (a) por que o carrinho **não** reserva estoque e onde fica a proteção de verdade, e (b) por que os testes usam escopos separados para conferir o banco (as duas verificações de 07/10 ficaram em "não sei" e foram explicadas pelo Claude).
-2. **M2, pedido no banco:** o autor propõe como o `Order` guarda os itens (snapshot de nome + preço unitário + quantidade) e o endereço de entrega (`ShippingAddress`); o Claude revisa; mapeamento + migration + teste de persistência. Pronto quando: um pedido com 2 itens é salvo e lido de volta com os preços do momento da compra.
-3. **M2, "Finalizar":** o autor escreve a reserva atômica (`ExecuteUpdateAsync` com `WHERE stock >= qty`) + criação do pedido numa transação. Pronto quando: o estoque cai, o carrinho esvazia, e com estoque insuficiente nada muda (teste).
+1. **Revisão rápida (~15 min):** confirmar que o deploy do PR #44 rodou (migration `AddOrders` na VM, finalizar um pedido de teste em produção). O autor explica com as próprias palavras (a) o que acontece com o pedido e com o estoque se faltar o `CommitAsync` (o `await using` desfaz tudo) e (b) por que o curioso recebe 404 e não 403 (as duas ficaram em "não sei" em 08/10 e foram explicadas pelo Claude).
+2. **M3, parte 1 (configuração da Stripe):** pacote `Stripe.net` (conferir a versão e a documentação oficial), `StripeOptions` com `ValidateOnStart`, chave **de teste** em `dotnet user-secrets` (o autor digita no terminal; **nunca** no chat), `StripeSessionId` no `Order` + migration. Pronto quando: a aplicação não sobe sem a chave, e um teste prova isso.
+3. **M3, parte 2 (sessão do Checkout):** `IPaymentGateway` na Application, `StripePaymentGateway` na Infrastructure; "Finalizar" cria a sessão a partir do **snapshot** do pedido (`brl`, `metadata.order_id`, `expires_at` +30 min, chave de idempotência `session-{orderId}`) e redireciona o cliente. Pronto quando: pagar com o cartão `4242` no sandbox leva até a página de retorno (o estado do pedido ainda **não** muda: isso é do webhook).
 
 ## Bloqueios
 
@@ -107,12 +108,24 @@ _Nenhum._
 - Entrada adulterada no carrinho (quantidade 0 ou produto inexistente pelo F12) vira página de erro **500**. Nada errado entra no banco; falta traduzir as exceções de domínio para 400/404/409 (filtro de exceção, junto com o `409` do `InvalidOrderTransitionException`).
 - O login ignora o `ReturnUrl` (quem tenta abrir `/Cart` sem login cai no catálogo depois de entrar, e não no carrinho).
 - O `migrate` no deploy mostra `libgssapi_krb5.so.2: cannot open shared object file` (aviso do driver do PostgreSQL; já aparecia antes; a migration roda normalmente). Investigar no M6.
+- **Pedidos em produção seguram o estoque para sempre** (desde o PR #44): ainda não existe pagamento nem o job do D35 (libera pedidos `AwaitingPayment` sem `StripeSessionId` após 10 min). Loja de teste, risco baixo, mas o estoque dos kits pode ir zerando. Resolve no M3/M4.
+- O `CustomerId` do pedido é obrigatório no banco e no domínio; o `DEFINICOES.md` prevê torná-lo opcional quando houver exclusão de conta (v2).
+- Os auxiliares dos testes de página (`TokenFrom`, `LoggedInClientAsync`) estão copiados em 3 classes (`CartPageTests`, `CheckoutPageTests`, `OrderPageTests`). Candidato a extrair para `Fixtures` quando aparecer a 4ª cópia.
 
 **Decisões de 06/10:** bloqueio após **3** tentativas (não 5), ciente de que facilita bloquear a conta de outra pessoa (5 min); chaves no PostgreSQL (ADR 0022); admin pelo comando também no PC e conta existente promovida (ADR 0023).
 
 **Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 08/10/2026: pedido no banco, "Finalizar" com reserva atômica e **M2 concluído** (3h)
+- Revisão de 07/10: carrinho não reserva (acertou: "só garante na hora da compra"); escopos separados nos testes (não sabia; explicado e confirmado na pergunta seguinte).
+- Decisão do autor: frete grátis no Centro-Oeste, SP e RJ; R$ 15 nos demais (ADR 0024, substitui o frete fixo do ADR 0002).
+- Pedido no banco (PR #43): `OrderItem`, `ShippingPolicy`, `ShippingAddress` com TDD; mapeamento com `OwnsOne`/`OwnsMany`, migration `AddOrders`. Primeira versão do `OrderItem` validava as propriedades em vez dos parâmetros (corrigido).
+- "Finalizar" escrito pelo autor, passo a passo e com lacunas (PR #44); páginas de checkout e do pedido. **116 testes.** Testado no navegador de ponta a ponta (CE → frete R$ 15,00).
+- Sabotagem: comentar o `.Where` inteiro faria o `UPDATE` valer para **todos** os produtos; os testes de concorrência e de "tudo ou nada" pegaram.
+- Tropeços: o esqueleto do `CheckoutService` não compilava (parâmetro `clock` sem uso + `TreatWarningsAsErrors`; erro do Claude, que só testou a versão completa); o `GetAsync` inteiro foi colado **dentro** do método (instrução ambígua "olhe o `GetAsync`"); arquivos do item 5 no lugar errado (testes colados sobre o `CheckoutPageTests`, view em `Views/Checkout`, controller faltando) e o `git add` recusou tudo; resolvido com `git restore` e recriando os arquivos.
+- Verificações: atomicidade do "ler e depois gravar" (acertou), `IsUnique` no `CustomerId` do pedido (não sabia), `db.Carts` × `db.Orders` (não sabia; depois acertou "só a cesta existe"), `reserved == 0` (acertou com ajuste), `CommitAsync` (não sabia), `ModelState` × navegador (acertou), 404 × 403 (não sabia), quando o estoque cai (acertou: só no "Finalizar"). O autor diz que nada ficou confuso, mas pediu para ir mais devagar no esqueleto ("tô entendendo nada"): explicar linha a linha **antes** de pedir código.
 
 ### 07/10/2026: `Order`, carrinho completo do domínio à página (3h)
 - Aquecimento: fábrica de testes num lugar só (PR #35). `Order` escrito pelo autor, com 12 testes (PR #36); o arquivo de teste estava no projeto de integração e foi movido para o de unidade.
@@ -185,16 +198,9 @@ _Nenhum._
 - Aprendizado: CRLF quebra scripts bash; `.editorconfig` com `[*.sh] end_of_line = lf` resolve na origem.
 - **Ficou confuso: praticamente toda a parte do script de bootstrap** (conceitos de Linux, firewall, SSH e bash). Causa provável: ritmo rápido demais no fim de uma sessão longa, com muitos conceitos novos. Revisar no início da próxima sessão (passo 1).
 
-### 30/09/2026: ambiente, spike da Stripe, solution, testes e CI (2h)
-- Ambiente: WSL 2, Docker Desktop, Stripe CLI (winget: o ID é `Stripe.StripeCli`, com "Cli").
-- Spike da Stripe concluído (ver "Resultado do spike"): Pix no Checkout só gera `completed` depois de pago; falha de Pix não encerra a sessão; eventos fora de ordem observados na prática.
-- Solution criada, com as referências definidas pelo autor. Teste de arquitetura (com sabotagem) e smoke tests de integração com Testcontainers.
-- CI no GitHub Actions + ruleset na `main`. A partir de agora: **sempre branch + PR**.
-- Aprendizados: `TreatWarningsAsErrors` pegou um construtor obsoleto do Testcontainers; `git restore` recuperou um `.csproj` que perdeu as referências; o workflow só roda dentro de `.github/workflows/`.
-- **Ficou confuso:** as referências entre projetos e o que o código dos testes faz linha a linha (os conceitos ficaram claros). Revisar no início da próxima sessão.
-
 ## Histórico
 
 _(sessões antigas resumidas em uma linha cada)_
 
+- **30/09/2026 (manhã, 2h):** ambiente (WSL 2, Docker, Stripe CLI), spike da Stripe, solution com 4 projetos, teste de arquitetura, smoke tests com Testcontainers, CI + ruleset na `main` (sempre branch + PR).
 - **29/09/2026:** definição do projeto (entrevista de arquitetura, `DEFINICOES.md`, `CLAUDE.md`, regras, comandos, ADRs). Nenhum código.
