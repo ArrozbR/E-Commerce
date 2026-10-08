@@ -32,3 +32,4 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0022](0022-chaves-data-protection-no-postgresql.md) | Chaves do Data Protection no PostgreSQL |
 | [0023](0023-admin-pelo-comando-tambem-no-pc.md) | Admin pelo comando também no PC (sem seed); conta existente é promovida |
 | [0024](0024-frete-gratis-por-estado.md) | Frete por estado: grátis no Centro-Oeste, SP e RJ; R$ 15,00 nos demais |
+| [0025](0025-roadmap-v2-funcionalidades-v3-visual.md) | Roadmap: v2 com tudo o que não é visual (parte legal primeiro), v3 visual em Razor, sem v4 |
