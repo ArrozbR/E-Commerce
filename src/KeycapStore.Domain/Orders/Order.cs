@@ -9,11 +9,20 @@ public sealed class Order
     public OrderStatus Status { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public IReadOnlyList<OrderItem> Items => _items;
-    public decimal Total => Items.Sum(i => i.LineTotal);
+    public ShippingAddress ShippingAddress { get; private set; }
+    public decimal ShippingFee { get; private set; }
+    public decimal Total => Items.Sum(i => i.LineTotal) + ShippingFee;
 
-    public Order(string customerId, DateTimeOffset createdAt, IEnumerable<OrderItem> items)
+    private Order()
+    {
+        CustomerId = null!;
+        ShippingAddress = null!;
+    }
+
+    public Order(string customerId, DateTimeOffset createdAt, IEnumerable<OrderItem> items, ShippingAddress shippingAddress)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(customerId);
+        ArgumentNullException.ThrowIfNull(shippingAddress);
 
         _items.AddRange(items);
 
@@ -31,6 +40,8 @@ public sealed class Order
         CustomerId = customerId;
         CreatedAt = createdAt;
         Status = OrderStatus.AwaitingPayment;
+        ShippingAddress = shippingAddress;
+        ShippingFee = ShippingPolicy.FeeFor(shippingAddress.State);
     }
 
     public void ConfirmPayment()
