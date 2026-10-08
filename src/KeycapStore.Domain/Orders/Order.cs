@@ -2,19 +2,46 @@
 
 public sealed class Order
 {
+    private readonly List<OrderItem> _items = [];
+
     public Guid Id { get; private set; }
     public string CustomerId { get; private set; }
     public OrderStatus Status { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
+    public IReadOnlyList<OrderItem> Items => _items;
+    public ShippingAddress ShippingAddress { get; private set; }
+    public decimal ShippingFee { get; private set; }
+    public decimal Total => Items.Sum(i => i.LineTotal) + ShippingFee;
 
-    public Order(string customerId, DateTimeOffset createdAt)
+    private Order()
+    {
+        CustomerId = null!;
+        ShippingAddress = null!;
+    }
+
+    public Order(string customerId, DateTimeOffset createdAt, IEnumerable<OrderItem> items, ShippingAddress shippingAddress)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(customerId);
+        ArgumentNullException.ThrowIfNull(shippingAddress);
+
+        _items.AddRange(items);
+
+        if (_items.Count == 0)
+        {
+            throw new ArgumentException("O pedido precisa de pelo menos um item.", nameof(items));
+        }
+
+        if (_items.DistinctBy(i => i.ProductId).Count() != _items.Count)
+        {
+            throw new ArgumentException("O mesmo produto aparece mais de uma vez no pedido.", nameof(items));
+        }
 
         Id = Guid.NewGuid();
         CustomerId = customerId;
         CreatedAt = createdAt;
         Status = OrderStatus.AwaitingPayment;
+        ShippingAddress = shippingAddress;
+        ShippingFee = ShippingPolicy.FeeFor(shippingAddress.State);
     }
 
     public void ConfirmPayment()

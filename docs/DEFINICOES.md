@@ -26,7 +26,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 | Catálogo | Público (sem login). Produtos inseridos por **seed**. Cada kit é um produto separado, **sem variações**. Estoque visível ("últimas unidades", "esgotado"). |
 | Conta | Cadastro e login com ASP.NET Core Identity. **Conta obrigatória para comprar.** |
 | Carrinho | Guardado no banco, por cliente (exige login para adicionar). Adicionar, remover e alterar quantidade. |
-| Checkout | Endereço de entrega digitado no checkout, com **frete fixo**. Clicar em "Finalizar" cria o pedido e **reserva o estoque**. |
+| Checkout | Endereço de entrega digitado no checkout, com **frete por estado** (grátis no Centro-Oeste, SP e RJ; R$ 15,00 nos demais; ADR 0024). Clicar em "Finalizar" cria o pedido e **reserva o estoque**. |
 | Pagamento | **Stripe Checkout hospedado**, com **cartão e Pix**. |
 | Resultado | Página de retorno que consulta o próprio backend até o status mudar. |
 | Envio | Admin avança `Pago → EmSeparacao → Enviado → Entregue` por **endpoints de admin mínimos** (sem interface), autorizados pelo papel `Admin`. |
@@ -139,7 +139,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 
 1. O cliente autenticado envia o carrinho e o endereço de entrega.
 2. Tudo numa **única transação no banco**:
-   - Cria o `Pedido` em `AguardandoPagamento`, com um **snapshot** dos itens (preço unitário do servidor, nunca do cliente), do frete fixo e do `EnderecoEntrega` (nome do destinatário + endereço).
+   - Cria o `Pedido` em `AguardandoPagamento`, com um **snapshot** dos itens (preço unitário do servidor, nunca do cliente), do frete (calculado pela UF, ADR 0024) e do `EnderecoEntrega` (nome do destinatário + endereço).
    - Para cada item, faz a **reserva atômica**:
      ```sql
      UPDATE Produtos SET Estoque = Estoque - @qtd
@@ -434,7 +434,7 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 | D03 | Keycaps em lotes limitados, marcas fictícias, sem variações, sem pré-venda | Café, prints, livros, produto digital |
 | D04 | Catálogo público; conta obrigatória para comprar | Catálogo fechado; compra como convidado |
 | D05 | Produtos via seed; endpoints de admin só para o envio | Interface de admin na v1 |
-| D06 | Frete fixo; endereço como snapshot no pedido | Integração com Correios ou Melhor Envio |
+| D06 | ~~Frete fixo~~ Frete por estado (ADR 0024); endereço como snapshot no pedido | Integração com Correios ou Melhor Envio |
 | D07 | Stripe Checkout hospedado (Payment Element na v3) | Payment Element na v1 |
 | D08 | Cartão + Pix; o handler decide pelo `payment_status` | Boleto |
 | D09 | Webhook assinado como fonte da verdade; a página de retorno só consulta o backend | Confiar no redirecionamento; polling na Stripe como fonte principal |
