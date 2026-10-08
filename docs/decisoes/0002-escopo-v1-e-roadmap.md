@@ -13,7 +13,7 @@
 - **Produto:** kits de keycaps em lotes limitados, com marcas fictícias. **Cada kit é um produto separado, sem variações**, e só há venda com pronta entrega (sem pré-venda).
 - **v1 = fatia vertical:** catálogo público → carrinho (no banco, por cliente, com login) → finalizar (endereço + reserva) → Stripe → webhook → envio pelo admin.
 - **Conta obrigatória para comprar**; o catálogo é público.
-- **Produtos via seed**; frete fixo; endereço como snapshot no pedido.
+- **Produtos via seed**; ~~frete fixo~~ frete por estado (**substituído pelo ADR 0024**); endereço como snapshot no pedido.
 - **Roadmap:** v2 = cancelamento, arrependimento e exclusão de conta (bloqueios para produção); v3 = Payment Element; v4 = Web API + SPA; depois, admin, conciliação, frete, pré-venda. Cada item é independente.
 
 ## Alternativas consideradas
