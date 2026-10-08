@@ -41,18 +41,20 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 
 | Item | Onde fica | Motivo |
 |---|---|---|
-| Cancelamento, direito de arrependimento (CDC, 7 dias) e exclusão de conta (LGPD) | **v2** | São bloqueios para produção, e não para a v1 em modo teste. A v2 reaproveita o reembolso da v1. |
-| Payment Element (formulário embutido) | v3 | A interface do cartão não é o diferencial. O Checkout hospedado já resolve PCI, 3DS e expiração. |
-| Web API + SPA (React ou Angular) | v4 | Aprender um framework de frontend ao mesmo tempo que o resto diluiria o foco. |
-| Interface de admin e cadastro de produtos por tela | futuro | Seed resolve a v1. |
-| Job de conciliação com a Stripe | futuro | O webhook é a fonte da verdade, e a conciliação é só rede de segurança. |
-| Cálculo de frete (Correios, Melhor Envio) | futuro | É um poço de complexidade que não demonstra nada do objetivo do projeto. |
-| Pré-venda (*group buy*) | futuro (v3+) | Muda o modelo de estoque (vagas, prazos longos, reembolsos parciais). |
+| Cancelamento, direito de arrependimento (CDC, 7 dias) e exclusão de conta (LGPD) | **v2 (primeira parte)** | São bloqueios para produção, e não para a v1 em modo teste. A v2 reaproveita o reembolso da v1. |
+| Payment Element (formulário embutido) | ~~v3~~ **v2** (ADR 0025) | A interface do cartão não é o diferencial da v1. O Checkout hospedado já resolve PCI, 3DS e expiração. |
+| Web API + SPA (React ou Angular) | ~~v4~~ **não planejado** (ADR 0025) | Não deixa o site mais bonito por si só (isso vem do design). A reformulação visual é a v3, em Razor. |
+| Interface de admin e cadastro de produtos por tela | ~~futuro~~ **v2** (ADR 0025) | Seed resolve a v1. |
+| Job de conciliação com a Stripe | ~~futuro~~ **v2** (ADR 0025) | O webhook é a fonte da verdade, e a conciliação é só rede de segurança. |
+| Cálculo de frete (Correios, Melhor Envio) | ~~futuro~~ **v2** (ADR 0025) | Fora da v1: é um poço de complexidade. Na v2, substitui a regra por estado (ADR 0024); verificar o plano gratuito antes. |
+| Pré-venda (*group buy*) | ~~futuro (v3+)~~ **v2** (ADR 0025) | Muda o modelo de estoque (vagas, prazos longos, reembolsos parciais). |
 | Variações de produto (SKU) | fora | Cada kit é um produto próprio, como no mercado real. |
 | Boleto | fora | É lento, raramente é pago e prende estoque por dias. |
-| Endereços salvos na conta | futuro | Conveniência, não essencial. |
-| Login externo (Google etc.) | futuro | Dependência externa sem ganho de aprendizado na v1. |
+| Endereços salvos na conta | ~~futuro~~ **v2** (ADR 0025) | Conveniência, não essencial. |
+| Login externo (Google etc.) | ~~futuro~~ **v2** (ADR 0025) | Dependência externa sem ganho de aprendizado na v1. |
 | Compra como convidado | fora | Decisão: conta obrigatória para comprar. |
+| Site em inglês (troca pt-BR/en por bandeira no menu) | **v2** (ADR 0025) | A v1 é só em português. |
+| Reformulação visual (design, CSS, layout, identidade) | **v3** (ADR 0025) | Na v1, o foco é o backend; continua em MVC + Razor. |
 | Dinheiro real | fora (checklist em §11) | Exige conta ativada, obrigações fiscais, legais e de suporte. Além disso, um recrutador não consegue testar uma loja real sem gastar dinheiro. |
 | Redis, filas, microsserviços | fora | O banco resolve concorrência e idempotência. Seria superdimensionado e teria custo. |
 
@@ -76,11 +78,11 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 | Camada | Escolha | Por quê | Alternativa rejeitada |
 |---|---|---|---|
 | Backend | **.NET (ASP.NET Core)** | Área do autor e público-alvo (empresas .NET). | — |
-| Frontend v1 | **ASP.NET Core MVC + Razor** | O autor já domina (projeto agenda-pessoal). Toda a energia vai para domínio, pagamento e testes. Cookie é o modelo de autenticação mais seguro para esse caso. | SPA (v4), Blazor (novidade sem retorno proporcional) |
+| Frontend v1 | **ASP.NET Core MVC + Razor** | O autor já domina (projeto agenda-pessoal). Toda a energia vai para domínio, pagamento e testes. Cookie é o modelo de autenticação mais seguro para esse caso. | SPA (~~v4~~ não planejada, ADR 0025), Blazor (novidade sem retorno proporcional) |
 | Banco | **PostgreSQL** | Portabilidade entre provedores gratuitos. Roda em x86 e ARM. | SQL Server: exige 2 GB de RAM e não roda em ARM, então não cabe na Oracle Always Free. |
 | ORM | **EF Core** (provedor Npgsql) | Padrão do ecossistema, e o autor já tem experiência. | — |
 | Autenticação | **ASP.NET Core Identity com cookies** | Hash de senha, bloqueio por tentativas, tokens e papéis prontos e auditados. | Cookie feito à mão (inseguro para múltiplos usuários); login externo (dependência). |
-| Pagamento | **Stripe Checkout hospedado** (cartão + Pix) | PCI, 3DS e expiração de sessão já resolvidos. Pix disponível para contas BR (verificado na documentação). | Payment Element (v3) |
+| Pagamento | **Stripe Checkout hospedado** (cartão + Pix) | PCI, 3DS e expiração de sessão já resolvidos. Pix disponível para contas BR (verificado na documentação). | Payment Element (~~v3~~ v2, ADR 0025) |
 | Hospedagem | **Oracle Cloud Always Free**, VM **Ampere A1 (ARM64)**, separada da agenda | Custo zero sem prazo de validade. O autor já opera VM Oracle com Nginx e Certbot. | Azure for Students: o crédito acaba e a portabilidade exigiria trabalho duplo. |
 | Execução | **Docker Compose** (app + PostgreSQL) | Ambiente idêntico local e produção. Portabilidade: migrar de provedor é "instalar Docker e subir". | systemd direto (como a agenda), que não cobre PostgreSQL nem ARM com a mesma facilidade. |
 | Borda | **Nginx + Certbot no host**, subdomínio **DuckDNS** | Caminho já dominado pelo autor, com renovação automática já resolvida. | Caddy no Compose (novidade sem ganho). |
@@ -119,7 +121,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 - As dependências apontam **sempre para dentro**. O `Domain` não referencia ninguém.
   - *Por quê:* as regras de negócio não mudam quando a tecnologia muda (e ela já mudou uma vez: SQL Server → PostgreSQL), e podem ser testadas isoladamente, em milissegundos.
 - A `Application` define interfaces (ex.: `IGatewayPagamento`), e a `Infrastructure` as implementa (inversão de dependência).
-- **Controllers finos:** nenhuma regra de negócio no `Web`. Quando a SPA chegar (v4), nada de regra é reescrito.
+- **Controllers finos:** nenhuma regra de negócio no `Web`. Se um dia houver uma SPA (hoje não planejada, ADR 0025), nada de regra é reescrito.
 - **Módulos como pastas** dentro de cada camada: `Catalogo`, `Carrinho`, `Pedidos`, `Pagamentos`, `Identidade`. As fronteiras são reforçadas por **testes de arquitetura**.
 - O **Identity** vive na `Infrastructure`. O `Domain` conhece o cliente apenas pelo **ID**.
 
@@ -389,7 +391,7 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 - [ ] Pix ativado no modo de produção
 
 **Legal (bloqueios)**
-- [ ] **v2 entregue:** cancelamento, direito de arrependimento (CDC) e exclusão de conta (LGPD)
+- [ ] **parte legal da v2 entregue:** cancelamento, direito de arrependimento (CDC) e exclusão de conta (LGPD)
 - [ ] termos de uso
 - [ ] política de privacidade (incluindo o compartilhamento de dados com a Stripe e seus parceiros)
 - [ ] prazo legal de retenção dos pedidos definido
@@ -418,10 +420,11 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 | **M6** | Backups, monitoramento, checklist de go-live | 15–20h |
 
 **Roadmap depois da v1** (cada item é independente; a ordem é decidida depois da v1):
-- **v2:** direitos do consumidor e do titular (cancelamento, arrependimento, exclusão de conta)
-- **v3:** Payment Element embutido
-- **v4:** Web API + SPA (React ou Angular)
-- **Depois:** interface de admin, conciliação, frete, pré-venda, endereços salvos, login externo
+- **v2 (tudo o que não é visual, ADR 0025):**
+  1. **primeiro (libera o go-live):** direitos do consumidor e do titular (cancelamento, arrependimento, exclusão de conta);
+  2. **depois:** site em inglês (bandeira pt-BR/en no menu), tela de admin com cadastro de produtos, Payment Element embutido, conciliação com a Stripe, frete real (Correios ou Melhor Envio), pré-venda, endereços salvos, login com Google.
+- **v3:** reformulação visual, mantendo MVC + Razor.
+- **Não há v4.** Continuam fora: variações de produto (SKU), boleto e compra como convidado.
 
 ---
 
@@ -433,9 +436,9 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 | D02 | Modo teste, pronto para produção | Dinheiro real |
 | D03 | Keycaps em lotes limitados, marcas fictícias, sem variações, sem pré-venda | Café, prints, livros, produto digital |
 | D04 | Catálogo público; conta obrigatória para comprar | Catálogo fechado; compra como convidado |
-| D05 | Produtos via seed; endpoints de admin só para o envio | Interface de admin na v1 |
+| D05 | Produtos via seed; endpoints de admin só para o envio (na v1; tela de admin com cadastro de produtos na v2, ADR 0025) | Interface de admin na v1 |
 | D06 | ~~Frete fixo~~ Frete por estado (ADR 0024); endereço como snapshot no pedido | Integração com Correios ou Melhor Envio |
-| D07 | Stripe Checkout hospedado (Payment Element na v3) | Payment Element na v1 |
+| D07 | Stripe Checkout hospedado (Payment Element na ~~v3~~ v2, ADR 0025) | Payment Element na v1 |
 | D08 | Cartão + Pix; o handler decide pelo `payment_status` | Boleto |
 | D09 | Webhook assinado como fonte da verdade; a página de retorno só consulta o backend | Confiar no redirecionamento; polling na Stripe como fonte principal |
 | D10 | Idempotência pelo ID do evento (UNIQUE) + estado do pedido | Heurística por "pedido parecido" |
@@ -446,7 +449,7 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 | D15 | Sessão de 30 minutos; Pix de 30 minutos (reserva máxima de cerca de 1 hora) | Padrões da Stripe (24 horas e 4 horas) |
 | D16 | Máquina de estados no `Pedido` (modelo rico); admin só executa o envio; um endpoint por ação | PATCH genérico de status |
 | D17 | Cancelamento, arrependimento e exclusão de conta na v2 (bloqueio para produção) | Na v1 |
-| D18 | .NET com MVC e Razor na v1; SPA na v4 | React, Angular ou Blazor na v1 |
+| D18 | .NET com MVC e Razor na v1 ~~; SPA na v4~~ e também na reformulação visual da v3 (ADR 0025) | React, Angular ou Blazor na v1 |
 | D19 | PostgreSQL | SQL Server (não cabe no destino) |
 | D20 | Oracle Always Free A1, VM separada e descartável, com script de reconstrução | Azure for Students; VM compartilhada com a agenda; conta Pay As You Go; carga artificial |
 | D21 | Docker Compose para a app e o banco; Nginx e Certbot no host; DuckDNS | systemd direto; Caddy |
