@@ -4,7 +4,51 @@ namespace KeycapStore.UnitTests.Orders;
 
 public class OrderTests
 {
-    private static Order NewOrder() => new("customer-1", DateTimeOffset.UnixEpoch);
+    private static readonly Guid KitA = Guid.NewGuid();
+    private static readonly Guid KitB = Guid.NewGuid();
+
+    private static Order NewOrder() =>
+        new("customer-1", DateTimeOffset.UnixEpoch, [new OrderItem(KitA, "Kit A", 100m, 1)]);
+
+    [Fact]
+    public void NewOrder_KeepsItemsAndSumsTheTotal()
+    {
+        var order = new Order("customer-1", DateTimeOffset.UnixEpoch,
+        [
+            new OrderItem(KitA, "Kit A", 349.90m, 2),
+            new OrderItem(KitB, "Kit B", 89.90m, 1),
+        ]);
+
+        Assert.Equal(2, order.Items.Count);
+        Assert.Equal(789.70m, order.Total);
+    }
+
+    [Fact]
+    public void NewOrder_WithoutItems_Throws()
+    {
+        Assert.Throws<ArgumentException>(() => new Order("customer-1", DateTimeOffset.UnixEpoch, []));
+    }
+
+    [Fact]
+    public void NewOrder_WithSameProductTwice_Throws()
+    {
+        Assert.Throws<ArgumentException>(() => new Order("customer-1", DateTimeOffset.UnixEpoch,
+        [
+            new OrderItem(KitA, "Kit A", 100m, 1),
+            new OrderItem(KitA, "Kit A", 100m, 2),
+        ]));
+    }
+
+    [Fact]
+    public void NewOrder_ChangingTheOriginalListLater_DoesNotChangeTheOrder()
+    {
+        var items = new List<OrderItem> { new(KitA, "Kit A", 100m, 1) };
+        var order = new Order("customer-1", DateTimeOffset.UnixEpoch, items);
+
+        items.Add(new OrderItem(KitB, "Kit B", 50m, 1));
+
+        Assert.Single(order.Items);
+    }
 
     [Fact]
     public void NewOrder_StartsAwaitingPayment()
