@@ -1,9 +1,11 @@
 ﻿using KeycapStore.Application.Carts;
 using KeycapStore.Application.Catalog;
 using KeycapStore.Application.Identity;
+using KeycapStore.Application.Orders;
 using KeycapStore.Infrastructure.Carts;
 using KeycapStore.Infrastructure.Catalog;
 using KeycapStore.Infrastructure.Identity;
+using KeycapStore.Infrastructure.Orders;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.AspNetCore.DataProtection;
@@ -11,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace KeycapStore.Infrastructure;
 
@@ -30,6 +33,9 @@ public static class DependencyInjection
 
         services.AddScoped<ICatalogQueries, CatalogQueries>();
         services.AddScoped<ICartService, CartService>();
+        services.AddScoped<ICheckoutService, CheckoutService>();
+        services.AddScoped<IOrderQueries, OrderQueries>();
+        services.TryAddSingleton(TimeProvider.System);
 
         services.AddIdentityCore<IdentityUser>(options =>
         {
