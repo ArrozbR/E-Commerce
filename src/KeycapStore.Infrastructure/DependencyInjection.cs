@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<ICatalogQueries, CatalogQueries>();
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<ICheckoutService, CheckoutService>();
+        services.AddScoped<IOrderQueries, OrderQueries>();
         services.TryAddSingleton(TimeProvider.System);
 
         services.AddIdentityCore<IdentityUser>(options =>
