@@ -1,0 +1,79 @@
+﻿@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Endereço de entrega";
+    string[] states =
+    [
+        "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA",
+        "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+    ];
+}
+
+<h1>Endereço de entrega</h1>
+<p class="text-muted">Frete grátis para DF, GO, MT, MS, SP e RJ. Para os demais estados, R$ 15,00.</p>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Index" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="RecipientName" class="form-label"></label>
+                <input asp-for="RecipientName" class="form-control" autocomplete="name" />
+                <span asp-validation-for="RecipientName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PostalCode" class="form-label"></label>
+                <input asp-for="PostalCode" class="form-control" autocomplete="postal-code" />
+                <span asp-validation-for="PostalCode" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Street" class="form-label"></label>
+                <input asp-for="Street" class="form-control" autocomplete="address-line1" />
+                <span asp-validation-for="Street" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-4 mb-3">
+                    <label asp-for="Number" class="form-label"></label>
+                    <input asp-for="Number" class="form-control" />
+                    <span asp-validation-for="Number" class="text-danger"></span>
+                </div>
+                <div class="col-8 mb-3">
+                    <label asp-for="Complement" class="form-label"></label>
+                    <input asp-for="Complement" class="form-control" autocomplete="address-line2" />
+                    <span asp-validation-for="Complement" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="District" class="form-label"></label>
+                <input asp-for="District" class="form-control" />
+                <span asp-validation-for="District" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-8 mb-3">
+                    <label asp-for="City" class="form-label"></label>
+                    <input asp-for="City" class="form-control" autocomplete="address-level2" />
+                    <span asp-validation-for="City" class="text-danger"></span>
+                </div>
+                <div class="col-4 mb-3">
+                    <label asp-for="State" class="form-label"></label>
+                    <select asp-for="State" asp-items="@(new SelectList(states))" class="form-select">
+                        <option value="">UF</option>
+                    </select>
+                    <span asp-validation-for="State" class="text-danger"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Finalizar pedido</button>
+            <a asp-controller="Cart" asp-action="Index" class="btn btn-link">Voltar ao carrinho</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
