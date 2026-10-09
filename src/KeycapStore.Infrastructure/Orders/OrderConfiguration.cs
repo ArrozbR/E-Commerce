@@ -25,6 +25,9 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.ShippingFee)
             .HasPrecision(10, 2);
 
+        builder.Property(o => o.StripeSessionId)
+            .HasMaxLength(255);
+
         builder.OwnsOne(o => o.ShippingAddress, address =>
         {
             address.Property(a => a.RecipientName).HasColumnName("ShippingRecipientName").HasMaxLength(150);

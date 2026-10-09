@@ -74,4 +74,28 @@ public class OrderPersistenceTests(PostgresFixture postgres) : IClassFixture<Pos
             Assert.Equal(349.90m, Assert.Single(saved.Items).UnitPrice);
         }
     }
+
+    [Fact]
+    public async Task Order_KeepsTheStripeSessionId()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var order = new Order("customer-session", DateTimeOffset.UnixEpoch,
+            [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba);
+        order.AttachStripeSession("cs_test_persistencia");
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Orders.Add(order);
+            await db.SaveChangesAsync();
+        }
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var saved = await db.Orders.SingleAsync(o => o.Id == order.Id);
+
+            Assert.Equal("cs_test_persistencia", saved.StripeSessionId);
+        }
+    }
 }
