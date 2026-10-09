@@ -83,17 +83,34 @@ public class CheckoutPageTests(PostgresFixture postgres) : IClassFixture<Postgre
     }
 
     [Fact]
-    public async Task Checkout_WithValidAddress_CreatesTheOrder_AndEmptiesTheCart()
+    public async Task Checkout_WithValidAddress_SendsTheCustomerToStripe_AndEmptiesTheCart()
     {
-        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var stripe = new FakePaymentGateway();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(stripe);
         var client = await LoggedInClientAsync(factory, "checkout@example.com");
         await AddKitAuroraAsync(client);
 
         var response = await PostAddressAsync(client, "80020-310");
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.StartsWith("/Orders/Details/", response.Headers.Location?.OriginalString);
+        Assert.Equal($"https://checkout.stripe.test/{stripe.RequestedOrders.Single():N}", response.Headers.Location?.OriginalString);
         Assert.Contains("Seu carrinho está vazio.", WebUtility.HtmlDecode(await client.GetStringAsync("/Cart")));
+    }
+
+    [Fact]
+    public async Task Checkout_WhenStripeFails_ShowsTheOrderAsNotApproved()
+    {
+        var stripe = new FakePaymentGateway { Fail = true };
+        await using var factory = await postgres.CreateMigratedFactoryAsync(stripe);
+        var client = await LoggedInClientAsync(factory, "stripe-fora@example.com");
+        await AddKitAuroraAsync(client);
+
+        var response = await PostAddressAsync(client, "80020-310");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        var orderUrl = response.Headers.Location!.OriginalString;
+        Assert.Equal($"/Orders/Details/{stripe.RequestedOrders.Single()}", orderUrl);
+        Assert.Contains("Pagamento não aprovado", WebUtility.HtmlDecode(await client.GetStringAsync(orderUrl)));
     }
 
     [Fact]

@@ -23,6 +23,7 @@ public sealed class PostgresFixture : IAsyncLifetime
     {
         builder.UseSetting("ConnectionStrings:Default", Container.GetConnectionString());
         builder.UseSetting("Stripe:SecretKey", "sk_test_fake_key_for_tests");
+        builder.ConfigureTestServices(services => services.AddSingleton<IPaymentGateway>(new FakePaymentGateway()));
     });
 
     public async Task<WebApplicationFactory<Program>> CreateMigratedFactoryAsync()
