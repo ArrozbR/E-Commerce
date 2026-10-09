@@ -16,8 +16,11 @@ public sealed class PostgresFixture : IAsyncLifetime
     public Task DisposeAsync() => Container.DisposeAsync().AsTask();
 
     public WebApplicationFactory<Program> CreateFactory() => new WebApplicationFactory<Program>()
-        .WithWebHostBuilder(builder =>
-            builder.UseSetting("ConnectionStrings:Default", Container.GetConnectionString()));
+    .WithWebHostBuilder(builder =>
+    {
+        builder.UseSetting("ConnectionStrings:Default", Container.GetConnectionString());
+        builder.UseSetting("Stripe:SecretKey", "sk_test_fake_key_for_tests");
+    });
 
     public async Task<WebApplicationFactory<Program>> CreateMigratedFactoryAsync()
     {
