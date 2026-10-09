@@ -7,6 +7,7 @@ using KeycapStore.Infrastructure.Catalog;
 using KeycapStore.Infrastructure.Identity;
 using KeycapStore.Infrastructure.Orders;
 using KeycapStore.Infrastructure.Persistence;
+using KeycapStore.Infrastructure.Payments;
 
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -36,6 +37,10 @@ public static class DependencyInjection
         services.AddScoped<ICheckoutService, CheckoutService>();
         services.AddScoped<IOrderQueries, OrderQueries>();
         services.TryAddSingleton(TimeProvider.System);
+        services.AddOptions<StripeOptions>()
+            .Bind(configuration.GetSection(StripeOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddIdentityCore<IdentityUser>(options =>
         {
