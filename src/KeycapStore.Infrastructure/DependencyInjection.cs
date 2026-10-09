@@ -6,8 +6,8 @@ using KeycapStore.Infrastructure.Carts;
 using KeycapStore.Infrastructure.Catalog;
 using KeycapStore.Infrastructure.Identity;
 using KeycapStore.Infrastructure.Orders;
-using KeycapStore.Infrastructure.Persistence;
 using KeycapStore.Infrastructure.Payments;
+using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
