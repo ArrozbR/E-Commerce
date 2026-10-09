@@ -12,6 +12,7 @@ public sealed class Order
     public ShippingAddress ShippingAddress { get; private set; }
     public decimal ShippingFee { get; private set; }
     public decimal Total => Items.Sum(i => i.LineTotal) + ShippingFee;
+    public string? StripeSessionId { get; private set; }
 
     private Order()
     {
@@ -42,6 +43,28 @@ public sealed class Order
         Status = OrderStatus.AwaitingPayment;
         ShippingAddress = shippingAddress;
         ShippingFee = ShippingPolicy.FeeFor(shippingAddress.State);
+    }
+
+    public void AttachStripeSession(string sessionId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sessionId);
+
+        if (StripeSessionId == sessionId)
+        {
+            return;
+        }
+
+        if (StripeSessionId is not null)
+        {
+            throw new InvalidOperationException("O pedido já tem outra sessão da Stripe.");
+        }
+
+        if (Status is not OrderStatus.AwaitingPayment)
+        {
+            throw new InvalidOperationException("Só um pedido aguardando pagamento recebe uma sessão da Stripe.");
+        }
+
+        StripeSessionId = sessionId;
     }
 
     public void ConfirmPayment()
