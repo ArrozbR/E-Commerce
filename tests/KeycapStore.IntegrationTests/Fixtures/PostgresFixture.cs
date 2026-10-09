@@ -1,6 +1,9 @@
-﻿using KeycapStore.Infrastructure;
+﻿using KeycapStore.Application.Payments;
+using KeycapStore.Infrastructure;
 
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 
 using Testcontainers.PostgreSql;
 
@@ -25,6 +28,14 @@ public sealed class PostgresFixture : IAsyncLifetime
     public async Task<WebApplicationFactory<Program>> CreateMigratedFactoryAsync()
     {
         var factory = CreateFactory();
+        await factory.Services.MigrateDatabaseAsync();
+        return factory;
+    }
+
+    public async Task<WebApplicationFactory<Program>> CreateMigratedFactoryAsync(IPaymentGateway payments)
+    {
+        var factory = CreateFactory()
+            .WithWebHostBuilder(builder => builder.ConfigureTestServices(services => services.AddSingleton(payments)));
         await factory.Services.MigrateDatabaseAsync();
         return factory;
     }
