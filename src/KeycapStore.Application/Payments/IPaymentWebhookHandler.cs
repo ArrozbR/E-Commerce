@@ -8,5 +8,6 @@ public interface IPaymentWebhookHandler
 public enum WebhookOutcome
 {
     Accepted,
+    Duplicate,
     InvalidSignature,
 }

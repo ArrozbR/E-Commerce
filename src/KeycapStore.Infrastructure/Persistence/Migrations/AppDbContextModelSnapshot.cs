@@ -141,6 +141,25 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.ToTable("orders", (string)null);
                 });
 
+            modelBuilder.Entity("KeycapStore.Infrastructure.Payments.ProcessedStripeEvent", b =>
+                {
+                    b.Property<string>("EventId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTimeOffset>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("EventId");
+
+                    b.ToTable("processed_stripe_events", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
                 {
                     b.Property<int>("Id")
