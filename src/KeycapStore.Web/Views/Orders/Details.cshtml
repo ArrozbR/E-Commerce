@@ -1,23 +1,10 @@
-﻿@using KeycapStore.Domain.Orders
+﻿@using KeycapStore.Web.Models
 @model KeycapStore.Application.Orders.OrderView
 @{
     ViewData["Title"] = "Pedido";
     var brl = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
     var brasilia = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
-    var status = Model.Status switch
-    {
-        OrderStatus.AwaitingPayment => "Aguardando pagamento",
-        OrderStatus.AwaitingConfirmation => "Aguardando confirmação do pagamento",
-        OrderStatus.Paid => "Pago",
-        OrderStatus.Expired => "Expirado",
-        OrderStatus.Failed => "Pagamento não aprovado",
-        OrderStatus.PaidOutOfStock => "Pago, mas sem estoque",
-        OrderStatus.Refunded => "Reembolsado",
-        OrderStatus.Picking => "Em separação",
-        OrderStatus.Shipped => "Enviado",
-        OrderStatus.Delivered => "Entregue",
-        _ => Model.Status.ToString(),
-    };
+    var status = OrderStatusText.For(Model.Status);
     var address = Model.ShippingAddress;
 }
 

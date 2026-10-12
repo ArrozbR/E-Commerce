@@ -38,7 +38,7 @@ public sealed class CheckoutController(ICheckoutService checkout) : Controller
         }
 
         var orderId = result.OrderId!.Value;
-        var successUrl = new Uri(Url.Action("Details", "Orders", new { id = orderId }, Request.Scheme)!);
+        var successUrl = new Uri(Url.Action("Return", "Orders", new { id = orderId }, Request.Scheme)!);
         var cancelUrl = new Uri(Url.Action("Index", "Cart", null, Request.Scheme)!);
 
         var payment = await checkout.StartPaymentAsync(orderId, CustomerId, successUrl, cancelUrl, cancellationToken);

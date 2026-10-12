@@ -13,6 +13,7 @@ public class OrderPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
 {
     private const string Password = "Senha#Forte123";
 
+    // Kit Aurora (base), R$ 349,90 e 40 unidades no seed.
     private const string KitAurora = "6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e01";
 
     private static string TokenFrom(string html) =>
@@ -44,6 +45,8 @@ public class OrderPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
     }
 
     // Compra 1 Kit Aurora para Curitiba (PR, frete R$ 15,00) e devolve o endereço da página do pedido.
+    // O "Finalizar" leva para a Stripe de mentira (https://checkout.stripe.test/{id do pedido}):
+    // o id do pedido é o último pedaço desse endereço.
     private static async Task<string> PlaceOrderAsync(HttpClient client)
     {
         var token = TokenFrom(await client.GetStringAsync("/Catalog"));
@@ -70,6 +73,8 @@ public class OrderPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
         var orderId = Guid.Parse(response.Headers.Location!.Segments[^1]);
         return $"/Orders/Details/{orderId}";
     }
+
+    private static Guid OrderIdFrom(string orderUrl) => Guid.Parse(orderUrl.Split('/')[^1]);
 
     [Fact]
     public async Task Owner_SeesTheOrder_WithShippingAndTotal()
@@ -98,6 +103,45 @@ public class OrderPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
         var response = await stranger.GetAsync(orderUrl);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ReturnPage_ShowsTheOrder_AndIsOnlyForTheOwner()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var owner = await LoggedInClientAsync(factory, "retorno@example.com");
+        var orderId = OrderIdFrom(await PlaceOrderAsync(owner));
+
+        var page = WebUtility.HtmlDecode(await owner.GetStringAsync($"/orders/{orderId}/return"));
+        Assert.Contains("Confirmando seu pagamento", page);
+        Assert.Contains($"/orders/{orderId}/status", page);
+
+        var stranger = await LoggedInClientAsync(factory, "curioso-retorno@example.com");
+        Assert.Equal(HttpStatusCode.NotFound, (await stranger.GetAsync($"/orders/{orderId}/return")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Status_ChangesToPaid_AfterTheWebhook_AndIsOnlyForTheOwner()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var owner = await LoggedInClientAsync(factory, "situacao@example.com");
+        var orderId = OrderIdFrom(await PlaceOrderAsync(owner));
+
+        Assert.Contains("\"status\":\"AwaitingPayment\"", await owner.GetStringAsync($"/orders/{orderId}/status"));
+
+        // A Stripe avisa: R$ 364,90 = 36490 centavos (Kit Aurora + frete para o PR).
+        var payload = StripeWebhookSigner.CheckoutCompleted("evt_test_status_page", orderId, 36490);
+        var webhook = new HttpRequestMessage(HttpMethod.Post, "/webhooks/stripe")
+        {
+            Content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json"),
+        };
+        webhook.Headers.Add("Stripe-Signature", StripeWebhookSigner.Sign(payload));
+        Assert.Equal(HttpStatusCode.OK, (await factory.CreateClient().SendAsync(webhook)).StatusCode);
+
+        Assert.Contains("\"status\":\"Paid\"", await owner.GetStringAsync($"/orders/{orderId}/status"));
+
+        var stranger = await LoggedInClientAsync(factory, "curioso-situacao@example.com");
+        Assert.Equal(HttpStatusCode.NotFound, (await stranger.GetAsync($"/orders/{orderId}/status")).StatusCode);
     }
 
     [Fact]
