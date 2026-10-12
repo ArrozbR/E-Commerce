@@ -91,7 +91,7 @@ Ordem obrigatória:
 - `mode = payment`, `ui_mode = hosted_page`.
 - `line_items` em **`brl`**, montados **a partir do snapshot do pedido no servidor**. Preço vindo do cliente é ignorado.
 - `client_reference_id` = `orderId` e `metadata["order_id"]` = `orderId`.
-- `expires_at` = agora + **30 minutos**.
+- `expires_at` = **criação do pedido (`Order.CreatedAt`) + 31 minutos** (ADR 0026). Nunca "agora": a nova tentativa com a mesma chave de idempotência precisa dos mesmos parâmetros, e a Stripe exige no mínimo 30 minutos.
 - `payment_method_options.pix.expires_after_seconds` = **1800**.
 - `success_url` → `/orders/{id}/return` e `cancel_url` → carrinho.
 - Chave de idempotência `session-{orderId}`.

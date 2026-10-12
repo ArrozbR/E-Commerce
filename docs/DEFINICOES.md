@@ -157,7 +157,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 4. Chama `POST /v1/checkout/sessions` com:
    - `mode=payment`, `line_items` em **`brl`**, montados a partir do snapshot do pedido
    - `client_reference_id` e `metadata.order_id` = ID do pedido
-   - `expires_at` = agora + **30 minutos** (o mínimo permitido)
+   - `expires_at` = ~~agora + **30 minutos** (o mínimo permitido)~~ → **criação do pedido + 31 minutos** (ADR 0026: parâmetros fixos para a chave de idempotência, e folga para o mínimo de 30 minutos da Stripe)
    - `payment_method_options.pix.expires_after_seconds` = **1800** (30 minutos, contados a partir do momento em que o cliente escolhe Pix; o padrão da Stripe seria 4 horas)
    - `success_url` → `/orders/{id}/return`, `cancel_url` → carrinho
    - **chave de idempotência** `sessao-{pedidoId}` na requisição
