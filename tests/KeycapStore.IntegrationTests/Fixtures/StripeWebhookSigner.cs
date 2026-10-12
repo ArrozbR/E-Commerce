@@ -23,4 +23,23 @@ public static class StripeWebhookSigner
           "data": { "object": { "id": "cs_test_fake", "object": "checkout.session" } }
         }
         """;
+
+    public static string CheckoutCompleted(string id, Guid orderId, long amountTotal, string currency = "brl", string paymentStatus = "paid") => $$"""
+        {
+          "id": "{{id}}",
+          "object": "event",
+          "api_version": "{{Stripe.StripeConfiguration.ApiVersion}}",
+          "type": "checkout.session.completed",
+          "data": {
+            "object": {
+              "id": "cs_test_{{orderId:N}}",
+              "object": "checkout.session",
+              "amount_total": {{amountTotal}},
+              "currency": "{{currency}}",
+              "payment_status": "{{paymentStatus}}",
+              "metadata": { "order_id": "{{orderId}}" }
+            }
+          }
+        }
+        """;
 }
