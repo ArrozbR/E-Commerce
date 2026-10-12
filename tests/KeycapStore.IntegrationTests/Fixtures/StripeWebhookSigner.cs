@@ -1,0 +1,26 @@
+﻿using System.Security.Cryptography;
+using System.Text;
+
+namespace KeycapStore.IntegrationTests.Fixtures;
+
+public static class StripeWebhookSigner
+{
+    public const string TestSecret = "whsec_test_secret_for_tests";
+
+    public static string Sign(string payload, string secret = TestSecret, DateTimeOffset? signedAt = null)
+    {
+        var timestamp = (signedAt ?? DateTimeOffset.UtcNow).ToUnixTimeSeconds();
+        var hash = HMACSHA256.HashData(Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes($"{timestamp}.{payload}"));
+        return $"t={timestamp},v1={Convert.ToHexStringLower(hash)}";
+    }
+
+    public static string Event(string id, string type) => $$"""
+        {
+          "id": "{{id}}",
+          "object": "event",
+          "api_version": "{{Stripe.StripeConfiguration.ApiVersion}}",
+          "type": "{{type}}",
+          "data": { "object": { "id": "cs_test_fake", "object": "checkout.session" } }
+        }
+        """;
+}

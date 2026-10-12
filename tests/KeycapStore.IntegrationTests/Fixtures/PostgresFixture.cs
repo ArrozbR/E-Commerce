@@ -23,6 +23,7 @@ public sealed class PostgresFixture : IAsyncLifetime
     {
         builder.UseSetting("ConnectionStrings:Default", Container.GetConnectionString());
         builder.UseSetting("Stripe:SecretKey", "sk_test_fake_key_for_tests");
+        builder.UseSetting("Stripe:WebhookSecret", StripeWebhookSigner.TestSecret);
         builder.ConfigureTestServices(services => services.AddSingleton<IPaymentGateway>(new FakePaymentGateway()));
     });
 
