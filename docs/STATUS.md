@@ -2,9 +2,9 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** **M3** (Stripe Checkout com cartão + webhook idempotente + página de retorno), a começar. **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
+**Marco atual:** **M3** (Stripe Checkout com cartão + webhook idempotente + página de retorno), em andamento: configuração e criação da sessão prontas; faltam o teste no sandbox, o webhook e a página de retorno. **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · total: 21,5h
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 3h até agora (estimativa 20–30h) · total: 24,5h
 **Estimativa da v1:** ~~120–180h~~ → **revisada em 08/10 para 55–85h** (21,5h feitas + 35–60h para M3–M6). Os 3 primeiros marcos saíram com cerca de 25–35% do estimado, mas o M3 e o M4 têm mais incerteza (Stripe, webhook, Pix, eventos fora de ordem), por isso a revisão não aplica a mesma proporção. Revisar de novo ao fim do M3.
 
 ## Marcos da v1
@@ -16,6 +16,17 @@
 - [ ] **M4:** Pix, expiração, falha, reembolso por falta de estoque (15–25h)
 - [ ] **M5:** endpoints de admin para o envio (8–12h)
 - [ ] **M6:** backups, monitoramento, checklist de go-live (15–20h)
+
+## Checklist do M3
+
+- [x] `StripeOptions` (`SecretKey` obrigatória e no formato `sk_test_`/`sk_live_`) com `ValidateDataAnnotations` + `ValidateOnStart`; testes provam que a aplicação não sobe sem a chave nem com uma `pk_` por engano (sabotagem sem `ValidateOnStart` → 2 falhas). Chave de teste em `user-secrets` no PC e em `STRIPE_SECRET_KEY` no `.env` da VM (`compose.prod.yaml` recusa subir sem ela) (PR #47)
+- [x] `Order.StripeSessionId` + `AttachStripeSession`, **escrito pelo autor**: a mesma sessão de novo não faz nada, outra sessão é recusada, só `AwaitingPayment` recebe sessão; migration `AddOrderStripeSessionId`; 7 testes unitários + 1 de persistência (PR #48)
+- [x] `IPaymentGateway` (Application) + `StripePaymentGateway` (Infrastructure, `Stripe.net` 53.0.0) + `StripeCheckoutSessionFactory`: sessão montada do **snapshot** do pedido (centavos em `brl`, linha "Frete" só se houver), `client_reference_id` e `metadata.order_id`, Pix 1800 s, chave de idempotência `session-{orderId}`; `expires_at` = **criação do pedido + 31 min** (ver Questões em aberto); 8 testes (branch `feat/stripe-gateway`)
+- [x] `StartPaymentAsync`, **escrito pelo autor**: só o dono do pedido; se a Stripe falhar, **compensação** numa transação (`MarkFailed` + estoque devolvido em ordem de `ProductId`); se der certo, `AttachStripeSession`. `FakePaymentGateway` nos testes (padrão em toda fábrica: nenhum teste fala com a Stripe real); 3 testes, sabotagem sem a devolução do estoque (branch `feat/stripe-gateway`)
+- [x] "Finalizar compra" redireciona para a página de pagamento da Stripe (`success_url` = página do pedido por enquanto, `cancel_url` = carrinho, `Request.Scheme` correto atrás do Nginx por `ASPNETCORE_FORWARDEDHEADERS_ENABLED`); Stripe fora → página do pedido "Pagamento não aprovado"; sabotagem sem o `if` → 500. **139 testes** (branch `feat/stripe-gateway`, **sem push ainda**)
+- [ ] Pagar com o cartão `4242` no sandbox, a partir do site rodando no PC, e voltar para a página do pedido
+- [ ] Webhook `POST /webhooks/stripe` (assinatura, `ProcessedStripeEvents`, conferência de valor, transição pelo domínio)
+- [ ] Página de retorno `/orders/{id}/return` (só consulta)
 
 ## Checklist do M2
 
@@ -88,9 +99,9 @@
 
 ## Próximos passos
 
-1. **Revisão rápida (~15 min):** confirmar que o deploy do PR #44 rodou (migration `AddOrders` na VM, finalizar um pedido de teste em produção). O autor explica com as próprias palavras (a) o que acontece com o pedido e com o estoque se faltar o `CommitAsync` (o `await using` desfaz tudo) e (b) por que o curioso recebe 404 e não 403 (as duas ficaram em "não sei" em 08/10 e foram explicadas pelo Claude).
-2. **M3, parte 1 (configuração da Stripe):** pacote `Stripe.net` (conferir a versão e a documentação oficial), `StripeOptions` com `ValidateOnStart`, chave **de teste** em `dotnet user-secrets` (o autor digita no terminal; **nunca** no chat), `StripeSessionId` no `Order` + migration. Pronto quando: a aplicação não sobe sem a chave, e um teste prova isso.
-3. **M3, parte 2 (sessão do Checkout):** `IPaymentGateway` na Application, `StripePaymentGateway` na Infrastructure; "Finalizar" cria a sessão a partir do **snapshot** do pedido (`brl`, `metadata.order_id`, `expires_at` +30 min, chave de idempotência `session-{orderId}`) e redireciona o cliente. Pronto quando: pagar com o cartão `4242` no sandbox leva até a página de retorno (o estado do pedido ainda **não** muda: isso é do webhook).
+1. **Revisão rápida (~15 min):** o autor explica com as próprias palavras as 3 perguntas que ficaram em "não sei" em 09/10 e foram explicadas pelo Claude: (a) para que serve a chave de idempotência `session-{orderId}` (o "pedido por telefone" repetido) e por que o `expires_at` sai da data de **criação** do pedido; (b) por que devolver estoque não precisa do `Stock >= qty` (e qual é o perigo de verdade: devolver duas vezes); (c) por que, com a Stripe fora, o cliente vai para a página do pedido e não de volta ao checkout.
+2. **Fechar o PR `feat/stripe-gateway` (~45 min):** rodar o site no PC (chave de teste nos user-secrets), finalizar uma compra, pagar com o cartão `4242` e voltar para a página do pedido (que continua "Aguardando pagamento": quem muda o estado é o webhook). Depois push, PR, merge, deploy e o mesmo teste em produção. Pronto quando: a compra em produção chega na página da Stripe e volta.
+3. **M3, webhook parte 1:** tabela `ProcessedStripeEvents` (UNIQUE no `event.id`) + segredo `whsec_` em `StripeOptions` (user-secrets e `.env` da VM) + endpoint que verifica a assinatura e responde 400 sem ela. Pronto quando: um teste com evento assinado localmente passa e um sem assinatura recebe 400.
 
 ## Bloqueios
 
@@ -110,6 +121,10 @@ _Nenhum._
 - O `migrate` no deploy mostra `libgssapi_krb5.so.2: cannot open shared object file` (aviso do driver do PostgreSQL; já aparecia antes; a migration roda normalmente). Investigar no M6.
 - **Pedidos em produção seguram o estoque para sempre** (desde o PR #44): ainda não existe pagamento nem o job do D35 (libera pedidos `AwaitingPayment` sem `StripeSessionId` após 10 min). Loja de teste, risco baixo, mas o estoque dos kits pode ir zerando. Resolve no M3/M4.
 - O `CustomerId` do pedido é obrigatório no banco e no domínio; o `DEFINICOES.md` prevê torná-lo opcional quando houver exclusão de conta (v2).
+- **Validade da sessão da Stripe = criação do pedido + 31 min** (e não "agora + 30 min"): registrado no **ADR 0026** em 12/10, com `pagamentos.md` §6 e `DEFINICOES.md` atualizados.
+- **Estoque devolvido duas vezes:** se a compensação do `StartPaymentAsync` rodar ao mesmo tempo que outra liberação (job do D35, webhook `expired`), o `MarkFailed` sozinho não impede, porque o `Order` ainda não tem token de concorrência. Resolver no M4 (concorrência otimista, como pedem as regras).
+- **Melhoria futura (pedido do autor em 09/10):** quando a Stripe estiver fora, mostrar um aviso claro ("tente de novo em alguns minutos") e um jeito de refazer a compra a partir do pedido que falhou (hoje o carrinho já foi apagado e o cliente só vê "Pagamento não aprovado").
+- Pedido de teste em produção (09/10, Kit Zéfiro teclas de função) segura 1 unidade até existir o job do D35.
 - Os auxiliares dos testes de página (`TokenFrom`, `LoggedInClientAsync`) estão copiados em 3 classes (`CartPageTests`, `CheckoutPageTests`, `OrderPageTests`). Candidato a extrair para `Fixtures` quando aparecer a 4ª cópia.
 
 **Decisões de 06/10:** bloqueio após **3** tentativas (não 5), ciente de que facilita bloquear a conta de outra pessoa (5 min); chaves no PostgreSQL (ADR 0022); admin pelo comando também no PC e conta existente promovida (ADR 0023).
@@ -117,6 +132,15 @@ _Nenhum._
 **Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 09/10/2026: M3 parte 1 e 2, configuração da Stripe, sessão do Checkout e "Finalizar" levando à Stripe (3h)
+- Revisão de 08/10: `CommitAsync` (errou, depois acertou com a analogia do lápis e da caneta), 404 × 403 (acertou). Pedido de teste em produção confirmou o deploy do PR #44.
+- `StripeOptions` com `ValidateOnStart` e chave no `.env` da VM (PR #47); `StripeSessionId` + `AttachStripeSession` escrito pelo autor (PR #48; a primeira versão tinha as regras 2 e 3 trocadas, corrigido depois de rastrear o código).
+- Branch `feat/stripe-gateway` (3 commits, sem push): `IPaymentGateway` + `StripePaymentGateway` (`Stripe.net` 53.0.0), `StartPaymentAsync` com **compensação** escrito pelo autor (6 lacunas, todas certas), "Finalizar" redireciona para a Stripe. **139 testes.**
+- Conferido na documentação da Stripe: `ui_mode` padrão `hosted_page`, `expires_at` entre 30 min e 24 h, Pix de 10 s a 14 dias, chaves de idempotência (mesmos parâmetros, guardadas 24 h).
+- Sabotagens: sem `ValidateOnStart` (2 falhas), sem devolver o estoque, sem o `if` da falha da Stripe (500).
+- Tropeços: pasta `Paymens`; sabotagem deixada no lugar uma vez; CI do PR #47 falhou por ordem de `using` (resolvido com `dotnet format`); rotina pós-merge rodada antes do push (o `-d` recusou, corretamente).
+- Verificações: fail-fast (acertou), `.env` na VM (acertou), sessão repetida (parcial: pensou em "duas abas"; o caso real é a nova tentativa do servidor), compensação (acertou), idempotência, devolução sem `>=` e página do pedido com a Stripe fora (as 3 últimas em "não sei", explicadas pelo Claude). O autor diz que nada ficou confuso, mas as 3 vão para a revisão.
 
 ### 08/10/2026: pedido no banco, "Finalizar" com reserva atômica e **M2 concluído** (3h)
 - Revisão de 07/10: carrinho não reserva (acertou: "só garante na hora da compra"); escopos separados nos testes (não sabia; explicado e confirmado na pergunta seguinte).
@@ -190,17 +214,10 @@ _Nenhum._
 - Nova prática: uma pergunta de verificação a cada passo. Funcionou; ficaram poucas dúvidas.
 - Lição de git: voltar para a `main` e dar `git pull` logo após cada merge.
 
-### 30/09/2026 (tarde): revisão, Docker, VM e bootstrap (2h)
-- Revisão guiada: referências entre projetos e fluxo dos testes (5 perguntas; dúvidas esclarecidas).
-- Docker: Dockerfile + compose (PR #3).
-- VM: A1 sem capacidade → E2.1.Micro provisória (ADR 0020). Alias `ssh keycapstore`.
-- Bootstrap partes 1 a 4 rodadas na VM (PR #4): swap, fuso + atualizações, Docker, firewall/SSH/fail2ban. Idempotência comprovada. O fail2ban registrou uma tentativa de login de robô minutos após a VM ser criada.
-- Aprendizado: CRLF quebra scripts bash; `.editorconfig` com `[*.sh] end_of_line = lf` resolve na origem.
-- **Ficou confuso: praticamente toda a parte do script de bootstrap** (conceitos de Linux, firewall, SSH e bash). Causa provável: ritmo rápido demais no fim de uma sessão longa, com muitos conceitos novos. Revisar no início da próxima sessão (passo 1).
-
 ## Histórico
 
 _(sessões antigas resumidas em uma linha cada)_
 
+- **30/09/2026 (tarde, 2h):** Dockerfile + compose (PR #3), VM E2.1.Micro provisória (ADR 0020), bootstrap partes 1–4 (PR #4); CRLF quebra bash (`.editorconfig` com LF); o script de bootstrap ficou confuso e foi revisado depois.
 - **30/09/2026 (manhã, 2h):** ambiente (WSL 2, Docker, Stripe CLI), spike da Stripe, solution com 4 projetos, teste de arquitetura, smoke tests com Testcontainers, CI + ruleset na `main` (sempre branch + PR).
 - **29/09/2026:** definição do projeto (entrevista de arquitetura, `DEFINICOES.md`, `CLAUDE.md`, regras, comandos, ADRs). Nenhum código.

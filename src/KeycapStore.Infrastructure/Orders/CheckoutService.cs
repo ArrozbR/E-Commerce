@@ -1,4 +1,5 @@
 ﻿using KeycapStore.Application.Orders;
+using KeycapStore.Application.Payments;
 using KeycapStore.Domain.Orders;
 using KeycapStore.Infrastructure.Persistence;
 
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeycapStore.Infrastructure.Orders;
 
-internal sealed class CheckoutService(AppDbContext db, TimeProvider clock) : ICheckoutService
+internal sealed class CheckoutService(AppDbContext db, TimeProvider clock, IPaymentGateway payments) : ICheckoutService
 {
     public async Task<PlaceOrderResult> PlaceOrderAsync(string customerId, ShippingAddress shippingAddress, CancellationToken cancellationToken = default)
     {
@@ -45,5 +46,42 @@ internal sealed class CheckoutService(AppDbContext db, TimeProvider clock) : ICh
         await transaction.CommitAsync(cancellationToken);
 
         return PlaceOrderResult.Success(order.Id);
+    }
+
+    public async Task<StartPaymentResult> StartPaymentAsync(Guid orderId, string customerId, Uri successUrl, Uri cancelUrl, CancellationToken cancellationToken = default)
+    {
+        var order = await db.Orders.SingleOrDefaultAsync(o => o.Id == orderId && o.CustomerId == customerId, cancellationToken);
+        if (order is null)
+        {
+            return StartPaymentResult.Failure("Pedido não encontrado.");
+        }
+
+        CheckoutSession session;
+        try
+        {
+            session = await payments.CreateCheckoutSessionAsync(order, successUrl, cancelUrl, cancellationToken);
+        }
+        catch (PaymentGatewayException)
+        {
+            await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+
+            order.MarkFailed();
+            foreach (var item in order.Items.OrderBy(i => i.ProductId))
+            {
+                await db.Products
+                    .Where(p => p.Id == item.ProductId)
+                    .ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, p => p.Stock + item.Quantity), cancellationToken);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            return StartPaymentResult.Failure("Não foi possível iniciar o pagamento. Tente de novo em alguns minutos.");
+        }
+
+        order.AttachStripeSession(session.Id);
+        await db.SaveChangesAsync(cancellationToken);
+
+        return StartPaymentResult.Success(session.Url);
     }
 }

@@ -13,7 +13,6 @@ public class OrderPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
 {
     private const string Password = "Senha#Forte123";
 
-    // Kit Aurora (base), R$ 349,90 e 40 unidades no seed.
     private const string KitAurora = "6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e01";
 
     private static string TokenFrom(string html) =>
@@ -68,7 +67,8 @@ public class OrderPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
         }));
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
 
-        return response.Headers.Location!.OriginalString;
+        var orderId = Guid.Parse(response.Headers.Location!.Segments[^1]);
+        return $"/Orders/Details/{orderId}";
     }
 
     [Fact]

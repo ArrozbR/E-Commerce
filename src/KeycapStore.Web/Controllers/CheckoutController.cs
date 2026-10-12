@@ -37,6 +37,17 @@ public sealed class CheckoutController(ICheckoutService checkout) : Controller
             return View(model);
         }
 
-        return RedirectToAction("Details", "Orders", new { id = result.OrderId });
+        var orderId = result.OrderId!.Value;
+        var successUrl = new Uri(Url.Action("Details", "Orders", new { id = orderId }, Request.Scheme)!);
+        var cancelUrl = new Uri(Url.Action("Index", "Cart", null, Request.Scheme)!);
+
+        var payment = await checkout.StartPaymentAsync(orderId, CustomerId, successUrl, cancelUrl, cancellationToken);
+
+        if (!payment.Succeeded)
+        {
+            return RedirectToAction("Details", "Orders", new { id = orderId });
+        }
+
+        return Redirect(payment.PaymentUrl!.ToString());
     }
 }

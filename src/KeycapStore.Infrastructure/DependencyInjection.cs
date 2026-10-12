@@ -2,6 +2,7 @@
 using KeycapStore.Application.Catalog;
 using KeycapStore.Application.Identity;
 using KeycapStore.Application.Orders;
+using KeycapStore.Application.Payments;
 using KeycapStore.Infrastructure.Carts;
 using KeycapStore.Infrastructure.Catalog;
 using KeycapStore.Infrastructure.Identity;
@@ -41,6 +42,7 @@ public static class DependencyInjection
             .Bind(configuration.GetSection(StripeOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
+        services.AddSingleton<IPaymentGateway, StripePaymentGateway>();
 
         services.AddIdentityCore<IdentityUser>(options =>
         {
