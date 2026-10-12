@@ -1,6 +1,7 @@
 ﻿using KeycapStore.Domain.Carts;
 using KeycapStore.Domain.Catalog;
 using KeycapStore.Domain.Orders;
+using KeycapStore.Infrastructure.Payments;
 
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -17,6 +18,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Cart> Carts => Set<Cart>();
 
     public DbSet<Order> Orders => Set<Order>();
+
+    public DbSet<ProcessedStripeEvent> ProcessedStripeEvents => Set<ProcessedStripeEvent>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 

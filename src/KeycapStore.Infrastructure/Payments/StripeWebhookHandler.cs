@@ -1,24 +1,43 @@
 ﻿using KeycapStore.Application.Payments;
+using KeycapStore.Infrastructure.Persistence;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+
+using Npgsql;
 
 using Stripe;
 
 namespace KeycapStore.Infrastructure.Payments;
 
-internal sealed class StripeWebhookHandler(IOptions<StripeOptions> options) : IPaymentWebhookHandler
+internal sealed class StripeWebhookHandler(AppDbContext db, TimeProvider clock, IOptions<StripeOptions> options) : IPaymentWebhookHandler
 {
-    public Task<WebhookOutcome> HandleAsync(string payload, string signatureHeader, CancellationToken cancellationToken = default)
+    public async Task<WebhookOutcome> HandleAsync(string payload, string signatureHeader, CancellationToken cancellationToken = default)
     {
+        Event stripeEvent;
         try
         {
-            EventUtility.ConstructEvent(payload, signatureHeader, options.Value.WebhookSecret);
+            stripeEvent = EventUtility.ConstructEvent(payload, signatureHeader, options.Value.WebhookSecret);
         }
         catch (StripeException)
         {
-            return Task.FromResult(WebhookOutcome.InvalidSignature);
+            return WebhookOutcome.InvalidSignature;
         }
 
-        return Task.FromResult(WebhookOutcome.Accepted);
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+
+        db.ProcessedStripeEvents.Add(new ProcessedStripeEvent(stripeEvent.Id, stripeEvent.Type, clock.GetUtcNow()));
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            return WebhookOutcome.Duplicate;
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+
+        return WebhookOutcome.Accepted;
     }
 }
