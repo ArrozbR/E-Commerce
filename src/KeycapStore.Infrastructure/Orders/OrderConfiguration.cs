@@ -28,7 +28,9 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.StripeSessionId)
             .HasMaxLength(255);
 
-        // Token de concorrência: a coluna de sistema xmin do PostgreSQL muda a cada UPDATE da linha.
+        builder.Property(o => o.StripePaymentIntentId)
+            .HasMaxLength(255);
+
         builder.Property<uint>("Version")
             .IsRowVersion();
 

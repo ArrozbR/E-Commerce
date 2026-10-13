@@ -13,6 +13,7 @@ public sealed class Order
     public decimal ShippingFee { get; private set; }
     public decimal Total => Items.Sum(i => i.LineTotal) + ShippingFee;
     public string? StripeSessionId { get; private set; }
+    public string? StripePaymentIntentId { get; private set; }
 
     private Order()
     {
@@ -69,7 +70,6 @@ public sealed class Order
 
     public void ConfirmPayment()
     {
-        // Já pago: um segundo aviso de pagamento (outro evento da Stripe) não muda nada.
         if (Status is OrderStatus.Paid)
         {
             return;
@@ -111,5 +111,39 @@ public sealed class Order
         }
 
         Status = OrderStatus.Failed;
+    }
+
+
+    public void ConfirmLatePayment()
+    {
+        if (Status is not (OrderStatus.Expired or OrderStatus.Failed))
+        {
+            throw new InvalidOrderTransitionException(Status, OrderStatus.Paid);
+        }
+
+        Status = OrderStatus.Paid;
+    }
+
+    public void MarkOutOfStock(string paymentIntentId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(paymentIntentId);
+
+        if (Status is not (OrderStatus.Expired or OrderStatus.Failed))
+        {
+            throw new InvalidOrderTransitionException(Status, OrderStatus.PaidOutOfStock);
+        }
+
+        StripePaymentIntentId = paymentIntentId;
+        Status = OrderStatus.PaidOutOfStock;
+    }
+
+    public void MarkRefunded()
+    {
+        if (Status is not (OrderStatus.PaidOutOfStock))
+        {
+            throw new InvalidOrderTransitionException(Status, OrderStatus.Refunded);
+        }
+
+        Status = OrderStatus.Refunded;
     }
 }
