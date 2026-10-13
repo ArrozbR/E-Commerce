@@ -111,6 +111,17 @@ public class OrderTests
     }
 
     [Fact]
+    public void ConfirmPayment_WhenAlreadyPaid_DoesNothing()
+    {
+        var order = NewOrder();
+        order.ConfirmPayment();
+
+        order.ConfirmPayment();
+
+        Assert.Equal(OrderStatus.Paid, order.Status);
+    }
+
+    [Fact]
     public void ConfirmPayment_FromAwaitingConfirmation_GoesToPaid()
     {
         var order = NewOrder();
