@@ -1,4 +1,5 @@
 ﻿using KeycapStore.Application.Payments;
+using KeycapStore.Domain.Orders;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
@@ -43,9 +44,16 @@ internal sealed class StripeWebhookHandler(
             return WebhookOutcome.Duplicate;
         }
 
-        if (stripeEvent.Type == EventTypes.CheckoutSessionCompleted && stripeEvent.Data.Object is Session session)
+        if (stripeEvent.Data.Object is Session session)
         {
-            await ApplyCheckoutCompletedAsync(stripeEvent.Id, session, cancellationToken);
+            if (stripeEvent.Type == EventTypes.CheckoutSessionCompleted)
+            {
+                await ApplyCheckoutCompletedAsync(stripeEvent.Id, session, cancellationToken);
+            }
+            else if (stripeEvent.Type == EventTypes.CheckoutSessionExpired)
+            {
+                await ApplyCheckoutExpiredAsync(stripeEvent.Id, session, cancellationToken);
+            }
         }
 
         await transaction.CommitAsync(cancellationToken);
@@ -55,16 +63,9 @@ internal sealed class StripeWebhookHandler(
 
     private async Task ApplyCheckoutCompletedAsync(string eventId, Session session, CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(session.Metadata?.GetValueOrDefault("order_id"), out var orderId))
-        {
-            logger.LogWarning("Evento {EventId} sem order_id nos metadados; ignorado", eventId);
-            return;
-        }
-
-        var order = await db.Orders.SingleOrDefaultAsync(o => o.Id == orderId, cancellationToken);
+        var order = await FindOrderAsync(eventId, session, cancellationToken);
         if (order is null)
         {
-            logger.LogWarning("Evento {EventId} aponta para o pedido {OrderId}, que não existe; ignorado", eventId, orderId);
             return;
         }
 
@@ -85,5 +86,52 @@ internal sealed class StripeWebhookHandler(
 
         await db.SaveChangesAsync(cancellationToken);
         logger.LogInformation("Evento {EventId}: pedido {OrderId} agora está {Status}", eventId, order.Id, order.Status);
+    }
+
+    // A sessão expirou sem pagamento: o pedido vira Expired e o estoque reservado volta para a prateleira.
+    private async Task ApplyCheckoutExpiredAsync(string eventId, Session session, CancellationToken cancellationToken)
+    {
+        var order = await FindOrderAsync(eventId, session, cancellationToken);
+        if (order is null)
+        {
+            return;
+        }
+
+        // Já saiu de "aguardando pagamento" por outro caminho: nada a devolver (o estoque não volta duas vezes).
+        if (order.Status is not OrderStatus.AwaitingPayment)
+        {
+            logger.LogInformation("Evento {EventId}: pedido {OrderId} já está {Status}; expiração ignorada", eventId, order.Id, order.Status);
+            return;
+        }
+
+        order.Expire();
+        foreach (var item in order.Items.OrderBy(i => i.ProductId))
+        {
+            await db.Products
+                .Where(p => p.Id == item.ProductId)
+                .ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, p => p.Stock + item.Quantity), cancellationToken);
+        }
+
+        // O token de concorrência do pedido garante que, se outra transação mudou o pedido no meio do caminho,
+        // este SaveChanges falha e TUDO (inclusive a devolução do estoque acima) é desfeito.
+        await db.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Evento {EventId}: pedido {OrderId} expirado e estoque devolvido", eventId, order.Id);
+    }
+
+    private async Task<Order?> FindOrderAsync(string eventId, Session session, CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(session.Metadata?.GetValueOrDefault("order_id"), out var orderId))
+        {
+            logger.LogWarning("Evento {EventId} sem order_id nos metadados; ignorado", eventId);
+            return null;
+        }
+
+        var order = await db.Orders.SingleOrDefaultAsync(o => o.Id == orderId, cancellationToken);
+        if (order is null)
+        {
+            logger.LogWarning("Evento {EventId} aponta para o pedido {OrderId}, que não existe; ignorado", eventId, orderId);
+        }
+
+        return order;
     }
 }

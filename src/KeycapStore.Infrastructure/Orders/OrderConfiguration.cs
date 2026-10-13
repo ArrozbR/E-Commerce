@@ -28,6 +28,10 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.StripeSessionId)
             .HasMaxLength(255);
 
+        // Token de concorrência: a coluna de sistema xmin do PostgreSQL muda a cada UPDATE da linha.
+        builder.Property<uint>("Version")
+            .IsRowVersion();
+
         builder.OwnsOne(o => o.ShippingAddress, address =>
         {
             address.Property(a => a.RecipientName).HasColumnName("ShippingRecipientName").HasMaxLength(150);

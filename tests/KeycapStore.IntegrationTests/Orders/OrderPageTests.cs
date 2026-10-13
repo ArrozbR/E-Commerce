@@ -129,7 +129,6 @@ public class OrderPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
 
         Assert.Contains("\"status\":\"AwaitingPayment\"", await owner.GetStringAsync($"/orders/{orderId}/status"));
 
-        // A Stripe avisa: R$ 364,90 = 36490 centavos (Kit Aurora + frete para o PR).
         var payload = StripeWebhookSigner.CheckoutCompleted("evt_test_status_page", orderId, 36490);
         var webhook = new HttpRequestMessage(HttpMethod.Post, "/webhooks/stripe")
         {

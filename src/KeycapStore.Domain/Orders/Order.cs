@@ -69,6 +69,12 @@ public sealed class Order
 
     public void ConfirmPayment()
     {
+        // Já pago: um segundo aviso de pagamento (outro evento da Stripe) não muda nada.
+        if (Status is OrderStatus.Paid)
+        {
+            return;
+        }
+
         if (Status is not (OrderStatus.AwaitingPayment or OrderStatus.AwaitingConfirmation))
         {
             throw new InvalidOrderTransitionException(Status, OrderStatus.Paid);
