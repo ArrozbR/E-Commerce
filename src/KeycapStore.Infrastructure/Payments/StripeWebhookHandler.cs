@@ -46,9 +46,13 @@ internal sealed class StripeWebhookHandler(
 
         if (stripeEvent.Data.Object is Session session)
         {
-            if (stripeEvent.Type == EventTypes.CheckoutSessionCompleted)
+            if (stripeEvent.Type is EventTypes.CheckoutSessionCompleted or EventTypes.CheckoutSessionAsyncPaymentSucceeded)
             {
-                await ApplyCheckoutCompletedAsync(stripeEvent.Id, session, cancellationToken);
+                await ApplyPaymentAsync(stripeEvent.Id, session, cancellationToken);
+            }
+            else if (stripeEvent.Type == EventTypes.CheckoutSessionAsyncPaymentFailed)
+            {
+                await ApplyAsyncPaymentFailedAsync(stripeEvent.Id, session, cancellationToken);
             }
             else if (stripeEvent.Type == EventTypes.CheckoutSessionExpired)
             {
@@ -61,7 +65,7 @@ internal sealed class StripeWebhookHandler(
         return WebhookOutcome.Accepted;
     }
 
-    private async Task ApplyCheckoutCompletedAsync(string eventId, Session session, CancellationToken cancellationToken)
+    private async Task ApplyPaymentAsync(string eventId, Session session, CancellationToken cancellationToken)
     {
         var order = await FindOrderAsync(eventId, session, cancellationToken);
         if (order is null)
@@ -79,7 +83,7 @@ internal sealed class StripeWebhookHandler(
         {
             order.ConfirmPayment();
         }
-        else if (session.PaymentStatus == "unpaid")
+        else if (session.PaymentStatus == "unpaid" && order.Status is OrderStatus.AwaitingPayment)
         {
             order.MarkAwaitingConfirmation();
         }
@@ -88,7 +92,27 @@ internal sealed class StripeWebhookHandler(
         logger.LogInformation("Evento {EventId}: pedido {OrderId} agora está {Status}", eventId, order.Id, order.Status);
     }
 
-    // A sessão expirou sem pagamento: o pedido vira Expired e o estoque reservado volta para a prateleira.
+    private async Task ApplyAsyncPaymentFailedAsync(string eventId, Session session, CancellationToken cancellationToken)
+    {
+        var order = await FindOrderAsync(eventId, session, cancellationToken);
+        if (order is null)
+        {
+            return;
+        }
+
+        if (order.Status is not (OrderStatus.AwaitingConfirmation or OrderStatus.AwaitingPayment))
+        {
+            logger.LogInformation("Evento {EventId}: pedido {OrderId} já está {Status}; falha ignorada", eventId, order.Id, order.Status);
+            return;
+        }
+
+        order.MarkFailed();
+        await ReleaseStockAsync(order, cancellationToken);
+
+        await db.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Evento {EventId}: pagamento do pedido {OrderId} falhou e o estoque foi devolvido", eventId, order.Id);
+    }
+
     private async Task ApplyCheckoutExpiredAsync(string eventId, Session session, CancellationToken cancellationToken)
     {
         var order = await FindOrderAsync(eventId, session, cancellationToken);
@@ -97,7 +121,6 @@ internal sealed class StripeWebhookHandler(
             return;
         }
 
-        // Já saiu de "aguardando pagamento" por outro caminho: nada a devolver (o estoque não volta duas vezes).
         if (order.Status is not OrderStatus.AwaitingPayment)
         {
             logger.LogInformation("Evento {EventId}: pedido {OrderId} já está {Status}; expiração ignorada", eventId, order.Id, order.Status);
@@ -105,17 +128,20 @@ internal sealed class StripeWebhookHandler(
         }
 
         order.Expire();
+        await ReleaseStockAsync(order, cancellationToken);
+
+        await db.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Evento {EventId}: pedido {OrderId} expirado e estoque devolvido", eventId, order.Id);
+    }
+
+    private async Task ReleaseStockAsync(Order order, CancellationToken cancellationToken)
+    {
         foreach (var item in order.Items.OrderBy(i => i.ProductId))
         {
             await db.Products
                 .Where(p => p.Id == item.ProductId)
                 .ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, p => p.Stock + item.Quantity), cancellationToken);
         }
-
-        // O token de concorrência do pedido garante que, se outra transação mudou o pedido no meio do caminho,
-        // este SaveChanges falha e TUDO (inclusive a devolução do estoque acima) é desfeito.
-        await db.SaveChangesAsync(cancellationToken);
-        logger.LogInformation("Evento {EventId}: pedido {OrderId} expirado e estoque devolvido", eventId, order.Id);
     }
 
     private async Task<Order?> FindOrderAsync(string eventId, Session session, CancellationToken cancellationToken)

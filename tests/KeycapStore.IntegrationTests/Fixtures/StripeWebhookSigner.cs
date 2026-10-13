@@ -24,7 +24,6 @@ public static class StripeWebhookSigner
         }
         """;
 
-    // Um checkout.session.expired: a sessão venceu sem pagamento.
     public static string CheckoutExpired(string id, Guid orderId) => $$"""
         {
           "id": "{{id}}",
@@ -37,6 +36,25 @@ public static class StripeWebhookSigner
               "object": "checkout.session",
               "status": "expired",
               "payment_status": "unpaid",
+              "metadata": { "order_id": "{{orderId}}" }
+            }
+          }
+        }
+        """;
+
+    public static string AsyncPayment(string id, string type, Guid orderId, long amountTotal, string paymentStatus) => $$"""
+        {
+          "id": "{{id}}",
+          "object": "event",
+          "api_version": "{{Stripe.StripeConfiguration.ApiVersion}}",
+          "type": "{{type}}",
+          "data": {
+            "object": {
+              "id": "cs_test_{{orderId:N}}",
+              "object": "checkout.session",
+              "amount_total": {{amountTotal}},
+              "currency": "brl",
+              "payment_status": "{{paymentStatus}}",
               "metadata": { "order_id": "{{orderId}}" }
             }
           }
