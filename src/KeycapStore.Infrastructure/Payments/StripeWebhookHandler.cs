@@ -82,7 +82,7 @@ internal sealed class StripeWebhookHandler(
 
         if (session.PaymentStatus == "paid")
         {
-            order.ConfirmPayment();
+            await ApplyPaidAsync(eventId, order, session, cancellationToken);
         }
         else if (session.PaymentStatus == "unpaid" && order.Status is OrderStatus.AwaitingPayment)
         {
@@ -91,6 +91,30 @@ internal sealed class StripeWebhookHandler(
 
         await db.SaveChangesAsync(cancellationToken);
         logger.LogInformation("Evento {EventId}: pedido {OrderId} agora está {Status}", eventId, order.Id, order.Status);
+    }
+    private async Task ApplyPaidAsync(string eventId, Order order, Session session, CancellationToken cancellationToken)
+    {
+        if (order.Status is OrderStatus.AwaitingPayment or OrderStatus.AwaitingConfirmation or OrderStatus.Paid)
+        {
+            order.ConfirmPayment();
+        }
+        else if (order.Status is OrderStatus.Expired or OrderStatus.Failed)
+        {
+            if (await db.TryReserveStockAsync(order, cancellationToken))
+            {
+                order.ConfirmLatePayment();
+            }
+            else
+            {
+                order.MarkOutOfStock(session.PaymentIntentId);
+
+                logger.LogError("Evento {EventId}: pedido {OrderId} foi pago depois de liberar a reserva e não há estoque; reembolso necessário", eventId, order.Id);
+            }
+        }
+        else
+        {
+            logger.LogInformation("Evento {EventId}: pedido {OrderId} já está {Status}; pagamento repetido ignorado", eventId, order.Id, order.Status);
+        }
     }
 
     private async Task ApplyAsyncPaymentFailedAsync(string eventId, Session session, CancellationToken cancellationToken)

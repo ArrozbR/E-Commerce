@@ -55,6 +55,7 @@ public static class StripeWebhookSigner
               "amount_total": {{amountTotal}},
               "currency": "brl",
               "payment_status": "{{paymentStatus}}",
+              "payment_intent": "pi_test_{{orderId:N}}",
               "metadata": { "order_id": "{{orderId}}" }
             }
           }
@@ -74,6 +75,7 @@ public static class StripeWebhookSigner
               "amount_total": {{amountTotal}},
               "currency": "{{currency}}",
               "payment_status": "{{paymentStatus}}",
+              "payment_intent": "pi_test_{{orderId:N}}",
               "metadata": { "order_id": "{{orderId}}" }
             }
           }
