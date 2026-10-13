@@ -16,4 +16,27 @@ internal static class StockRelease
                 .ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, p => p.Stock + item.Quantity), cancellationToken);
         }
     }
+
+    public static async Task<bool> TryReserveStockAsync(this AppDbContext db, Order order, CancellationToken cancellationToken)
+    {
+        var transaction = db.Database.CurrentTransaction
+            ?? throw new InvalidOperationException("A reserva de estoque precisa de uma transação aberta.");
+
+        await transaction.CreateSavepointAsync("reserve", cancellationToken);
+
+        foreach (var item in order.Items.OrderBy(i => i.ProductId))
+        {
+            var reserved = await db.Products
+                .Where(p => p.Id == item.ProductId && p.Stock >= item.Quantity)
+                .ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, p => p.Stock - item.Quantity), cancellationToken);
+
+            if (reserved == 0)
+            {
+                await transaction.RollbackToSavepointAsync("reserve", cancellationToken);
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

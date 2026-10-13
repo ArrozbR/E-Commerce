@@ -220,4 +220,107 @@ public class OrderTests
         Assert.Equal(OrderStatus.Paid, ex.From);
         Assert.Equal(OrderStatus.Paid, order.Status);
     }
+
+    [Fact]
+    public void ConfirmLatePayment_FromExpired_GoesToPaid()
+    {
+        var order = NewOrder();
+        order.Expire();
+
+        order.ConfirmLatePayment();
+
+        Assert.Equal(OrderStatus.Paid, order.Status);
+    }
+
+    [Fact]
+    public void ConfirmLatePayment_FromFailed_GoesToPaid()
+    {
+        var order = NewOrder();
+        order.MarkFailed();
+
+        order.ConfirmLatePayment();
+
+        Assert.Equal(OrderStatus.Paid, order.Status);
+    }
+
+    [Fact]
+    public void ConfirmLatePayment_WhenAwaitingPayment_Throws()
+    {
+        var order = NewOrder();
+
+        var ex = Assert.Throws<InvalidOrderTransitionException>(order.ConfirmLatePayment);
+
+        Assert.Equal(OrderStatus.AwaitingPayment, ex.From);
+        Assert.Equal(OrderStatus.AwaitingPayment, order.Status);
+    }
+
+    [Fact]
+    public void MarkOutOfStock_FromExpired_GoesToPaidOutOfStock_AndKeepsThePaymentIntent()
+    {
+        var order = NewOrder();
+        order.Expire();
+
+        order.MarkOutOfStock("pi_test_123");
+
+        Assert.Equal(OrderStatus.PaidOutOfStock, order.Status);
+        Assert.Equal("pi_test_123", order.StripePaymentIntentId);
+    }
+
+    [Fact]
+    public void MarkOutOfStock_FromFailed_GoesToPaidOutOfStock()
+    {
+        var order = NewOrder();
+        order.MarkFailed();
+
+        order.MarkOutOfStock("pi_test_123");
+
+        Assert.Equal(OrderStatus.PaidOutOfStock, order.Status);
+    }
+
+    [Fact]
+    public void MarkOutOfStock_WhenPaid_Throws()
+    {
+        var order = NewOrder();
+        order.ConfirmPayment();
+
+        var ex = Assert.Throws<InvalidOrderTransitionException>(() => order.MarkOutOfStock("pi_test_123"));
+
+        Assert.Equal(OrderStatus.Paid, ex.From);
+        Assert.Equal(OrderStatus.Paid, order.Status);
+        Assert.Null(order.StripePaymentIntentId);
+    }
+
+    [Fact]
+    public void MarkOutOfStock_WithoutPaymentIntent_Throws()
+    {
+        var order = NewOrder();
+        order.Expire();
+
+        Assert.Throws<ArgumentException>(() => order.MarkOutOfStock(" "));
+        Assert.Equal(OrderStatus.Expired, order.Status);
+    }
+
+    [Fact]
+    public void MarkRefunded_FromPaidOutOfStock_GoesToRefunded()
+    {
+        var order = NewOrder();
+        order.Expire();
+        order.MarkOutOfStock("pi_test_123");
+
+        order.MarkRefunded();
+
+        Assert.Equal(OrderStatus.Refunded, order.Status);
+    }
+
+    [Fact]
+    public void MarkRefunded_WhenPaid_Throws()
+    {
+        var order = NewOrder();
+        order.ConfirmPayment();
+
+        var ex = Assert.Throws<InvalidOrderTransitionException>(order.MarkRefunded);
+
+        Assert.Equal(OrderStatus.Paid, ex.From);
+        Assert.Equal(OrderStatus.Paid, order.Status);
+    }
 }

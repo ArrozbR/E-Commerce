@@ -130,6 +130,10 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
+                    b.Property<string>("StripePaymentIntentId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<string>("StripeSessionId")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
