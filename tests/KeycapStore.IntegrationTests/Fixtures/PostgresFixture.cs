@@ -1,5 +1,6 @@
 ﻿using KeycapStore.Application.Payments;
 using KeycapStore.Infrastructure;
+using KeycapStore.Infrastructure.Orders;
 
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -24,7 +25,11 @@ public sealed class PostgresFixture : IAsyncLifetime
         builder.UseSetting("ConnectionStrings:Default", Container.GetConnectionString());
         builder.UseSetting("Stripe:SecretKey", "sk_test_fake_key_for_tests");
         builder.UseSetting("Stripe:WebhookSecret", StripeWebhookSigner.TestSecret);
-        builder.ConfigureTestServices(services => services.AddSingleton<IPaymentGateway>(new FakePaymentGateway()));
+        builder.ConfigureTestServices(services =>
+        {
+            services.AddSingleton<IPaymentGateway>(new FakePaymentGateway());
+            services.Remove(services.Single(d => d.ImplementationType == typeof(OrphanOrderJob)));
+        });
     });
 
     public async Task<WebApplicationFactory<Program>> CreateMigratedFactoryAsync()
