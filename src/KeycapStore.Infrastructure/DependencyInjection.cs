@@ -37,6 +37,8 @@ public static class DependencyInjection
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<ICheckoutService, CheckoutService>();
         services.AddScoped<IOrderQueries, OrderQueries>();
+        services.AddScoped<IOrphanOrderReleaser, OrphanOrderReleaser>();
+        services.AddHostedService<OrphanOrderJob>();
         services.TryAddSingleton(TimeProvider.System);
         services.AddOptions<StripeOptions>()
             .Bind(configuration.GetSection(StripeOptions.SectionName))
