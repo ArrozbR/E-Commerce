@@ -1,5 +1,6 @@
 ﻿using KeycapStore.Application.Payments;
 using KeycapStore.Domain.Orders;
+using KeycapStore.Infrastructure.Orders;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
@@ -107,7 +108,7 @@ internal sealed class StripeWebhookHandler(
         }
 
         order.MarkFailed();
-        await ReleaseStockAsync(order, cancellationToken);
+        await db.ReleaseStockAsync(order, cancellationToken);
 
         await db.SaveChangesAsync(cancellationToken);
         logger.LogInformation("Evento {EventId}: pagamento do pedido {OrderId} falhou e o estoque foi devolvido", eventId, order.Id);
@@ -128,20 +129,10 @@ internal sealed class StripeWebhookHandler(
         }
 
         order.Expire();
-        await ReleaseStockAsync(order, cancellationToken);
+        await db.ReleaseStockAsync(order, cancellationToken);
 
         await db.SaveChangesAsync(cancellationToken);
         logger.LogInformation("Evento {EventId}: pedido {OrderId} expirado e estoque devolvido", eventId, order.Id);
-    }
-
-    private async Task ReleaseStockAsync(Order order, CancellationToken cancellationToken)
-    {
-        foreach (var item in order.Items.OrderBy(i => i.ProductId))
-        {
-            await db.Products
-                .Where(p => p.Id == item.ProductId)
-                .ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, p => p.Stock + item.Quantity), cancellationToken);
-        }
     }
 
     private async Task<Order?> FindOrderAsync(string eventId, Session session, CancellationToken cancellationToken)

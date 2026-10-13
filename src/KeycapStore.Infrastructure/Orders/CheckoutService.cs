@@ -66,12 +66,7 @@ internal sealed class CheckoutService(AppDbContext db, TimeProvider clock, IPaym
             await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
 
             order.MarkFailed();
-            foreach (var item in order.Items.OrderBy(i => i.ProductId))
-            {
-                await db.Products
-                    .Where(p => p.Id == item.ProductId)
-                    .ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, p => p.Stock + item.Quantity), cancellationToken);
-            }
+            await db.ReleaseStockAsync(order, cancellationToken);
 
             await db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
