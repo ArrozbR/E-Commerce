@@ -110,4 +110,42 @@ public class CartPageTests(PostgresFixture postgres) : IClassFixture<PostgresFix
 
         Assert.Contains("Seu carrinho está vazio.", WebUtility.HtmlDecode(await client.GetStringAsync("/Cart")));
     }
+
+    [Fact]
+    public async Task TamperedCartRequests_GetClientErrors_InsteadOf500()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var client = await LoggedInClientAsync(factory, "curioso@example.com");
+
+        var token = TokenFrom(await client.GetStringAsync("/Catalog"));
+        var unknownProduct = await client.PostAsync("/Cart/Add", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["productId"] = Guid.NewGuid().ToString(),
+            ["__RequestVerificationToken"] = token,
+        }));
+        Assert.Equal(HttpStatusCode.NotFound, unknownProduct.StatusCode);
+
+        await client.PostAsync("/Cart/Add", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["productId"] = KitAurora,
+            ["__RequestVerificationToken"] = token,
+        }));
+
+        token = TokenFrom(await client.GetStringAsync("/Cart"));
+        var zero = await client.PostAsync("/Cart/ChangeQuantity", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["productId"] = KitAurora,
+            ["quantity"] = "0",
+            ["__RequestVerificationToken"] = token,
+        }));
+        Assert.Equal(HttpStatusCode.BadRequest, zero.StatusCode);
+
+        var notInCart = await client.PostAsync("/Cart/ChangeQuantity", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["productId"] = Guid.NewGuid().ToString(),
+            ["quantity"] = "2",
+            ["__RequestVerificationToken"] = token,
+        }));
+        Assert.Equal(HttpStatusCode.NotFound, notInCart.StatusCode);
+    }
 }

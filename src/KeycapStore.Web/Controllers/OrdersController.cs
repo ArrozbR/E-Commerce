@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 
 using KeycapStore.Application.Orders;
+using KeycapStore.Web.Filters;
 using KeycapStore.Web.Models;
 
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KeycapStore.Web.Controllers;
 
 [Authorize]
+[DomainExceptionFilter]
 public sealed class OrdersController(IOrderQueries orders) : Controller
 {
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;

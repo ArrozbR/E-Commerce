@@ -2,6 +2,7 @@
 
 using KeycapStore.Application.Orders;
 using KeycapStore.Domain.Orders;
+using KeycapStore.Web.Filters;
 using KeycapStore.Web.Models;
 
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KeycapStore.Web.Controllers;
 
 [Authorize]
+[DomainExceptionFilter]
 public sealed class CheckoutController(ICheckoutService checkout) : Controller
 {
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
