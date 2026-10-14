@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 
 using KeycapStore.Application.Identity;
+using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace KeycapStore.Infrastructure.Identity;
 
 public sealed record CreateAdminResult(bool Succeeded, string? GeneratedPassword, IReadOnlyList<string> Errors);
+public sealed record ResetAdminPasswordResult(bool Succeeded, string? NewPassword, IReadOnlyList<string> Errors);
 
 public static class AdminCommand
 {
@@ -54,6 +56,42 @@ public static class AdminCommand
 
         return new CreateAdminResult(true, generatedPassword, []);
     }
+    public static async Task<ResetAdminPasswordResult> ResetAdminPasswordAsync(this IServiceProvider services, string email)
+    {
+        await using var scope = services.CreateAsyncScope();
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var user = await users.FindByEmailAsync(email);
+        if (user is null || !await users.IsInRoleAsync(user, AdminRole))
+        {
+            return new ResetAdminPasswordResult(false, null, ["Não existe admin com esse e-mail."]);
+        }
+
+        var newPassword = GeneratePassword();
+
+        await using var transaction = await db.Database.BeginTransactionAsync();
+
+        var removed = await users.RemovePasswordAsync(user);
+        if (!removed.Succeeded)
+        {
+            return ResetFailure(removed);
+        }
+
+        var added = await users.AddPasswordAsync(user, newPassword);
+        if (!added.Succeeded)
+        {
+            return ResetFailure(added);
+        }
+
+        await transaction.CommitAsync();
+
+        return new ResetAdminPasswordResult(true, newPassword, []);
+    }
+
+    private static ResetAdminPasswordResult ResetFailure(IdentityResult result) =>
+        new(false, null, [.. result.Errors.Select(e => e.Description).Distinct()]);
+
 
     private static CreateAdminResult Failure(IdentityResult result) =>
         new(false, null, [.. result.Errors.Select(e => e.Description).Distinct()]);
