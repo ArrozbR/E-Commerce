@@ -28,7 +28,7 @@ public sealed class PostgresFixture : IAsyncLifetime
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<IPaymentGateway>(new FakePaymentGateway());
-            services.Remove(services.Single(d => d.ImplementationType == typeof(OrphanOrderJob)));
+            services.Remove(services.Single(d => d.ImplementationType == typeof(OrderMaintenanceJob)));
         });
     });
 
