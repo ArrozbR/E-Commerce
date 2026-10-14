@@ -29,7 +29,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 | Checkout | Endereço de entrega digitado no checkout, com **frete por estado** (grátis no Centro-Oeste, SP e RJ; R$ 15,00 nos demais; ADR 0024). Clicar em "Finalizar" cria o pedido e **reserva o estoque**. |
 | Pagamento | **Stripe Checkout hospedado**, com **cartão e Pix**. |
 | Resultado | Página de retorno que consulta o próprio backend até o status mudar. |
-| Envio | Admin avança `Pago → EmSeparacao → Enviado → Entregue` por **endpoints de admin mínimos** (sem interface), autorizados pelo papel `Admin`. |
+| Envio | Admin avança `Pago → EmSeparacao → Enviado → Entregue` por **endpoints de admin mínimos** ~~(sem interface)~~, com **uma página mínima de envio** (ADR 0028), autorizados pelo papel `Admin`. |
 | Admin | Primeiro admin criado pelo comando `criar-admin`. |
 | Operação | Deploy na Oracle Cloud, CI/CD, monitoramento, backups. |
 
@@ -436,7 +436,7 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 | D02 | Modo teste, pronto para produção | Dinheiro real |
 | D03 | Keycaps em lotes limitados, marcas fictícias, sem variações, sem pré-venda | Café, prints, livros, produto digital |
 | D04 | Catálogo público; conta obrigatória para comprar | Catálogo fechado; compra como convidado |
-| D05 | Produtos via seed; endpoints de admin só para o envio (na v1; tela de admin com cadastro de produtos na v2, ADR 0025) | Interface de admin na v1 |
+| D05 | Produtos via seed; endpoints de admin só para o envio, com uma página mínima de envio (ADR 0028) (na v1; tela de admin com cadastro de produtos na v2, ADR 0025) | Interface de admin completa na v1 |
 | D06 | ~~Frete fixo~~ Frete por estado (ADR 0024); endereço como snapshot no pedido | Integração com Correios ou Melhor Envio |
 | D07 | Stripe Checkout hospedado (Payment Element na ~~v3~~ v2, ADR 0025) | Payment Element na v1 |
 | D08 | Cartão + Pix; o handler decide pelo `payment_status` | Boleto |
