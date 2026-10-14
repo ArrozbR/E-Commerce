@@ -22,6 +22,7 @@ else
                 <th class="text-end">Total</th>
                 <th>Entrega</th>
                 <th>Situação</th>
+                <th>Ação</th>
             </tr>
         </thead>
         <tbody>
@@ -51,6 +52,27 @@ else
                         @if (order.TrackingCode is not null)
                         {
                             <br /><small>Rastreio: @order.TrackingCode</small>
+                        }
+                    </td>
+                    <td>
+                        @if (order.Status == KeycapStore.Domain.Orders.OrderStatus.Paid)
+                        {
+                            <form asp-action="StartPicking" asp-route-id="@order.Id" method="post">
+                                <button type="submit" class="btn btn-sm btn-primary">Iniciar separação</button>
+                            </form>
+                        }
+                        else if (order.Status == KeycapStore.Domain.Orders.OrderStatus.Picking)
+                        {
+                            <form asp-action="Ship" asp-route-id="@order.Id" method="post">
+                                <input name="trackingCode" class="form-control form-control-sm mb-1" placeholder="Código de rastreio" maxlength="@KeycapStore.Domain.Orders.Order.MaxTrackingCodeLength" required />
+                                <button type="submit" class="btn btn-sm btn-primary">Marcar como enviado</button>
+                            </form>
+                        }
+                        else if (order.Status == KeycapStore.Domain.Orders.OrderStatus.Shipped)
+                        {
+                            <form asp-action="Deliver" asp-route-id="@order.Id" method="post">
+                                <button type="submit" class="btn btn-sm btn-success">Marcar como entregue</button>
+                            </form>
                         }
                     </td>
                 </tr>

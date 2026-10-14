@@ -14,7 +14,7 @@ public sealed class DomainExceptionFilterAttribute : ExceptionFilterAttribute
         int? statusCode = context.Exception switch
         {
             InvalidOrderTransitionException => StatusCodes.Status409Conflict,
-            ProductNotFoundException or CartItemNotFoundException => StatusCodes.Status404NotFound,
+            ProductNotFoundException or CartItemNotFoundException or OrderNotFoundException => StatusCodes.Status404NotFound,
             ArgumentException => StatusCodes.Status400BadRequest,
             _ => null,
         };

@@ -10,7 +10,7 @@ namespace KeycapStore.Web.Controllers;
 [Authorize(Roles = Roles.Admin)]
 [DomainExceptionFilter]
 [Route("admin/orders")]
-public sealed class AdminOrdersController(IAdminOrderQueries orders) : Controller
+public sealed class AdminOrdersController(IAdminOrderQueries orders, IShippingService shipping) : Controller
 {
     [HttpGet("")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
@@ -18,5 +18,29 @@ public sealed class AdminOrdersController(IAdminOrderQueries orders) : Controlle
         var queue = await orders.GetShippingQueueAsync(cancellationToken);
 
         return View(queue);
+    }
+
+    [HttpPost("{id:guid}/start-picking")]
+    public async Task<IActionResult> StartPicking(Guid id, CancellationToken cancellationToken)
+    {
+        await shipping.StartPickingAsync(id, cancellationToken);
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("{id:guid}/ship")]
+    public async Task<IActionResult> Ship(Guid id, string trackingCode, CancellationToken cancellationToken)
+    {
+        await shipping.ShipAsync(id, trackingCode, cancellationToken);
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("{id:guid}/deliver")]
+    public async Task<IActionResult> Deliver(Guid id, CancellationToken cancellationToken)
+    {
+        await shipping.DeliverAsync(id, cancellationToken);
+
+        return RedirectToAction(nameof(Index));
     }
 }
