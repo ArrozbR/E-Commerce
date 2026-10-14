@@ -28,4 +28,19 @@ internal sealed class StripePaymentGateway(IOptions<StripeOptions> options) : IP
             throw new PaymentGatewayException("A Stripe recusou criar a sessão de pagamento.", ex);
         }
     }
+
+    public async Task RefundAsync(Guid orderId, string paymentIntentId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await new RefundService(_client).CreateAsync(
+                StripeRefundFactory.BuildOptions(paymentIntentId),
+                StripeRefundFactory.BuildRequestOptions(orderId),
+                cancellationToken);
+        }
+        catch (StripeException ex)
+        {
+            throw new PaymentGatewayException("A Stripe recusou o reembolso.", ex);
+        }
+    }
 }

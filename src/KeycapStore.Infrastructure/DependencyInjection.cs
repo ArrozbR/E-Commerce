@@ -38,7 +38,7 @@ public static class DependencyInjection
         services.AddScoped<ICheckoutService, CheckoutService>();
         services.AddScoped<IOrderQueries, OrderQueries>();
         services.AddScoped<IOrphanOrderReleaser, OrphanOrderReleaser>();
-        services.AddHostedService<OrphanOrderJob>();
+        services.AddHostedService<OrderMaintenanceJob>();
         services.TryAddSingleton(TimeProvider.System);
         services.AddOptions<StripeOptions>()
             .Bind(configuration.GetSection(StripeOptions.SectionName))
@@ -46,6 +46,7 @@ public static class DependencyInjection
             .ValidateOnStart();
         services.AddSingleton<IPaymentGateway, StripePaymentGateway>();
         services.AddScoped<IPaymentWebhookHandler, StripeWebhookHandler>();
+        services.AddScoped<IOutOfStockRefunder, OutOfStockRefunder>();
 
         services.AddIdentityCore<IdentityUser>(options =>
         {
