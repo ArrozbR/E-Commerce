@@ -323,4 +323,105 @@ public class OrderTests
         Assert.Equal(OrderStatus.Paid, ex.From);
         Assert.Equal(OrderStatus.Paid, order.Status);
     }
+
+    private static Order PaidOrder()
+    {
+        var order = NewOrder();
+        order.ConfirmPayment();
+        return order;
+    }
+
+    [Fact]
+    public void StartPicking_FromPaid_GoesToPicking()
+    {
+        var order = PaidOrder();
+
+        order.StartPicking();
+
+        Assert.Equal(OrderStatus.Picking, order.Status);
+    }
+
+    [Fact]
+    public void StartPicking_WhenAwaitingPayment_Throws()
+    {
+        var order = NewOrder();
+
+        var ex = Assert.Throws<InvalidOrderTransitionException>(order.StartPicking);
+
+        Assert.Equal(OrderStatus.AwaitingPayment, ex.From);
+        Assert.Equal(OrderStatus.AwaitingPayment, order.Status);
+    }
+
+    [Fact]
+    public void MarkShipped_FromPicking_GoesToShipped_AndKeepsTheTrackingCode()
+    {
+        var order = PaidOrder();
+        order.StartPicking();
+
+        order.MarkShipped("BR123456789");
+
+        Assert.Equal(OrderStatus.Shipped, order.Status);
+        Assert.Equal("BR123456789", order.TrackingCode);
+    }
+
+    [Fact]
+    public void MarkShipped_WhenNotPickedYet_Throws()
+    {
+        var order = PaidOrder();
+
+        var ex = Assert.Throws<InvalidOrderTransitionException>(() => order.MarkShipped("BR123456789"));
+
+        Assert.Equal(OrderStatus.Paid, ex.From);
+        Assert.Equal(OrderStatus.Paid, order.Status);
+        Assert.Null(order.TrackingCode);
+    }
+
+    [Fact]
+    public void MarkShipped_WithoutTrackingCode_Throws()
+    {
+        var order = PaidOrder();
+        order.StartPicking();
+
+        Assert.Throws<ArgumentException>(() => order.MarkShipped(" "));
+        Assert.Equal(OrderStatus.Picking, order.Status);
+    }
+
+    [Fact]
+    public void MarkShipped_TrackingCodeAtTheLimit_IsAccepted_AndOneMoreIsNot()
+    {
+        var accepted = PaidOrder();
+        accepted.StartPicking();
+        var refused = PaidOrder();
+        refused.StartPicking();
+
+        accepted.MarkShipped(new string('A', Order.MaxTrackingCodeLength));
+
+        Assert.Equal(OrderStatus.Shipped, accepted.Status);
+        Assert.Throws<ArgumentOutOfRangeException>(() => refused.MarkShipped(new string('A', Order.MaxTrackingCodeLength + 1)));
+        Assert.Equal(OrderStatus.Picking, refused.Status);
+    }
+
+    [Fact]
+    public void MarkDelivered_FromShipped_GoesToDelivered()
+    {
+        var order = PaidOrder();
+        order.StartPicking();
+        order.MarkShipped("BR123456789");
+
+        order.MarkDelivered();
+
+        Assert.Equal(OrderStatus.Delivered, order.Status);
+    }
+
+    [Fact]
+    public void MarkDelivered_WhenPicking_Throws()
+    {
+        var order = PaidOrder();
+        order.StartPicking();
+
+        var ex = Assert.Throws<InvalidOrderTransitionException>(order.MarkDelivered);
+
+        Assert.Equal(OrderStatus.Picking, ex.From);
+        Assert.Equal(OrderStatus.Picking, order.Status);
+    }
 }

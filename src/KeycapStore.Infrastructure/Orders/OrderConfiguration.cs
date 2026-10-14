@@ -31,6 +31,9 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.StripePaymentIntentId)
             .HasMaxLength(255);
 
+        builder.Property(o => o.TrackingCode)
+            .HasMaxLength(Order.MaxTrackingCodeLength);
+
         builder.Property<uint>("Version")
             .IsRowVersion();
 

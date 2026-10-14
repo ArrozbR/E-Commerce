@@ -35,3 +35,4 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0025](0025-roadmap-v2-funcionalidades-v3-visual.md) | Roadmap: v2 com tudo o que não é visual (parte legal primeiro), v3 visual em Razor, sem v4 |
 | [0026](0026-validade-da-sessao-a-partir-do-pedido.md) | Validade da sessão do Checkout: criação do pedido + 31 minutos |
 | [0027](0027-eventos-do-webhook-na-versao-do-sdk.md) | Eventos do webhook na versão da API do SDK (snapshot, `endive`) |
+| [0028](0028-pagina-minima-de-envio-para-o-admin.md) | Página mínima de envio para o admin (em vez de endpoints sem interface) |

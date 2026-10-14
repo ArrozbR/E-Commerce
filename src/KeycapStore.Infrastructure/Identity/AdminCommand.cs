@@ -1,5 +1,7 @@
 ﻿using System.Security.Cryptography;
 
+using KeycapStore.Application.Identity;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,7 +11,7 @@ public sealed record CreateAdminResult(bool Succeeded, string? GeneratedPassword
 
 public static class AdminCommand
 {
-    public const string AdminRole = "Admin";
+    public const string AdminRole = Roles.Admin;
 
     public static async Task<CreateAdminResult> CreateAdminAsync(this IServiceProvider services, string email)
     {

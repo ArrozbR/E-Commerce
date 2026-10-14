@@ -2,6 +2,8 @@
 
 public sealed class Order
 {
+    public const int MaxTrackingCodeLength = 50;
+
     private readonly List<OrderItem> _items = [];
 
     public Guid Id { get; private set; }
@@ -14,6 +16,7 @@ public sealed class Order
     public decimal Total => Items.Sum(i => i.LineTotal) + ShippingFee;
     public string? StripeSessionId { get; private set; }
     public string? StripePaymentIntentId { get; private set; }
+    public string? TrackingCode { get; private set; }
 
     private Order()
     {
@@ -145,5 +148,40 @@ public sealed class Order
         }
 
         Status = OrderStatus.Refunded;
+    }
+
+    public void StartPicking()
+    {
+        if (Status is not OrderStatus.Paid)
+        {
+            throw new InvalidOrderTransitionException(Status, OrderStatus.Picking);
+        }
+
+        Status = OrderStatus.Picking;
+    }
+
+    public void MarkShipped(string trackingCode)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(trackingCode);
+
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(trackingCode.Length, MaxTrackingCodeLength, nameof(trackingCode));
+
+        if (Status is not OrderStatus.Picking)
+        {
+            throw new InvalidOrderTransitionException(Status, OrderStatus.Shipped);
+        }
+
+        TrackingCode = trackingCode;
+        Status = OrderStatus.Shipped;
+    }
+
+    public void MarkDelivered()
+    {
+        if (Status is not OrderStatus.Shipped)
+        {
+            throw new InvalidOrderTransitionException(Status, OrderStatus.Delivered);
+        }
+
+        Status = OrderStatus.Delivered;
     }
 }
