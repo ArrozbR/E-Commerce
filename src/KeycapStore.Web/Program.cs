@@ -61,6 +61,28 @@ if (args.Contains("create-admin"))
     return;
 }
 
+if (args.Contains("reset-admin-password"))
+{
+    var emailIndex = Array.IndexOf(args, "--email");
+    if (emailIndex < 0 || emailIndex + 1 >= args.Length)
+    {
+        Console.Error.WriteLine("Uso: reset-admin-password --email <e-mail>");
+        Environment.ExitCode = 1;
+        return;
+    }
+
+    var result = await app.Services.ResetAdminPasswordAsync(args[emailIndex + 1]);
+    if (!result.Succeeded)
+    {
+        Console.Error.WriteLine("Não foi possível trocar a senha: " + string.Join(" ", result.Errors));
+        Environment.ExitCode = 1;
+        return;
+    }
+
+    Console.WriteLine($"Senha nova do admin (anote agora; ela não será mostrada de novo): {result.NewPassword}");
+    return;
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
