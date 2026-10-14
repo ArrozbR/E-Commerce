@@ -2,10 +2,10 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** **M4** (Pix, expiração, falha, reembolso por falta de estoque), em andamento: falta o reembolso automático e o filtro 409/404. **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
+**Marco atual:** **M5** (endpoints de admin para o envio), a começar. **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 4h até 13/10 (estimativa 15–25h) · total: 30,5h
-**Estimativa da v1:** ~~120–180h~~ → ~~55–85h (08/10)~~ → **revisada em 12/10 para 45–60h** (26,5h feitas + 18–33h para M4–M6). O M3 saiu com 5h (cerca de 20% do estimado), confirmando o padrão dos marcos anteriores; o M4 ainda guarda a parte mais delicada (Pix assíncrono, expiração com liberação de estoque, concorrência otimista, reembolso), por isso a margem continua larga. Revisar de novo ao fim do M4.
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · total: 32h
+**Estimativa da v1:** ~~120–180h~~ → ~~55–85h (08/10)~~ → ~~45–60h (12/10)~~ → **revisada em 14/10 para 40–50h** (32h feitas + 8–18h para M5–M6). O M4 saiu com 5,5h (cerca de 25% do estimado), o mesmo padrão de todos os marcos. O M6 é mais de operação (backups, monitoramento, go-live) do que de código, e depende de serviços externos ainda não testados (Q4), por isso a margem continua larga. Revisar de novo ao fim do M5.
 
 ## Marcos da v1
 
@@ -13,7 +13,7 @@
 - [x] **M1:** catálogo (seed) + Identity + `create-admin` (15–25h estimadas; **8,5h reais**, concluído em 06/10/2026)
 - [x] **M2:** carrinho, pedido, reserva atômica + testes de concorrência (20–30h estimadas; **6h reais**, concluído em 08/10/2026)
 - [x] **M3:** Stripe Checkout com cartão + webhook idempotente + página de retorno (20–30h estimadas; **5h reais**, concluído em 12/10/2026)
-- [ ] **M4:** Pix, expiração, falha, reembolso por falta de estoque (15–25h)
+- [x] **M4:** Pix, expiração, falha, reembolso por falta de estoque (15–25h estimadas; **5,5h reais**, concluído em 14/10/2026)
 - [ ] **M5:** endpoints de admin para o envio (8–12h)
 - [ ] **M6:** backups, monitoramento, checklist de go-live (15–20h)
 
@@ -24,8 +24,9 @@
 - [x] **Q1b confirmada em produção:** Pix com `fill_never@…` nunca pago → `checkout.session.expired` às 19:51:27, 31 min depois da criação (19:20:26), pedido `Expired`
 - [x] Devolução de estoque num lugar só (`StockRelease.ReleaseStockAsync`, refatoração sem mudar comportamento) + job do **D35** (`OrphanOrderReleaser`, **escrito pelo autor**, 6 lacunas; `<` × `>` corrigido pelos testes): `AwaitingPayment` sem `StripeSessionId` há mais de 10 min → `Failed` + estoque, uma transação por pedido, confere de novo depois de carregar, `ChangeTracker.Clear()` na concorrência. `BackgroundService` a cada 1 min, desligado nos testes (`PostgresFixture`). Sabotagem sem a transação → estoque 13 em vez de 5. Em produção, liberou sozinho o pedido preso desde 09/10 (PR #57)
 - [x] Pagamento depois da reserva liberada (PR #58), **escrito pelo autor**: `ConfirmLatePayment`, `MarkOutOfStock(paymentIntentId)`, `MarkRefunded` (9 testes de unidade), coluna `StripePaymentIntentId` (migration `AddOrderPaymentIntentId`); webhook reserva de novo com **savepoint** (`TryReserveStockAsync`) → `Paid` ou `PaidOutOfStock` + `LogError`; outros estados → ignorado com 200 (antes virava 500). Sabotagem sem o `RollbackToSavepointAsync` → reserva pela metade (3 em vez de 5). **185 testes.** Pela documentação da Stripe, uma sessão expirada não aceita pagamento: é defesa
-- [ ] Reembolso automático: `PaidOutOfStock` → `Refunded` com `refund-{orderId}`, num job fora do webhook; falha mantém `PaidOutOfStock` + alerta
-- [ ] Filtro de exceções: `InvalidOrderTransitionException` → 409, entrada inexistente → 404 (hoje viram 500)
+- [x] Reembolso automático (PR #60): `IPaymentGateway.RefundAsync` (`RefundService`, `StripeRefundFactory` com a chave `refund-{orderId}`), `OutOfStockRefunder` **escrito pelo autor** (faltou o `SaveChangesAsync` de primeira; os testes pegaram); falha → continua `PaidOutOfStock` + `LogError` e nova tentativa no minuto seguinte. Os dois jobs viraram um só (`OrderMaintenanceJob`, cada tarefa no seu `try`). **Reembolso real no sandbox:** pagamento com `4242`, pedido posto em `PaidOutOfStock` à mão no banco do PC, job reembolsou em menos de 1 min (Dashboard "Reembolsado", pedido `Refunded`)
+- [x] Filtro de exceções (PR #61): `[DomainExceptionFilter]` nos controllers de páginas (não no webhook, que precisa responder 500): `InvalidOrderTransitionException` → 409, `ProductNotFoundException` (nova, conferida no `CartService`) e `CartItemNotFoundException` → 404, `ArgumentException` → 400, o resto continua 500. Sabotagem sem o atributo → 500 de volta. Em produção, `ChangeQuantity` de produto alheio pelo console → **404**. **196 testes**
+- [x] (fora do plano) .NET **10.0.13** (PR #59): alerta de segurança CVE-2026-96960 publicado em 13/10 fez o build falhar (`NU1903`, avisos como erros). Migrations não foram alteradas (a anotação `ProductVersion` fica como estava)
 
 ## Checklist do M3
 
@@ -111,9 +112,9 @@
 
 ## Próximos passos
 
-1. **Revisão rápida (~15 min)** das perguntas que ficaram sem resposta em 13/10: (a) caderno × token de concorrência (10 eventos diferentes em paralelo); (b) por que a devolução de estoque foi para um lugar só e por que os 167 testes provaram a refatoração; (c) `CreatedAt < cutoff` × `>` (quem o `>` pegava); (d) conferir antes de mudar no `MarkOutOfStock`; (e) para onde iam as 2 unidades sem o savepoint. Mais as 4 de 12/10 (antiforgery × assinatura, destino `dahlia`, 200 × 500 no valor divergente, 404 do curioso).
-2. **Reembolso automático (M4):** `IPaymentGateway.RefundAsync` (Stripe `RefundService`, chave `refund-{orderId}`), job que reembolsa `PaidOutOfStock` → `Refunded`; falha → continua `PaidOutOfStock` + `LogError`. Pronto quando: testes com o gateway falso (sucesso, falha e nova tentativa, paralelo) passam e um reembolso real funciona no sandbox.
-3. **Filtro 409/404** e fechar o M4 (revisar a estimativa da v1).
+1. **Revisão rápida (~15 min):** (a) por que o reembolso roda num job e não no webhook; (b) servidor cai entre o `RefundAsync` e o `SaveChangesAsync`: o cliente recebe duas vezes? (não: chave `refund-{orderId}`); (c) caderno × token de concorrência; (d) `CreatedAt < cutoff` × `>`; (e) conferir antes de mudar no `MarkOutOfStock`; (f) para onde iam as 2 unidades sem o savepoint. As de 12/10 (antiforgery × assinatura, destino `dahlia`, 200 × 500, 404 do curioso) se sobrar tempo.
+2. **Estoque preso em produção (~15 min):** listar os pedidos `AwaitingPayment` **com** `StripeSessionId` criados antes do PR #55 (o **Kit Maré (modificadores)** aparece "Esgotado") e decidir com o autor como liberar (as sessões já expiraram na Stripe).
+3. **M5, parte 1:** papel `Admin` protegendo uma área `/admin/orders` (lista de pedidos `Paid`) + o primeiro endpoint `POST /admin/orders/{id}/start-picking` → `StartPicking()` (escrito pelo autor, com teste) e 409 quando a transição não vale. Pronto quando: cliente comum recebe 403/redirect, admin vê a lista, e `start-picking` duas vezes dá 409 na segunda.
 
 ## Bloqueios
 
@@ -123,6 +124,8 @@ _Nenhum._
 
 - **Q1b respondida em 13/10** (ver checklist do M4). Ainda não confirmado na documentação: o que acontece com um Pix **já gerado** quando a sessão expira.
 - **Pedidos de teste do M3 em produção** que tinham sessão e expiraram antes do PR #55 continuam `AwaitingPayment` segurando estoque (o `expired` deles foi só anotado). O job do D35 não os pega (têm sessão). Conferir com uma consulta e decidir o que fazer.
+- **Reembolso depois de 24 h:** a Stripe guarda a chave de idempotência por 24 h. Se o `SaveChangesAsync` depois do reembolso falhar e o pedido ficar `PaidOutOfStock` por mais de um dia, a nova tentativa recebe um erro ("já reembolsado") e vira `LogError` a cada minuto. Risco baixo; tratar o código de erro da Stripe como sucesso se acontecer.
+- As 409/404/400 do filtro respondem com a página em branco (sem mensagem amigável). Melhorar junto com as telas de admin (M5) ou no M6.
 - **Teste instável (14/10):** `Webhook_SameEventInParallel_IsRecordedOnce_AndAllGet200` falhou 1 vez numa rodada completa e passou nas 36 seguintes. Causa desconhecida; se falhar de novo, guardar a mensagem de erro.
 - Q3: **respondida** (sem capacidade A1 em 30/09); seguir tentando para migrar da Micro
 - Q4: R2/B2, monitor externo, healthchecks.io (M6)
@@ -130,7 +133,6 @@ _Nenhum._
 - Cookie do antiforgery sem `Secure` (o de login tem). Risco baixo; endurecer exige que os testes de página usem `https`.
 - Senha do admin de produção apareceu no chat em 06/10; o autor optou por não trocar agora. **Trocar antes do go-live (checklist do M6).**
 - **Corrida no primeiro carrinho:** duas abas criando o primeiro carrinho do mesmo cliente ao mesmo tempo → o índice único recusa o segundo (correto), mas aquele clique vê uma página de erro. Melhoria: tentar de novo uma vez. Baixa prioridade.
-- Entrada adulterada no carrinho (quantidade 0 ou produto inexistente pelo F12) vira página de erro **500**. Nada errado entra no banco; falta traduzir as exceções de domínio para 400/404/409 (filtro de exceção, junto com o `409` do `InvalidOrderTransitionException`).
 - O login ignora o `ReturnUrl` (quem tenta abrir `/Cart` sem login cai no catálogo depois de entrar, e não no carrinho).
 - O `migrate` no deploy mostra `libgssapi_krb5.so.2: cannot open shared object file` (aviso do driver do PostgreSQL; já aparecia antes; a migration roda normalmente). Investigar no M6.
 - O `CustomerId` do pedido é obrigatório no banco e no domínio; o `DEFINICOES.md` prevê torná-lo opcional quando houver exclusão de conta (v2).
@@ -145,6 +147,14 @@ _Nenhum._
 **Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 14/10/2026: reembolso automático, filtro 409/404/400 e **M4 concluído** (1,5h)
+- `/encerrar` de 13/10 feito no início (4h). Aquecimento: por que o reembolso fica fora do webhook (não sabia; explicado com o porteiro e o tesoureiro).
+- Imprevisto: alerta de segurança do .NET (CVE-2026-96960) quebrou o build; .NET 10.0.13 (PR #59). O "Substituir em todos os arquivos" do Visual Studio trocou também 11 arquivos de migration (`ProductVersion`); pego pelo `git status` e desfeito com `git restore` só na pasta.
+- Reembolso automático (PR #60): autor escreveu o `OutOfStockRefunder` (faltou o `SaveChangesAsync`, os testes pegaram). Reembolso **real** no sandbox com o banco do PC. Filtro de exceções (PR #61), 404 conferido em produção. **196 testes.**
+- Tropeços: `docker compose` rodado fora da pasta do projeto ("no configuration file provided"); código errado colado no chat (o `CartService` em vez do `OutOfStockRefunder`; o print mostrava o certo).
+- Achado: um teste antigo (`Webhook_SameEventInParallel...`) falhou uma vez e passou nas 36 seguintes; anotado.
+- Verificações: reembolso fora do webhook (não sabia), servidor caindo entre reembolso e gravação (sem resposta). O autor diz que ficou sem dúvidas; as duas vão para a revisão.
 
 ### 13/10/2026: concorrência, expiração, Pix, pedidos órfãos e pagamento atrasado (4h)
 - Aquecimento: webhook sem antiforgery nem login (parcial: "é um robô"; explicado que quem barra o impostor é a assinatura).
@@ -222,18 +232,11 @@ _Nenhum._
 - Produção: conexão via variável de ambiente, comando `migrate`, `deploy.sh` com migration antes da troca. **Catálogo no ar** (PR #18, deploy aprovado em 49 s).
 - O autor apagava o `#!/usr/bin/env bash` achando que era comentário (3 vezes); explicado. Atenção a isso em todo script.
 
-### 02/10/2026: revisão do deploy, Product, persistência e consulta do catálogo (1,5h)
-- Revisão das 6 perguntas do deploy: acertou com ajuda as do comando forçado e da chave sem senha; as outras ficaram com correções.
-- `Product` com invariantes e testes (PR #14). O primeiro teste do estoque zero estava com a regra invertida, e rodar o teste revelou o erro.
-- `AppDbContext`, mapeamento, migration `InitialCatalog`, teste de integração que salva e lê (PR #15). Corrigidos: conflito de versões do EF Core (MSB3277) e o `dotnet format` reclamando das migrations.
-- Consulta do catálogo (porta + DTO + teste de integração), commits no branch `feat/catalog-query`.
-- Tropeços de editor: modelo do Visual Studio colado junto com o código (usar Ctrl+A antes de colar); arquivo com nome `FileName.cs` e depois `.cs.cs`.
-- **Ficou confuso:** o que é um DTO. Revisar na próxima sessão.
-
 ## Histórico
 
 _(sessões antigas resumidas em uma linha cada)_
 
+- **02/10/2026 (1,5h):** revisão do deploy; `Product` com invariantes (PR #14), `AppDbContext` + `InitialCatalog` (PR #15), consulta do catálogo; ficou confuso o que é um DTO (revisado em 05/10).
 - **01/10/2026 (2ª sessão, 1,5h):** `deploy.sh` com rollback (PR #10), usuário `deploy` com comando forçado (PR #11), job `deploy` com aprovação obrigatória (PR #12); reinício da VM testado; **M0 concluído**.
 - **01/10/2026 (1,5h):** revisão do bootstrap, DuckDNS, Nginx + HTTPS (PR #6), imagem no GHCR (PR #7), compose de produção (PR #8) e loja no ar; início da pergunta de verificação a cada passo.
 - **30/09/2026 (tarde, 2h):** Dockerfile + compose (PR #3), VM E2.1.Micro provisória (ADR 0020), bootstrap partes 1–4 (PR #4); CRLF quebra bash (`.editorconfig` com LF); o script de bootstrap ficou confuso e foi revisado depois.
