@@ -1,0 +1,60 @@
+﻿@using KeycapStore.Web.Models
+@model IReadOnlyList<KeycapStore.Application.Orders.AdminOrderView>
+@{
+    ViewData["Title"] = "Envio de pedidos";
+    var brl = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+    var brasilia = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
+}
+
+<h1>Envio de pedidos</h1>
+
+@if (Model.Count == 0)
+{
+    <p>Nenhum pedido para separar, enviar ou entregar.</p>
+}
+else
+{
+    <table class="table align-top">
+        <thead>
+            <tr>
+                <th>Pedido</th>
+                <th>Itens</th>
+                <th class="text-end">Total</th>
+                <th>Entrega</th>
+                <th>Situação</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                var address = order.ShippingAddress;
+                <tr>
+                    <td>
+                        <code>@order.Id</code><br />
+                        <small class="text-muted">@TimeZoneInfo.ConvertTime(order.CreatedAt, brasilia).ToString("dd/MM/yyyy HH:mm", brl)</small>
+                    </td>
+                    <td>
+                        @foreach (var line in order.Lines)
+                        {
+                            <div>@line.Quantity × @line.ProductName</div>
+                        }
+                    </td>
+                    <td class="text-end">@order.Total.ToString("C", brl)</td>
+                    <td>
+                        @address.RecipientName<br />
+                        @address.Street, @address.Number@(address.Complement is null ? "" : $" - {address.Complement}")<br />
+                        @address.District, @address.City - @address.State<br />
+                        CEP @address.PostalCode.Insert(5, "-")
+                    </td>
+                    <td>
+                        <strong>@OrderStatusText.For(order.Status)</strong>
+                        @if (order.TrackingCode is not null)
+                        {
+                            <br /><small>Rastreio: @order.TrackingCode</small>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
