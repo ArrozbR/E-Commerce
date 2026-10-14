@@ -56,7 +56,13 @@ public class StripeWebhookIdempotencyTests(PostgresFixture postgres) : IClassFix
 
         var responses = await Task.WhenAll(Enumerable.Range(0, 5).Select(_ => PostSignedAsync(client, payload, signature)));
 
-        Assert.All(responses, r => Assert.Equal(HttpStatusCode.OK, r.StatusCode));
+        var failures = new List<string>();
+        foreach (var response in responses.Where(r => r.StatusCode != HttpStatusCode.OK))
+        {
+            failures.Add($"{(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+        }
+
+        Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
         Assert.Equal(1, await CountRecordedAsync(factory, "evt_test_parallel"));
     }
 
