@@ -2,10 +2,10 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** **M5** (endpoints de admin para o envio), a começar. **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
+**Marco atual:** **M6** (backups, monitoramento, checklist de go-live), a começar. **M5 concluído em 15/10/2026** (página mínima de envio só para o papel Admin, separar → enviar com rastreio → entregar, comando `reset-admin-password`; pedido levado até "Entregue" em produção). **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · total: 32h
-**Estimativa da v1:** ~~120–180h~~ → ~~55–85h (08/10)~~ → ~~45–60h (12/10)~~ → **revisada em 14/10 para 40–50h** (32h feitas + 8–18h para M5–M6). O M4 saiu com 5,5h (cerca de 25% do estimado), o mesmo padrão de todos os marcos. O M6 é mais de operação (backups, monitoramento, go-live) do que de código, e depende de serviços externos ainda não testados (Q4), por isso a margem continua larga. Revisar de novo ao fim do M5.
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · M5: 3h (estimativa era 8–12h) · total: 35h
+**Estimativa da v1:** ~~120–180h~~ → ~~55–85h (08/10)~~ → ~~45–60h (12/10)~~ → ~~40–50h (14/10)~~ → **revisada em 15/10 para 40–45h** (35h feitas + 5–10h para o M6). O M5 saiu com 3h (cerca de 30% do estimado). O M6 é de operação (backups com restauração testada, monitoramento externo, checklist de go-live) e depende de serviços ainda não confirmados (Q4), por isso a faixa não encolhe mais que isso.
 
 ## Marcos da v1
 
@@ -14,8 +14,17 @@
 - [x] **M2:** carrinho, pedido, reserva atômica + testes de concorrência (20–30h estimadas; **6h reais**, concluído em 08/10/2026)
 - [x] **M3:** Stripe Checkout com cartão + webhook idempotente + página de retorno (20–30h estimadas; **5h reais**, concluído em 12/10/2026)
 - [x] **M4:** Pix, expiração, falha, reembolso por falta de estoque (15–25h estimadas; **5,5h reais**, concluído em 14/10/2026)
-- [ ] **M5:** endpoints de admin para o envio (8–12h)
+- [x] **M5:** endpoints de admin para o envio (8–12h estimadas; **3h reais**, concluído em 15/10/2026)
 - [ ] **M6:** backups, monitoramento, checklist de go-live (15–20h)
+
+## Checklist do M5
+
+- [x] ADR 0028: **página mínima de envio** em vez de endpoints sem interface (o antiforgery global e o login por cookie tornariam os endpoints puros desajeitados ou inseguros); `DEFINICOES.md` atualizado (D05, Envio)
+- [x] `StartPicking`, `MarkShipped(trackingCode)` (vazio recusado, até `Order.MaxTrackingCodeLength` = 50), `MarkDelivered`, **escritos pelo autor** (o `TrackingCode = trackingCode` faltou de primeira; o teste pegou); 8 testes de unidade; migration `AddOrderTrackingCode`
+- [x] `/admin/orders` (PR #64): `[Authorize(Roles = Roles.Admin)]` (nome do papel na Application), fila `Paid`/`Picking`/`Shipped` do mais antigo ao mais novo com o endereço, link "Envio" no menu só para admins; cliente logado → **403** (`OnRedirectToAccessDenied`), visitante → login. Sabotagens: sem o papel → 200 para o cliente; sem o ajuste → 302
+- [x] Botões (PR #64): `ShippingService`, **escrito pelo autor** (lambdas `Action<Order>`, `?? throw new OrderNotFoundException`), um `POST` por ação, 404/409/400 pelo filtro. Testes: fluxo completo, clique duplo → 409, rastreio em branco → 400, pedido inexistente → 404, cliente → 403, 5 cliques simultâneos → só 1 passa. `PageClient` em `Fixtures` (4ª cópia dos ajudantes de página)
+- [x] Comando `reset-admin-password` (PR #65, ADR 0029): só para quem já é Admin, senha nova gerada e mostrada uma vez, troca numa transação, `SecurityStamp` muda (sessões antigas caem). **A senha que vazou em 06/10 não vale mais** (trocada duas vezes em produção, a segunda sem nenhum print)
+- [x] **Em produção:** pedido `04bd9d69` levado de Pago → Em separação → Enviado (`BR000000001BR`) → Entregue pelo admin; `pedro2@test.com` recebeu 403 em `/admin/orders`. **216 testes**
 
 ## Checklist do M4
 
@@ -112,9 +121,9 @@
 
 ## Próximos passos
 
-1. **Revisão rápida (~15 min):** (a) por que o reembolso roda num job e não no webhook; (b) servidor cai entre o `RefundAsync` e o `SaveChangesAsync`: o cliente recebe duas vezes? (não: chave `refund-{orderId}`); (c) caderno × token de concorrência; (d) `CreatedAt < cutoff` × `>`; (e) conferir antes de mudar no `MarkOutOfStock`; (f) para onde iam as 2 unidades sem o savepoint. As de 12/10 (antiforgery × assinatura, destino `dahlia`, 200 × 500, 404 do curioso) se sobrar tempo.
-2. **Estoque preso em produção (~15 min):** listar os pedidos `AwaitingPayment` **com** `StripeSessionId` criados antes do PR #55 (o **Kit Maré (modificadores)** aparece "Esgotado") e decidir com o autor como liberar (as sessões já expiraram na Stripe).
-3. **M5, parte 1:** papel `Admin` protegendo uma área `/admin/orders` (lista de pedidos `Paid`) + o primeiro endpoint `POST /admin/orders/{id}/start-picking` → `StartPicking()` (escrito pelo autor, com teste) e 409 quando a transição não vale. Pronto quando: cliente comum recebe 403/redirect, admin vê a lista, e `start-picking` duas vezes dá 409 na segunda.
+1. **Revisão rápida (~15 min):** (a) por que conferir tudo antes de guardar numa entidade (não é transação: a memória não tem rollback); (b) o que é o `order => order.StartPicking()` (lambda, `Action<Order>`); (c) por que o `;` antes do `??` quebra a compilação; (d) servidor cai entre o `RefundAsync` e o `SaveChangesAsync`: o cliente recebe duas vezes? (não: chave `refund-{orderId}`).
+2. **M6, parte 1 (backups):** confirmar na documentação oficial o plano gratuito do destino dos backups (Q4: Cloudflare R2 ou Backblaze B2), escrever o `pg_dump` diário em `deploy/` e **restaurar um backup** num banco separado. Pronto quando: um backup sai da VM sozinho e uma restauração mostra os pedidos de produção.
+3. **M6, parte 2:** monitor externo do site (Q4) + checklist de go-live (inclui tirar o papel Admin de contas que não usamos mais, se houver, e a revisão das questões em aberto abaixo).
 
 ## Bloqueios
 
@@ -123,15 +132,15 @@ _Nenhum._
 ## Questões em aberto
 
 - **Q1b respondida em 13/10** (ver checklist do M4). Ainda não confirmado na documentação: o que acontece com um Pix **já gerado** quando a sessão expira.
-- **Pedidos de teste do M3 em produção** que tinham sessão e expiraram antes do PR #55 continuam `AwaitingPayment` segurando estoque (o `expired` deles foi só anotado). O job do D35 não os pega (têm sessão). Conferir com uma consulta e decidir o que fazer.
 - **Reembolso depois de 24 h:** a Stripe guarda a chave de idempotência por 24 h. Se o `SaveChangesAsync` depois do reembolso falhar e o pedido ficar `PaidOutOfStock` por mais de um dia, a nova tentativa recebe um erro ("já reembolsado") e vira `LogError` a cada minuto. Risco baixo; tratar o código de erro da Stripe como sucesso se acontecer.
 - As 409/404/400 do filtro respondem com a página em branco (sem mensagem amigável). Melhorar junto com as telas de admin (M5) ou no M6.
-- **Teste instável (14/10):** `Webhook_SameEventInParallel_IsRecordedOnce_AndAllGet200` falhou 1 vez numa rodada completa e passou nas 36 seguintes. Causa desconhecida; se falhar de novo, guardar a mensagem de erro.
+- **Teste instável (14/10):** `Webhook_SameEventInParallel_IsRecordedOnce_AndAllGet200` falhou 1 vez; em 15/10, cerca de 70 rodadas (inclusive 3 suítes ao mesmo tempo) sem reproduzir, e a leitura do código não mostrou corrida. O teste agora imprime o corpo das respostas que não forem 200 (PR #63): se falhar de novo, a causa estará na mensagem.
+- **Clique duplo simultâneo no admin:** o token de concorrência garante que o pedido avança uma vez só, mas, se dois cliques chegarem exatamente juntos, o segundo recebe 500 (e não 409). Os dados ficam certos; o tratamento foi tirado porque nenhum teste conseguia prová-lo. Reavaliar se aparecer no log.
+- **Eventos criados antes de existir o destino** nascem na versão padrão da conta (`dahlia`) e são recusados pelo webhook (ADR 0027), mesmo reenviados pelo CLI. Visto em 15/10 com o pedido `04bd9d69`.
 - Q3: **respondida** (sem capacidade A1 em 30/09); seguir tentando para migrar da Micro
 - Q4: R2/B2, monitor externo, healthchecks.io (M6)
 - Q5: prazo legal de retenção dos pedidos (produção, não é código)
 - Cookie do antiforgery sem `Secure` (o de login tem). Risco baixo; endurecer exige que os testes de página usem `https`.
-- Senha do admin de produção apareceu no chat em 06/10; o autor optou por não trocar agora. **Trocar antes do go-live (checklist do M6).**
 - **Corrida no primeiro carrinho:** duas abas criando o primeiro carrinho do mesmo cliente ao mesmo tempo → o índice único recusa o segundo (correto), mas aquele clique vê uma página de erro. Melhoria: tentar de novo uma vez. Baixa prioridade.
 - O login ignora o `ReturnUrl` (quem tenta abrir `/Cart` sem login cai no catálogo depois de entrar, e não no carrinho).
 - O `migrate` no deploy mostra `libgssapi_krb5.so.2: cannot open shared object file` (aviso do driver do PostgreSQL; já aparecia antes; a migration roda normalmente). Investigar no M6.
@@ -140,13 +149,23 @@ _Nenhum._
 - A Stripe recomenda eventos **thin** para integrações novas; usamos **snapshot** (o handler lê a sessão inteira do evento). Reavaliar se a troca de versão virar um problema.
 - O `ssh` na VM avisa que existe o Ubuntu `26.04.1 LTS`. **Não** fazer `do-release-upgrade` sem plano (M6).
 - **Melhoria futura (pedido do autor em 09/10):** quando a Stripe estiver fora, mostrar um aviso claro ("tente de novo em alguns minutos") e um jeito de refazer a compra a partir do pedido que falhou (hoje o carrinho já foi apagado e o cliente só vê "Pagamento não aprovado").
-- Os auxiliares dos testes de página (`TokenFrom`, `LoggedInClientAsync`) estão copiados em 3 classes (`CartPageTests`, `CheckoutPageTests`, `OrderPageTests`). Candidato a extrair para `Fixtures` quando aparecer a 4ª cópia.
+- Os auxiliares dos testes de página já existem em `Fixtures/PageClient` (15/10), mas `CartPageTests`, `CheckoutPageTests` e `OrderPageTests` ainda têm cópias próprias. Migrar quando mexer nessas classes.
+
+**Correção de dados em produção (15/10):** os 3 pedidos `AwaitingPayment` de 12/10 tinham sido **pagos** (testes com o `4242` enquanto o webhook era construído). `ae4211ec` e `d13dead5` foram confirmados pelo caminho oficial (reenvio do evento no Dashboard; para o `d13dead5`, apagada antes só a anotação `evt_1UPlEFLUSDq1G5KIhLvMFb0q` em `processed_stripe_events`). O `04bd9d69` foi marcado `Paid` **à mão** (`UPDATE ... WHERE "Status" = 'AwaitingPayment'`), com o autor de acordo, porque o evento `evt_1UPkCnLUSDq1G5KINtgNJ4Fx` (`paid`, R$ 639,80, `pi_3UPkCmLUSDq1G5KI0vmfOZBW`) era anterior ao destino e só existia em `dahlia`. O estoque não mudou (as unidades já estavam reservadas para pedidos pagos).
 
 **Decisões de 06/10:** bloqueio após **3** tentativas (não 5), ciente de que facilita bloquear a conta de outra pessoa (5 min); chaves no PostgreSQL (ADR 0022); admin pelo comando também no PC e conta existente promovida (ADR 0023).
 
 **Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 15/10/2026: pedidos presos resolvidos, teste instável investigado e **M5 concluído** (3h)
+- Aquecimento: visitante × cliente em `/admin/orders` (acertou que nenhum entra; explicado 401/login × 403). Revisão: reembolso fora do webhook (acertou o centro: "não depender da Stripe").
+- Pedidos presos em produção: os 3 tinham sido pagos; 2 confirmados reenviando eventos (Dashboard e CLI), 1 corrigido à mão com a prova (ver "Correção de dados"). Correção do Claude: o "Kit Maré (modificadores) Esgotado" vem do seed (estoque 0), e não de pedidos presos.
+- Teste instável: ~70 rodadas sem reproduzir; o teste passou a mostrar o erro quando falhar (PR #63). O Claude tinha descumprido a regra do `DEFINICOES.md` em 14/10 (rodou de novo e só anotou).
+- M5 (PR #64): ADR 0028 (página mínima), transições de envio (autor), `/admin/orders` com 403, `ShippingService` (autor; um `;` antes do `??` corrigido). Comando `reset-admin-password` (PR #65, ADR 0029), pedido pelo autor ao não lembrar a senha do admin. **216 testes.** Em produção, um pedido foi de Pago a Entregue pela página.
+- Tropeços: `UPDATE` digitado no bash e não no `psql` ("command not found"); senha nova mostrada borrada num print (borrão é reversível; o autor gerou outra, sem print).
+- Verificações: conferir antes de guardar (acertou a ideia, mas disse "transação"; corrigido: é a ordem das linhas, a memória não tem rollback); teste instável (não tinha entendido; explicado com a balança). O autor diz que ficou sem dúvidas.
 
 ### 14/10/2026: reembolso automático, filtro 409/404/400 e **M4 concluído** (1,5h)
 - `/encerrar` de 13/10 feito no início (4h). Aquecimento: por que o reembolso fica fora do webhook (não sabia; explicado com o porteiro e o tesoureiro).
@@ -224,18 +243,11 @@ _Nenhum._
 - Git: rodou a rotina pós-merge antes do push (o `-d` recusou apagar, corretamente); explicado `-d` × `-D` e o `push -u`.
 - Verificações: Scoped (errou, depois acertou com a analogia do carrinho), memória × banco (errou, depois acertou com o "Salvar" do Word), `mv` no final do `deploy.sh` (acertou depois da explicação). O autor diz que nada ficou confuso.
 
-### 05/10/2026: catálogo completo, do banco até a produção (1h)
-- Revisão: DTO (explicado do zero com a analogia do documento original × cópia) e o `DbContext` novo no teste; o autor respondeu bem às verificações.
-- Seed dos 6 kits; o teste da consulta quebrou por depender de banco vazio e foi corrigido (filtra só os dados do próprio teste); teste novo para o seed.
-- PostgreSQL de desenvolvimento (`compose.override.yaml`), user-secrets, `dotnet ef database update`, `psql` (o PowerShell 5.1 remove as aspas duplas de argumentos: usar o `psql` interativo).
-- Injeção de dependência (`AddInfrastructure`), `SmokeTests` entregando a conexão do container (no CI não há user-secrets), `CatalogController` fino e a página.
-- Produção: conexão via variável de ambiente, comando `migrate`, `deploy.sh` com migration antes da troca. **Catálogo no ar** (PR #18, deploy aprovado em 49 s).
-- O autor apagava o `#!/usr/bin/env bash` achando que era comentário (3 vezes); explicado. Atenção a isso em todo script.
-
 ## Histórico
 
 _(sessões antigas resumidas em uma linha cada)_
 
+- **05/10/2026 (1h):** seed dos 6 kits, PostgreSQL de desenvolvimento, `AddInfrastructure`, página do catálogo e comando `migrate` no deploy (PR #18); catálogo no ar.
 - **02/10/2026 (1,5h):** revisão do deploy; `Product` com invariantes (PR #14), `AppDbContext` + `InitialCatalog` (PR #15), consulta do catálogo; ficou confuso o que é um DTO (revisado em 05/10).
 - **01/10/2026 (2ª sessão, 1,5h):** `deploy.sh` com rollback (PR #10), usuário `deploy` com comando forçado (PR #11), job `deploy` com aprovação obrigatória (PR #12); reinício da VM testado; **M0 concluído**.
 - **01/10/2026 (1,5h):** revisão do bootstrap, DuckDNS, Nginx + HTTPS (PR #6), imagem no GHCR (PR #7), compose de produção (PR #8) e loja no ar; início da pergunta de verificação a cada passo.
