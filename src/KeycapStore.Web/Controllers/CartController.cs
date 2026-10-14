@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 
 using KeycapStore.Application.Carts;
+using KeycapStore.Web.Filters;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KeycapStore.Web.Controllers;
 
 [Authorize]
+[DomainExceptionFilter]
 public sealed class CartController(ICartService carts) : Controller
 {
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;

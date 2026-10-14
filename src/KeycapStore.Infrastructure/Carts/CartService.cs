@@ -1,5 +1,6 @@
 ﻿using KeycapStore.Application.Carts;
 using KeycapStore.Domain.Carts;
+using KeycapStore.Domain.Catalog;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,12 @@ internal sealed class CartService(AppDbContext db) : ICartService
     public async Task AddItemAsync(string customerId, Guid productId, int quantity, CancellationToken cancellationToken = default)
     {
         var cart = await db.Carts.SingleOrDefaultAsync(c => c.CustomerId == customerId, cancellationToken);
+
+        if (!await db.Products.AnyAsync(p => p.Id == productId, cancellationToken))
+        {
+            throw new ProductNotFoundException(productId);
+        }
+
         if (cart is null)
         {
             cart = new Cart(customerId);
