@@ -37,6 +37,7 @@ export RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID"
 export RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY"
 export RCLONE_CONFIG_R2_ACL=private
 export RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true
+export RCLONE_CONFIG_R2_NO_HEAD=true
 
 rclone copyto "$FILE" "r2:$R2_BUCKET/daily/$NAME"
 if [[ $(date -u +%u) -eq 7 ]]; then
