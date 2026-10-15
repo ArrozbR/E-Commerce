@@ -1,10 +1,27 @@
-using KeycapStore.Infrastructure;
+﻿using KeycapStore.Infrastructure;
 using KeycapStore.Infrastructure.Identity;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
+using Serilog;
+using Serilog.Formatting.Compact;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSerilog(logger =>
+{
+    logger.ReadFrom.Configuration(builder.Configuration).Enrich.FromLogContext();
+
+    if (builder.Environment.IsDevelopment())
+    {
+        logger.WriteTo.Console();
+    }
+    else
+    {
+        logger.WriteTo.Console(new RenderedCompactJsonFormatter());
+    }
+});
 
 builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
