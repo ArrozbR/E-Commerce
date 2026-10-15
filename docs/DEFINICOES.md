@@ -363,7 +363,7 @@ Voltar para uma versão anterior = executar o workflow de deploy com a tag anter
 ### 10.6 Backups
 
 - `pg_dump` diário via timer do systemd, criptografado com **`age`** (só a chave pública fica na VM; a privada fica com o autor).
-- Enviado para armazenamento de **outro provedor** (Cloudflare R2 ou Backblaze B2) com credencial **só de escrita**. A retenção (7 diários + 4 semanais) é feita por regra de ciclo de vida **do bucket**.
+- Enviado para armazenamento de **outro provedor** (~~Cloudflare R2 ou Backblaze B2~~ **Cloudflare R2**, ADR 0030) com ~~credencial **só de escrita**~~ token de objetos só desse bucket + **bucket lock** contra apagamento (ADR 0030). A retenção (7 diários + 4 semanais) é feita por regra de ciclo de vida **do bucket**. Runbook: `docs/runbooks/backup.md`.
 - **Dead man's switch** (healthchecks.io): se o backup não reportar sucesso, chega um alerta.
 - **Teste de restauração mensal**, documentado em runbook. O primeiro acontece **antes** do go-live.
 - 2 cópias locais na VM, só como restauração rápida complementar.

@@ -1,6 +1,6 @@
 # 0018. Observabilidade externa, backups fora do provedor e atualizações automáticas
 
-- **Status:** Aceito
+- **Status:** Aceito (destino e credencial dos backups detalhados no ADR 0030)
 - **Data:** 2026-09-29
 - **Relacionado:** `docs/DEFINICOES.md` D30–D32, §10.5–§10.6
 
@@ -18,7 +18,7 @@ Um sistema não consegue reportar a própria falha: se a VM cair, o disco encher
 
 **Backups**
 - `pg_dump` diário via timer do systemd, **criptografado com `age`** (só a chave pública fica na VM).
-- Enviado para **armazenamento de outro provedor** (Cloudflare R2 ou Backblaze B2), com credencial **só de escrita**; a retenção (7 diários + 4 semanais) é feita pelo **ciclo de vida do bucket**.
+- Enviado para **armazenamento de outro provedor** (Cloudflare R2 ou Backblaze B2), com credencial **só de escrita**; a retenção (7 diários + 4 semanais) é feita pelo **ciclo de vida do bucket**. **Ver ADR 0030:** R2, sem credencial só de escrita (não existe na R2), com bucket lock.
 - **Dead man's switch** (healthchecks.io): o silêncio gera um alerta.
 - **Teste de restauração mensal** em runbook; o primeiro acontece antes do go-live.
 - Cópias locais na VM só como restauração rápida complementar.
