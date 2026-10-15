@@ -29,7 +29,7 @@ O autor preferiu a R2, com a condição de que **nunca** haja cobrança.
    - o ciclo de vida impede o acúmulo;
    - um **alerta de orçamento** fica no menor valor que o painel permitir;
    - nenhum outro produto pago da Cloudflare é ativado na conta.
-5. **Envio pelo `rclone`** (pacote do Ubuntu, versão ≥ 1.59, como pede a documentação da R2), configurado por variáveis de ambiente lidas do `/opt/keycapstore/backup.env` (root, 600). Com um token de objeto, a documentação pede `no_check_bucket = true`.
+5. **Envio pelo `rclone`** (pacote do Ubuntu, versão ≥ 1.59, como pede a documentação da R2), configurado por variáveis de ambiente lidas do `/opt/keycapstore/backup.env` (root, 600). Com um token de objeto, a documentação pede `no_check_bucket = true`. Também `no_head = true`: no teste de 15/10, o `rclone` 1.60 (do Ubuntu) conferia o arquivo recém-enviado com `HEAD ...?versionId=...`, e a R2 respondia **501 Not Implemented**. O envio dava certo, mas cada execução gastava uma nova tentativa. Sem esse `HEAD`, o envio continua conferido pelo hash devolvido na resposta do `PUT`.
 
 ## Alternativas consideradas
 
