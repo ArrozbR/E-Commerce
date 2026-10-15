@@ -62,6 +62,9 @@ public static class DependencyInjection
         .AddEntityFrameworkStores<AppDbContext>();
 
         services.AddScoped<IAccountService, AccountService>();
+        services.AddHealthChecks()
+            .AddCheck<DatabaseHealthCheck>("database")
+            .AddCheck<DiskSpaceHealthCheck>("disk");
 
         return services;
     }

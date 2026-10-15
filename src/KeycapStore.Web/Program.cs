@@ -98,6 +98,8 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
+app.MapHealthChecks("/health");
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
