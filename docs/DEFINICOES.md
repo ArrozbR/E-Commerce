@@ -398,8 +398,8 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 - [ ] emissão de nota fiscal
 
 **Operação**
-- [ ] teste de restauração de backup bem-sucedido
-- [ ] monitor externo e dead man's switch ativos
+- [x] teste de restauração de backup bem-sucedido (15/10/2026, `docs/runbooks/backup.md`)
+- [x] monitor externo e dead man's switch ativos (UptimeRobot e healthchecks.io, 15/10/2026)
 - [ ] checklist ponta a ponta executado com chaves de produção num pedido real de baixo valor, depois reembolsado
 
 ---

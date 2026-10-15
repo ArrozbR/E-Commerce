@@ -2,10 +2,10 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** **M6** (backups, monitoramento, checklist de go-live), a começar. **M5 concluído em 15/10/2026** (página mínima de envio só para o papel Admin, separar → enviar com rastreio → entregar, comando `reset-admin-password`; pedido levado até "Entregue" em produção). **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
+**Marco atual:** 🎉 **v1 concluída em 15/10/2026**: todos os critérios de pronto do `DEFINICOES.md` §1 cumpridos em produção. Próximo: decidir o começo da v2 (ADR 0025: parte legal primeiro). **M6 concluído em 15/10/2026** (`/health`, Serilog, Dependabot, backup diário criptografado na Cloudflare R2 com restauração testada, healthchecks.io, UptimeRobot). **M5 concluído em 15/10/2026** (página mínima de envio só para o papel Admin, separar → enviar com rastreio → entregar, comando `reset-admin-password`; pedido levado até "Entregue" em produção). **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · M5: 3h (estimativa era 8–12h) · total: 35h
-**Estimativa da v1:** ~~120–180h~~ → ~~55–85h (08/10)~~ → ~~45–60h (12/10)~~ → ~~40–50h (14/10)~~ → **revisada em 15/10 para 40–45h** (35h feitas + 5–10h para o M6). O M5 saiu com 3h (cerca de 30% do estimado). O M6 é de operação (backups com restauração testada, monitoramento externo, checklist de go-live) e depende de serviços ainda não confirmados (Q4), por isso a faixa não encolhe mais que isso.
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · M5: 3h (estimativa era 8–12h) · M6: 2h (estimativa era 15–20h) · **total da v1: 37h**
+**Estimativa da v1:** ~~120–180h~~ → ~~55–85h (08/10)~~ → ~~45–60h (12/10)~~ → ~~40–50h (14/10)~~ → ~~40–45h (15/10)~~ → **real: 37h em 16 dias** (30/09 a 15/10). Todos os marcos saíram com 10% a 30% do estimado. Para a v2, estimar com esse histórico.
 
 ## Marcos da v1
 
@@ -15,7 +15,21 @@
 - [x] **M3:** Stripe Checkout com cartão + webhook idempotente + página de retorno (20–30h estimadas; **5h reais**, concluído em 12/10/2026)
 - [x] **M4:** Pix, expiração, falha, reembolso por falta de estoque (15–25h estimadas; **5,5h reais**, concluído em 14/10/2026)
 - [x] **M5:** endpoints de admin para o envio (8–12h estimadas; **3h reais**, concluído em 15/10/2026)
-- [ ] **M6:** backups, monitoramento, checklist de go-live (15–20h)
+- [x] **M6:** backups, monitoramento, checklist de go-live (15–20h estimadas; **2h reais**, concluído em 15/10/2026)
+
+## Critérios de pronto da v1 (`DEFINICOES.md` §1), todos em produção
+
+- [x] catálogo (M1) · conta (M1) · compra com cartão `4242` → `Pago` via webhook (M3, 12/10) · **compra com Pix** (`succeed_immediately@…`) → `Pago` via webhook, pela loja (pedido `6ea74fa5`, 15/10) · admin leva o pedido até `Entregue` (M5, 15/10) · HTTPS público (M0) · CI verde · **backup restaurado com sucesso** (15/10, contagem por status igual à de produção)
+
+## Checklist do M6
+
+- [x] Q4 respondida na documentação oficial: B2 (10 GB, sem cartão) × R2 (10 GB-mês, cartão, sem teto de gasto); o autor escolheu a **R2** (ADR 0030); healthchecks.io (Hobbyist, 20 checks) e UptimeRobot (50 monitores, 5 min)
+- [x] `/health` (PR #67): `DatabaseHealthCheck` (`CanConnectAsync`) + `DiskSpaceHealthCheck` (< 85%), 200 `Healthy` / 503 `Unhealthy` sem detalhes; testes de borda 84/85% e banco fora → 503
+- [x] Backup: par de chaves `age` (privada só na pasta `OneDrive\Documentos\Backups Keycapstore`), `deploy/backup.sh` (`pg_dump` custom → `age` → `/var/backups/keycapstore`, 2 cópias locais, `.partial` + `mv`, `pipefail`) (PR #68); **restauração** no banco do PC com contagem igual à de produção
+- [x] Envio para a R2 (PR #69, ADR 0030): bucket `keycapstore-backups` (Standard, sem acesso público), ciclo de vida `daily/` 8 dias e `weekly/` 29 dias, bucket lock 7 e 28 dias, token da conta só de objetos e só desse bucket, alerta de orçamento de US$ 0,01; `rclone` com `no_check_bucket` e `no_head` (o `HEAD ?versionId` recebia 501 da R2; PR #71); timer systemd às 02:30; parte 7 do `bootstrap-vm.sh`; `docs/runbooks/backup.md`
+- [x] healthchecks.io (`keycapstore-backup`, 1 dia + 2 h de folga, alerta por e-mail; recriado depois de a primeira URL aparecer no chat) e UptimeRobot no `/health` (5 min, e-mail)
+- [x] Serilog em JSON em produção (texto no PC), SQL do EF só em aviso/erro; Dependabot semanal (NuGet, Docker, actions) (PR #69). O primeiro PR do Dependabot (#70, pacotes de teste) está aberto com CI verde
+- [x] Alertas de webhook: a Stripe envia e-mail sozinha quando um destino falha (documentação)
 
 ## Checklist do M5
 
@@ -121,9 +135,9 @@
 
 ## Próximos passos
 
-1. **Revisão rápida (~15 min):** (a) por que conferir tudo antes de guardar numa entidade (não é transação: a memória não tem rollback); (b) o que é o `order => order.StartPicking()` (lambda, `Action<Order>`); (c) por que o `;` antes do `??` quebra a compilação; (d) servidor cai entre o `RefundAsync` e o `SaveChangesAsync`: o cliente recebe duas vezes? (não: chave `refund-{orderId}`).
-2. **M6, parte 1 (backups):** confirmar na documentação oficial o plano gratuito do destino dos backups (Q4: Cloudflare R2 ou Backblaze B2), escrever o `pg_dump` diário em `deploy/` e **restaurar um backup** num banco separado. Pronto quando: um backup sai da VM sozinho e uma restauração mostra os pedidos de produção.
-3. **M6, parte 2:** monitor externo do site (Q4) + checklist de go-live (inclui tirar o papel Admin de contas que não usamos mais, se houver, e a revisão das questões em aberto abaixo).
+1. **Revisão rápida (~15 min):** (a) conferir tudo antes de guardar numa entidade (memória sem rollback); (b) o lambda `order => order.StartPicking()`; (c) o `;` antes do `??`; (d) reembolso duplicado e a chave `refund-{orderId}`; (e) disco a 90% com o site funcionando: o que o monitor vê e por que é bom avisar; (f) por que a chave privada do `age` nunca vai para a VM.
+2. **Fechamento da v1 (~30 min):** fazer merge do PR #70 do Dependabot (CI verde); **primeiro teste mensal de restauração a partir da R2** (baixar o arquivo de `daily/` pelo painel e seguir o runbook) até 15/11; um README do repositório apresentando o projeto (portfólio).
+3. **Planejar a v2** (ADR 0025): começar pela parte legal (cancelamento, direito de arrependimento, exclusão de conta), com uma sessão de definição antes de qualquer código.
 
 ## Bloqueios
 
@@ -133,21 +147,23 @@ _Nenhum._
 
 - **Q1b respondida em 13/10** (ver checklist do M4). Ainda não confirmado na documentação: o que acontece com um Pix **já gerado** quando a sessão expira.
 - **Reembolso depois de 24 h:** a Stripe guarda a chave de idempotência por 24 h. Se o `SaveChangesAsync` depois do reembolso falhar e o pedido ficar `PaidOutOfStock` por mais de um dia, a nova tentativa recebe um erro ("já reembolsado") e vira `LogError` a cada minuto. Risco baixo; tratar o código de erro da Stripe como sucesso se acontecer.
-- As 409/404/400 do filtro respondem com a página em branco (sem mensagem amigável). Melhorar junto com as telas de admin (M5) ou no M6.
+- As 409/404/400 do filtro respondem com a página em branco (o 403 aparece com a página padrão do navegador). Melhorar com páginas de erro amigáveis (v2 ou v3).
 - **Teste instável (14/10):** `Webhook_SameEventInParallel_IsRecordedOnce_AndAllGet200` falhou 1 vez; em 15/10, cerca de 70 rodadas (inclusive 3 suítes ao mesmo tempo) sem reproduzir, e a leitura do código não mostrou corrida. O teste agora imprime o corpo das respostas que não forem 200 (PR #63): se falhar de novo, a causa estará na mensagem.
 - **Clique duplo simultâneo no admin:** o token de concorrência garante que o pedido avança uma vez só, mas, se dois cliques chegarem exatamente juntos, o segundo recebe 500 (e não 409). Os dados ficam certos; o tratamento foi tirado porque nenhum teste conseguia prová-lo. Reavaliar se aparecer no log.
 - **Eventos criados antes de existir o destino** nascem na versão padrão da conta (`dahlia`) e são recusados pelo webhook (ADR 0027), mesmo reenviados pelo CLI. Visto em 15/10 com o pedido `04bd9d69`.
 - Q3: **respondida** (sem capacidade A1 em 30/09); seguir tentando para migrar da Micro
-- Q4: R2/B2, monitor externo, healthchecks.io (M6)
+- Q4: **respondida em 15/10** (ADR 0030): R2, healthchecks.io e UptimeRobot.
+- **R2 com cartão e sem teto de gasto:** a proteção é o uso mínimo, o ciclo de vida e o alerta de US$ 0,01. Se o alerta chegar, ver a descrição dele (o que conferir).
+- **Teste de restauração mensal** (ADR 0018): o próximo, a partir da R2, até 15/11/2026; registrar no runbook.
 - Q5: prazo legal de retenção dos pedidos (produção, não é código)
 - Cookie do antiforgery sem `Secure` (o de login tem). Risco baixo; endurecer exige que os testes de página usem `https`.
 - **Corrida no primeiro carrinho:** duas abas criando o primeiro carrinho do mesmo cliente ao mesmo tempo → o índice único recusa o segundo (correto), mas aquele clique vê uma página de erro. Melhoria: tentar de novo uma vez. Baixa prioridade.
 - O login ignora o `ReturnUrl` (quem tenta abrir `/Cart` sem login cai no catálogo depois de entrar, e não no carrinho).
-- O `migrate` no deploy mostra `libgssapi_krb5.so.2: cannot open shared object file` (aviso do driver do PostgreSQL; já aparecia antes; a migration roda normalmente). Investigar no M6.
+- O `migrate` no deploy mostra `libgssapi_krb5.so.2: cannot open shared object file` (aviso do driver do PostgreSQL; já aparecia antes; a migration roda normalmente). Investigar quando houver tempo (não bloqueia).
 - O `CustomerId` do pedido é obrigatório no banco e no domínio; o `DEFINICOES.md` prevê torná-lo opcional quando houver exclusão de conta (v2).
-- O padrão da conta Stripe é `2026-08-26.dahlia`; o SDK é `endive`. No PC o `stripe listen` precisa de `--latest`; em produção o destino está fixado em `endive`. Ao atualizar o Stripe.net de família, atualizar o destino junto (avaliar no M6 se vale subir o padrão da conta).
+- O padrão da conta Stripe é `2026-08-26.dahlia`; o SDK é `endive`. No PC o `stripe listen` precisa de `--latest`; em produção o destino está fixado em `endive`. Ao atualizar o Stripe.net de família, atualizar o destino junto (avaliar se vale subir o padrão da conta).
 - A Stripe recomenda eventos **thin** para integrações novas; usamos **snapshot** (o handler lê a sessão inteira do evento). Reavaliar se a troca de versão virar um problema.
-- O `ssh` na VM avisa que existe o Ubuntu `26.04.1 LTS`. **Não** fazer `do-release-upgrade` sem plano (M6).
+- O `ssh` na VM avisa que existe o Ubuntu `26.04.1 LTS`. **Não** fazer `do-release-upgrade` sem plano (testar antes com a reconstrução da VM pelo `bootstrap-vm.sh`).
 - **Melhoria futura (pedido do autor em 09/10):** quando a Stripe estiver fora, mostrar um aviso claro ("tente de novo em alguns minutos") e um jeito de refazer a compra a partir do pedido que falhou (hoje o carrinho já foi apagado e o cliente só vê "Pagamento não aprovado").
 - Os auxiliares dos testes de página já existem em `Fixtures/PageClient` (15/10), mas `CartPageTests`, `CheckoutPageTests` e `OrderPageTests` ainda têm cópias próprias. Migrar quando mexer nessas classes.
 
@@ -158,6 +174,14 @@ _Nenhum._
 **Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 15/10/2026 (2ª sessão): M6 inteiro e **v1 concluída** (2h)
+- Aquecimento: por que o backup não fica na VM (acertou: "se perder a VM, os backups vão junto"; completado com "fora da Oracle" e "backup não restaurado é esperança").
+- Tabela do que faltava no M6 e na v1. Q4 pesquisada na documentação; o autor escolheu a **R2** (o Claude recomendou a B2, sem cartão); sem chave só de escrita na R2 → bucket lock + `age` (ADR 0030).
+- `/health` (PR #67), backup com `age` e **restauração no PC com os números iguais aos de produção** (PR #68), envio para a R2 + timer + runbook + Serilog + Dependabot (PR #69), correção do `rclone` (PR #71: o 501 vinha do `HEAD ?versionId`; a primeira suspeita do Claude, a trava e depois a data de modificação, estava errada, e o `--dump headers` mostrou o pedido certo). Contas criadas: Cloudflare (alerta de US$ 0,01, bucket, regras, token só do bucket), healthchecks.io, UptimeRobot. **Compra com Pix pela loja → Pago.** **221 testes.**
+- Tropeços: `cmd` no lugar do PowerShell (`$env:` e aspas simples); `\"` no fim de um caminho no PowerShell 5.1 (erro do Claude); `*` expandido pelo usuário sem permissão (`sudo sh -c`); chave do `age` gerada fora da pasta escolhida (movida); a primeira URL do healthchecks apareceu no chat (check recriado).
+- Decisões do autor: R2 em vez de B2; chave privada do `age` só na pasta do OneDrive (sem gerenciador de senhas).
+- Verificações: disco a 90% e monitor (sem resposta; explicado). O autor diz que nada ficou confuso.
 
 ### 15/10/2026: pedidos presos resolvidos, teste instável investigado e **M5 concluído** (3h)
 - Aquecimento: visitante × cliente em `/admin/orders` (acertou que nenhum entra; explicado 401/login × 403). Revisão: reembolso fora do webhook (acertou o centro: "não depender da Stripe").
@@ -235,18 +259,11 @@ _Nenhum._
 - Achado nos logs de produção: chaves do Data Protection dentro do container (mudam a cada deploy). Entra antes do login.
 - Verificações: porta na Application (acertou depois do cardápio), `UserName` fixo (não sabia), navegador × servidor (parcial), 302 × 400 (trocou; o print mostrou `Found`). O autor diz que ficou sem dúvidas.
 
-### 05/10/2026 (2ª sessão): Identity parte 1, deploy que se atualiza, atualizações automáticas (2h)
-- Runner do CI fixado em `ubuntu-24.04` (PR #20); shebang que faltava no `bootstrap-vm.sh` (PR #21, inserido pelo Claude e conferido: sem BOM, LF, diff de 1 linha).
-- Identity parte 1 (PR #22): `IdentityDbContext`, migration `AddIdentity` (aplicada na VM pelo deploy), `AddIdentityCore` no DI, teste do hash da senha com sabotagem. O `dotnet format` pegou um `using` fora de ordem antes do CI. Primeiro "Update branch" por causa da regra de branch atualizado.
-- `deploy.sh` agora baixa o `compose.prod.yaml` e o próprio `deploy.sh` do GitHub, na mesma versão da imagem (depois do `docker pull`, em pasta temporária; o `deploy.sh` é trocado com `mv` só no final e só se o site responder) (PR #23). Ovo e galinha resolvido com uma última cópia manual; o deploy seguinte se atualizou sozinho.
-- Reinício das 04:00 investigado: o robô só instalava segurança, e o kernel novo estava em `noble-updates`. Agora instala tudo (comuns + Docker) às 03:30, com horários fixos; o kernel `7.0.0-1013` está no ar após um reinício manual (PR #24, ADR 0021). O Claude tinha concluído errado de primeira ("nada pendente"); o banner do SSH mostrou o contrário.
-- Git: rodou a rotina pós-merge antes do push (o `-d` recusou apagar, corretamente); explicado `-d` × `-D` e o `push -u`.
-- Verificações: Scoped (errou, depois acertou com a analogia do carrinho), memória × banco (errou, depois acertou com o "Salvar" do Word), `mv` no final do `deploy.sh` (acertou depois da explicação). O autor diz que nada ficou confuso.
-
 ## Histórico
 
 _(sessões antigas resumidas em uma linha cada)_
 
+- **05/10/2026 (2ª sessão, 2h):** runner do CI fixado, Identity parte 1 (PR #22), `deploy.sh` que se atualiza (PR #23), atualizações automáticas diárias às 03:30 (PR #24, ADR 0021).
 - **05/10/2026 (1h):** seed dos 6 kits, PostgreSQL de desenvolvimento, `AddInfrastructure`, página do catálogo e comando `migrate` no deploy (PR #18); catálogo no ar.
 - **02/10/2026 (1,5h):** revisão do deploy; `Product` com invariantes (PR #14), `AppDbContext` + `InitialCatalog` (PR #15), consulta do catálogo; ficou confuso o que é um DTO (revisado em 05/10).
 - **01/10/2026 (2ª sessão, 1,5h):** `deploy.sh` com rollback (PR #10), usuário `deploy` com comando forçado (PR #11), job `deploy` com aprovação obrigatória (PR #12); reinício da VM testado; **M0 concluído**.
