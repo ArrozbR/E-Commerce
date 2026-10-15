@@ -254,3 +254,19 @@ elif [[ ! -f "/home/$DEPLOY_USER/.ssh/authorized_keys" ]]; then
 fi
 
 log "Parte 6 concluída"
+
+log "Instalando as ferramentas e o agendamento do backup"
+apt-get install -y age rclone
+install -m 750 -o root -g root "$SCRIPT_DIR/backup.sh" "$APP_DIR/backup.sh"
+install -m 644 "$SCRIPT_DIR/keycapstore-backup.service" /etc/systemd/system/keycapstore-backup.service
+install -m 644 "$SCRIPT_DIR/keycapstore-backup.timer" /etc/systemd/system/keycapstore-backup.timer
+systemctl daemon-reload
+systemctl enable --now keycapstore-backup.timer
+
+for required in "$APP_DIR/backup-recipient.txt" "$APP_DIR/backup.env"; do
+  if [[ ! -f "$required" ]]; then
+    echo "AVISO: falta $required; o backup vai falhar até ele existir (ver docs/runbooks/backup.md)." >&2
+  fi
+done
+
+log "Parte 7 concluída"

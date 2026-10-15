@@ -37,3 +37,4 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0027](0027-eventos-do-webhook-na-versao-do-sdk.md) | Eventos do webhook na versão da API do SDK (snapshot, `endive`) |
 | [0028](0028-pagina-minima-de-envio-para-o-admin.md) | Página mínima de envio para o admin (em vez de endpoints sem interface) |
 | [0029](0029-comando-para-trocar-a-senha-do-admin.md) | Comando `reset-admin-password` para trocar a senha de um admin |
+| [0030](0030-backups-na-cloudflare-r2.md) | Backups na Cloudflare R2, com bucket lock no lugar da credencial só de escrita |
