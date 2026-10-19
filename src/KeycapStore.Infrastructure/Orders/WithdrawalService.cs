@@ -15,6 +15,6 @@ internal sealed class WithdrawalService(AppDbContext db, TimeProvider clock) : I
 
         order.Withdraw(clock.GetUtcNow());
 
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(cancellationToken);
     }
 }
