@@ -54,3 +54,11 @@
     @address.District, @address.City - @address.State<br />
     CEP @address.PostalCode.Insert(5, "-")
 </p>
+
+@if (Model.Status is KeycapStore.Domain.Orders.OrderStatus.Paid or KeycapStore.Domain.Orders.OrderStatus.Picking)
+{
+    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Cancelar este pedido? O valor pago será devolvido.');">
+        <button type="submit" class="btn btn-outline-danger">Cancelar pedido</button>
+    </form>
+    <p class="text-muted small mt-1">Você pode cancelar até o pedido ser enviado. O valor é devolvido automaticamente.</p>
+}
