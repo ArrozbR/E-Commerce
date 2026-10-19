@@ -48,7 +48,7 @@ public static class DependencyInjection
             .ValidateOnStart();
         services.AddSingleton<IPaymentGateway, StripePaymentGateway>();
         services.AddScoped<IPaymentWebhookHandler, StripeWebhookHandler>();
-        services.AddScoped<IOutOfStockRefunder, OutOfStockRefunder>();
+        services.AddScoped<IRefundProcessor, RefundProcessor>();
 
         services.AddIdentityCore<IdentityUser>(options =>
         {

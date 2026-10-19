@@ -43,4 +43,19 @@ internal sealed class StripePaymentGateway(IOptions<StripeOptions> options) : IP
             throw new PaymentGatewayException("A Stripe recusou o reembolso.", ex);
         }
     }
+
+    public async Task<string> GetPaymentIntentIdAsync(string checkoutSessionId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var session = await new SessionService(_client).GetAsync(checkoutSessionId, cancellationToken: cancellationToken);
+
+            return session.PaymentIntentId
+                ?? throw new PaymentGatewayException("A sessão da Stripe não tem pagamento.");
+        }
+        catch (StripeException ex)
+        {
+            throw new PaymentGatewayException("A Stripe recusou a consulta da sessão.", ex);
+        }
+    }
 }

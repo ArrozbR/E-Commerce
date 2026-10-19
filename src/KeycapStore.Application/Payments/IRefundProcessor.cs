@@ -1,6 +1,6 @@
 ﻿namespace KeycapStore.Application.Payments;
 
-public interface IOutOfStockRefunder
+public interface IRefundProcessor
 {
     Task<int> RefundPendingAsync(CancellationToken cancellationToken = default);
 }

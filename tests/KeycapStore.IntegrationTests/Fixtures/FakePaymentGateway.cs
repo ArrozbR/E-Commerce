@@ -37,4 +37,9 @@ public sealed class FakePaymentGateway : IPaymentGateway
         Refunds.Enqueue((orderId, paymentIntentId));
         return Task.CompletedTask;
     }
+
+    public Task<string> GetPaymentIntentIdAsync(string checkoutSessionId, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult($"pi_from_{checkoutSessionId}");
+    }
 }
