@@ -12,7 +12,7 @@ internal sealed class RefundProcessor(AppDbContext db, IPaymentGateway payments,
     public async Task<int> RefundPendingAsync(CancellationToken cancellationToken = default)
     {
         var pendingIds = await db.Orders
-            .Where(o => o.Status == OrderStatus.PaidOutOfStock || o.Status == OrderStatus.Cancelled)
+            .Where(o => o.Status == OrderStatus.PaidOutOfStock || o.Status == OrderStatus.Cancelled || o.Status == OrderStatus.Withdrawn)
             .Select(o => o.Id)
             .ToListAsync(cancellationToken);
 
@@ -23,7 +23,7 @@ internal sealed class RefundProcessor(AppDbContext db, IPaymentGateway payments,
             {
                 var order = await db.Orders.SingleAsync(o => o.Id == orderId, cancellationToken);
 
-                if (order.Status is not (OrderStatus.PaidOutOfStock or OrderStatus.Cancelled))
+                if (order.Status is not (OrderStatus.PaidOutOfStock or OrderStatus.Cancelled or OrderStatus.Withdrawn))
                 {
                     continue;
                 }
