@@ -11,7 +11,7 @@ namespace KeycapStore.Web.Controllers;
 
 [Authorize]
 [DomainExceptionFilter]
-public sealed class OrdersController(IOrderQueries orders, ICancellationService cancellations) : Controller
+public sealed class OrdersController(IOrderQueries orders, ICancellationService cancellations, IWithdrawalService withdrawals) : Controller
 {
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -55,6 +55,14 @@ public sealed class OrdersController(IOrderQueries orders, ICancellationService 
     public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
     {
         await cancellations.CancelAsync(id, CustomerId, cancellationToken);
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost("orders/{id:guid}/withdraw")]
+    public async Task<IActionResult> Withdraw(Guid id, CancellationToken cancellationToken)
+    {
+        await withdrawals.WithdrawAsync(id, CustomerId, cancellationToken);
 
         return RedirectToAction(nameof(Details), new { id });
     }

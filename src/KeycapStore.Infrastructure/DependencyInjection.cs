@@ -40,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminOrderQueries, AdminOrderQueries>();
         services.AddScoped<IShippingService, ShippingService>();
         services.AddScoped<ICancellationService, CancellationService>();
+        services.AddScoped<IWithdrawalService, WithdrawalService>();
         services.AddScoped<IOrphanOrderReleaser, OrphanOrderReleaser>();
         services.AddHostedService<OrderMaintenanceJob>();
         services.TryAddSingleton(TimeProvider.System);

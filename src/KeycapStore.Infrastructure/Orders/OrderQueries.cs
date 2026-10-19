@@ -1,11 +1,12 @@
 ﻿using KeycapStore.Application.Orders;
+using KeycapStore.Domain.Orders;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
 
 namespace KeycapStore.Infrastructure.Orders;
 
-internal sealed class OrderQueries(AppDbContext db) : IOrderQueries
+internal sealed class OrderQueries(AppDbContext db, TimeProvider clock) : IOrderQueries
 {
     public async Task<OrderView?> GetForCustomerAsync(Guid orderId, string customerId, CancellationToken cancellationToken = default)
     {
@@ -21,6 +22,7 @@ internal sealed class OrderQueries(AppDbContext db) : IOrderQueries
             .OrderBy(l => l.ProductName)
             .ToList();
 
-        return new OrderView(order.Id, order.Status, order.CreatedAt, lines, order.ShippingFee, order.Total, order.ShippingAddress);
+        return new OrderView(order.Id, order.Status, order.CreatedAt, lines, order.ShippingFee, order.Total, order.ShippingAddress,
+            order.CanWithdraw(clock.GetUtcNow()), order.DeliveredAt + Order.WithdrawalPeriod);
     }
 }

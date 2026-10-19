@@ -209,12 +209,17 @@ public sealed class Order
         Status = OrderStatus.Cancelled;
     }
 
-    public void Withdraw(DateTimeOffset now)
+    public bool CanWithdraw(DateTimeOffset now)
     {
         bool inTransit = Status is OrderStatus.Shipped;
         bool withinPeriod = Status is OrderStatus.Delivered && DeliveredAt is not null && now <= DeliveredAt.Value + WithdrawalPeriod;
 
-        if (!inTransit && !withinPeriod)
+        return inTransit || withinPeriod;
+    }
+
+    public void Withdraw(DateTimeOffset now)
+    {
+        if (!CanWithdraw(now))
         {
             throw new InvalidOrderTransitionException(Status, OrderStatus.Withdrawn);
         }
