@@ -27,4 +27,22 @@ internal sealed class ShippingService(AppDbContext db, TimeProvider clock) : ISh
 
         await db.SaveChangesAsync(cancellationToken);
     }
+    public async Task ConfirmReturnAsync(Guid orderId, bool restock, CancellationToken cancellationToken = default)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+
+        var order = await db.Orders.SingleOrDefaultAsync(o => o.Id == orderId, cancellationToken)
+            ?? throw new OrderNotFoundException(orderId);
+
+        order.ConfirmReturn();
+
+        if (restock)
+        {
+            await db.ReleaseStockAsync(order, cancellationToken);
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+
+        await transaction.CommitAsync(cancellationToken);
+    }
 }

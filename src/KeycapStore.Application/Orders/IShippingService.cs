@@ -7,4 +7,6 @@ public interface IShippingService
     Task ShipAsync(Guid orderId, string trackingCode, CancellationToken cancellationToken = default);
 
     Task DeliverAsync(Guid orderId, CancellationToken cancellationToken = default);
+
+    Task ConfirmReturnAsync(Guid orderId, bool restock, CancellationToken cancellationToken = default);
 }

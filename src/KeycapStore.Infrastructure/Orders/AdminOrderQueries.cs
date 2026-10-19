@@ -8,7 +8,8 @@ namespace KeycapStore.Infrastructure.Orders;
 
 internal sealed class AdminOrderQueries(AppDbContext db) : IAdminOrderQueries
 {
-    private static readonly OrderStatus[] ShippingQueue = [OrderStatus.Paid, OrderStatus.Picking, OrderStatus.Shipped];
+    private static readonly OrderStatus[] ShippingQueue =
+        [OrderStatus.Paid, OrderStatus.Picking, OrderStatus.Shipped, OrderStatus.Withdrawn, OrderStatus.AwaitingReturn];
 
     public async Task<IReadOnlyList<AdminOrderView>> GetShippingQueueAsync(CancellationToken cancellationToken = default)
     {

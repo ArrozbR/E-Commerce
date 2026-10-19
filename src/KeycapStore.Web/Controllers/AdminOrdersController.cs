@@ -43,4 +43,12 @@ public sealed class AdminOrdersController(IAdminOrderQueries orders, IShippingSe
 
         return RedirectToAction(nameof(Index));
     }
+
+    [HttpPost("{id:guid}/confirm-return")]
+    public async Task<IActionResult> ConfirmReturn(Guid id, bool restock, CancellationToken cancellationToken)
+    {
+        await shipping.ConfirmReturnAsync(id, restock, cancellationToken);
+
+        return RedirectToAction(nameof(Index));
+    }
 }
