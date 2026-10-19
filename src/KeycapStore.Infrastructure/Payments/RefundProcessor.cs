@@ -7,12 +7,12 @@ using Microsoft.Extensions.Logging;
 
 namespace KeycapStore.Infrastructure.Payments;
 
-internal sealed class OutOfStockRefunder(AppDbContext db, IPaymentGateway payments, ILogger<OutOfStockRefunder> logger) : IOutOfStockRefunder
+internal sealed class RefundProcessor(AppDbContext db, IPaymentGateway payments, ILogger<RefundProcessor> logger) : IRefundProcessor
 {
     public async Task<int> RefundPendingAsync(CancellationToken cancellationToken = default)
     {
         var pendingIds = await db.Orders
-            .Where(o => o.Status == OrderStatus.PaidOutOfStock)
+            .Where(o => o.Status == OrderStatus.PaidOutOfStock || o.Status == OrderStatus.Cancelled)
             .Select(o => o.Id)
             .ToListAsync(cancellationToken);
 
@@ -23,22 +23,24 @@ internal sealed class OutOfStockRefunder(AppDbContext db, IPaymentGateway paymen
             {
                 var order = await db.Orders.SingleAsync(o => o.Id == orderId, cancellationToken);
 
-                if (order.Status is not OrderStatus.PaidOutOfStock)
+                if (order.Status is not (OrderStatus.PaidOutOfStock or OrderStatus.Cancelled))
                 {
                     continue;
                 }
 
-                await payments.RefundAsync(order.Id, order.StripePaymentIntentId!, cancellationToken);
+                var paymentIntentId = order.StripePaymentIntentId ?? await payments.GetPaymentIntentIdAsync(order.StripeSessionId!, cancellationToken);
+
+                await payments.RefundAsync(order.Id, paymentIntentId, cancellationToken);
 
                 order.MarkRefunded();
                 await db.SaveChangesAsync(cancellationToken);
 
                 refunded++;
-                logger.LogInformation("Pedido {OrderId} reembolsado (pago sem estoque)", orderId);
+                logger.LogInformation("Pedido {OrderId} reembolsado", orderId);
             }
             catch (PaymentGatewayException)
             {
-                logger.LogError("Reembolso do pedido {OrderId} falhou; o pedido continua PaidOutOfStock e será tentado de novo", orderId);
+                logger.LogError("Reembolso do pedido {OrderId} falhou; ele continua aguardando reembolso e será tentado de novo", orderId);
             }
             catch (DbUpdateConcurrencyException)
             {

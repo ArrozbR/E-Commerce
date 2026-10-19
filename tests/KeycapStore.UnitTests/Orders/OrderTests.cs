@@ -104,7 +104,7 @@ public class OrderTests
         var order = NewOrder();
         order.Expire();
 
-        var ex = Assert.Throws<InvalidOrderTransitionException>(order.ConfirmPayment);
+        var ex = Assert.Throws<InvalidOrderTransitionException>(() => order.ConfirmPayment());
 
         Assert.Equal(OrderStatus.Expired, ex.From);
         Assert.Equal(OrderStatus.Expired, order.Status);
@@ -248,7 +248,7 @@ public class OrderTests
     {
         var order = NewOrder();
 
-        var ex = Assert.Throws<InvalidOrderTransitionException>(order.ConfirmLatePayment);
+        var ex = Assert.Throws<InvalidOrderTransitionException>(() => order.ConfirmLatePayment());
 
         Assert.Equal(OrderStatus.AwaitingPayment, ex.From);
         Assert.Equal(OrderStatus.AwaitingPayment, order.Status);
@@ -423,5 +423,81 @@ public class OrderTests
 
         Assert.Equal(OrderStatus.Picking, ex.From);
         Assert.Equal(OrderStatus.Picking, order.Status);
+    }
+
+    [Fact]
+    public void ConfirmPayment_KeepsThePaymentIntent()
+    {
+        var order = NewOrder();
+
+        order.ConfirmPayment("pi_test_123");
+
+        Assert.Equal("pi_test_123", order.StripePaymentIntentId);
+    }
+
+    [Fact]
+    public void ConfirmLatePayment_KeepsThePaymentIntent()
+    {
+        var order = NewOrder();
+        order.Expire();
+
+        order.ConfirmLatePayment("pi_test_456");
+
+        Assert.Equal("pi_test_456", order.StripePaymentIntentId);
+    }
+
+    [Fact]
+    public void Cancel_FromPaid_GoesToCancelled()
+    {
+        var order = PaidOrder();
+
+        order.Cancel();
+
+        Assert.Equal(OrderStatus.Cancelled, order.Status);
+    }
+
+    [Fact]
+    public void Cancel_FromPicking_GoesToCancelled()
+    {
+        var order = PaidOrder();
+        order.StartPicking();
+
+        order.Cancel();
+
+        Assert.Equal(OrderStatus.Cancelled, order.Status);
+    }
+
+    [Fact]
+    public void Cancel_WhenShipped_Throws()
+    {
+        var order = PaidOrder();
+        order.StartPicking();
+        order.MarkShipped("BR123456789");
+
+        var ex = Assert.Throws<InvalidOrderTransitionException>(order.Cancel);
+
+        Assert.Equal(OrderStatus.Shipped, ex.From);
+        Assert.Equal(OrderStatus.Shipped, order.Status);
+    }
+
+    [Fact]
+    public void Cancel_WhenAwaitingPayment_Throws()
+    {
+        var order = NewOrder();
+
+        var ex = Assert.Throws<InvalidOrderTransitionException>(order.Cancel);
+
+        Assert.Equal(OrderStatus.AwaitingPayment, ex.From);
+    }
+
+    [Fact]
+    public void MarkRefunded_FromCancelled_GoesToRefunded()
+    {
+        var order = PaidOrder();
+        order.Cancel();
+
+        order.MarkRefunded();
+
+        Assert.Equal(OrderStatus.Refunded, order.Status);
     }
 }

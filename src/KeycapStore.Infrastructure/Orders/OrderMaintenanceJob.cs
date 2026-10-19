@@ -18,7 +18,7 @@ public sealed class OrderMaintenanceJob(IServiceScopeFactory scopes, ILogger<Ord
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
             await RunAsync<IOrphanOrderReleaser>((releaser, ct) => releaser.ReleaseOrphansAsync(ct), stoppingToken);
-            await RunAsync<IOutOfStockRefunder>((refunder, ct) => refunder.RefundPendingAsync(ct), stoppingToken);
+            await RunAsync<IRefundProcessor>((refunds, ct) => refunds.RefundPendingAsync(ct), stoppingToken);
         }
     }
 

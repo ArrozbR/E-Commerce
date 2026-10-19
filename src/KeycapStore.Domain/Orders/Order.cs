@@ -71,7 +71,7 @@ public sealed class Order
         StripeSessionId = sessionId;
     }
 
-    public void ConfirmPayment()
+    public void ConfirmPayment(string? paymentIntentId = null)
     {
         if (Status is OrderStatus.Paid)
         {
@@ -82,6 +82,8 @@ public sealed class Order
         {
             throw new InvalidOrderTransitionException(Status, OrderStatus.Paid);
         }
+
+        StripePaymentIntentId ??= paymentIntentId;
 
         Status = OrderStatus.Paid;
     }
@@ -117,12 +119,14 @@ public sealed class Order
     }
 
 
-    public void ConfirmLatePayment()
+    public void ConfirmLatePayment(string? paymentIntentId = null)
     {
         if (Status is not (OrderStatus.Expired or OrderStatus.Failed))
         {
             throw new InvalidOrderTransitionException(Status, OrderStatus.Paid);
         }
+
+        StripePaymentIntentId ??= paymentIntentId;
 
         Status = OrderStatus.Paid;
     }
@@ -142,7 +146,7 @@ public sealed class Order
 
     public void MarkRefunded()
     {
-        if (Status is not (OrderStatus.PaidOutOfStock))
+        if (Status is not (OrderStatus.PaidOutOfStock or OrderStatus.Cancelled))
         {
             throw new InvalidOrderTransitionException(Status, OrderStatus.Refunded);
         }
@@ -183,5 +187,15 @@ public sealed class Order
         }
 
         Status = OrderStatus.Delivered;
+    }
+
+    public void Cancel()
+    {
+        if (Status is not (OrderStatus.Paid or OrderStatus.Picking))
+        {
+            throw new InvalidOrderTransitionException(Status, OrderStatus.Cancelled);
+        }
+
+        Status = OrderStatus.Cancelled;
     }
 }

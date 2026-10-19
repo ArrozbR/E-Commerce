@@ -4,9 +4,9 @@ Estas regras são inegociáveis. Qualquer código que toque em pedido, estoque, 
 
 ## 1. Fonte da verdade
 
-- **O webhook assinado da Stripe é a ÚNICA fonte da verdade sobre pagamento.** Só o handler do webhook muda um pedido para `Paid`, `AwaitingConfirmation`, `Expired`, `Failed`, `PaidOutOfStock` ou `Refunded`.
+- **O webhook assinado da Stripe é a ÚNICA fonte da verdade sobre pagamento.** Só o handler do webhook muda um pedido para `Paid`, `AwaitingConfirmation`, `Expired`, `Failed` ou `PaidOutOfStock`. `Refunded` só pelo job de reembolso, depois de a Stripe aceitar o reembolso.
 - **O redirecionamento (`success_url`) não prova nada.** A página de retorno apenas consulta o próprio backend (`GET /orders/{id}/status`, restrito ao dono do pedido) e **nunca** altera estado.
-- Nenhum endpoint de admin, nenhuma tela e nenhum comando altera estado de pagamento.
+- Nenhum endpoint de admin, nenhuma tela e nenhum comando altera estado de pagamento. **Exceção (ADR 0031):** o cliente pode **cancelar** o próprio pedido `Paid`/`Picking`; o reembolso continua sendo do job, pela API da Stripe.
 - Consultar a API da Stripe (polling) é só rede de segurança (conciliação, fora da v1), nunca o caminho principal.
 
 ## 2. Webhook: `POST /webhooks/stripe`
@@ -65,13 +65,14 @@ Ordem obrigatória:
 | `Expire()` | `AwaitingPayment` | `Expired` | webhook |
 | `MarkFailed()` | `AwaitingPayment`, `AwaitingConfirmation` | `Failed` | webhook, falha ao criar sessão, job de órfãos |
 | `MarkOutOfStock()` | (confirmação sem reserva) | `PaidOutOfStock` | webhook |
-| `MarkRefunded()` | `PaidOutOfStock` | `Refunded` | caso de uso de reembolso |
+| `Cancel()` | `Paid`, `Picking` | `Cancelled` (+ estoque devolvido na mesma transação) | cliente dono do pedido (ADR 0031) |
+| `MarkRefunded()` | `PaidOutOfStock`, `Cancelled` | `Refunded` | job de reembolso |
 | `StartPicking()` | `Paid` | `Picking` | admin |
 | `MarkShipped(trackingCode)` | `Picking` | `Shipped` | admin |
 | `MarkDelivered()` | `Shipped` | `Delivered` | admin |
 
 - **Admin:** um endpoint por ação (`POST /admin/orders/{id}/start-picking`, `/ship`, `/deliver`). **Nunca um PATCH genérico de status.**
-- Cancelamento **não existe na v1** (entra na v2).
+- Cancelamento (v2, ADR 0031): só o dono, só de `Paid`/`Picking`; o reembolso é do job, nunca da requisição.
 
 ## 5. Estoque
 
@@ -84,6 +85,7 @@ Ordem obrigatória:
 - **Liberação SÓ por evento da Stripe** (`expired`, `async_payment_failed`). **Nunca por timer próprio.**
 - **Única exceção (D35):** um job libera pedidos `AwaitingPayment` **sem `StripeSessionId`** há mais de 10 minutos. Sem sessão, não existe forma de pagar.
 - Se a criação da sessão na Stripe falhar: `MarkFailed()` + liberar estoque (compensação).
+- **Cancelamento pelo cliente (ADR 0031):** `Cancel()` + liberar estoque, na mesma transação.
 - A confirmação de pagamento **não** mexe no estoque (ele já foi reservado). Se a reserva tiver sido liberada: tentar reservar de novo de forma atômica. Se conseguir → `Paid`. Se não → `PaidOutOfStock` → reembolso automático (`refund-{orderId}`) → `Refunded`. Se o reembolso falhar, o pedido continua em `PaidOutOfStock` e gera um alerta.
 
 ## 6. Criação da sessão do Checkout

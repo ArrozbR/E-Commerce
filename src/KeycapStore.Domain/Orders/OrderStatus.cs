@@ -12,4 +12,5 @@ public enum OrderStatus
     Picking,
     Shipped,
     Delivered,
+    Cancelled,
 }

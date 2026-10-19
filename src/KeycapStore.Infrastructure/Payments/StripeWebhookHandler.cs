@@ -96,13 +96,13 @@ internal sealed class StripeWebhookHandler(
     {
         if (order.Status is OrderStatus.AwaitingPayment or OrderStatus.AwaitingConfirmation or OrderStatus.Paid)
         {
-            order.ConfirmPayment();
+            order.ConfirmPayment(session.PaymentIntentId); ;
         }
         else if (order.Status is OrderStatus.Expired or OrderStatus.Failed)
         {
             if (await db.TryReserveStockAsync(order, cancellationToken))
             {
-                order.ConfirmLatePayment();
+                order.ConfirmLatePayment(session.PaymentIntentId);
             }
             else
             {
