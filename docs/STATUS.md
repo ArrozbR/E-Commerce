@@ -2,10 +2,19 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** 🎉 **v1 concluída em 15/10/2026**: todos os critérios de pronto do `DEFINICOES.md` §1 cumpridos em produção. Próximo: decidir o começo da v2 (ADR 0025: parte legal primeiro). **M6 concluído em 15/10/2026** (`/health`, Serilog, Dependabot, backup diário criptografado na Cloudflare R2 com restauração testada, healthchecks.io, UptimeRobot). **M5 concluído em 15/10/2026** (página mínima de envio só para o papel Admin, separar → enviar com rastreio → entregar, comando `reset-admin-password`; pedido levado até "Entregue" em produção). **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
+**Marco atual:** **v2, parte legal (ADR 0025): 2 de 3 peças em produção** (cancelamento, ADR 0031, e direito de arrependimento, ADR 0032, em 19/10/2026). Falta a exclusão de conta (LGPD). 🎉 **v1 concluída em 15/10/2026**: todos os critérios de pronto do `DEFINICOES.md` §1 cumpridos em produção. **M6 concluído em 15/10/2026** (`/health`, Serilog, Dependabot, backup diário criptografado na Cloudflare R2 com restauração testada, healthchecks.io, UptimeRobot). **M5 concluído em 15/10/2026** (página mínima de envio só para o papel Admin, separar → enviar com rastreio → entregar, comando `reset-admin-password`; pedido levado até "Entregue" em produção). **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · M5: 3h (estimativa era 8–12h) · M6: 2h (estimativa era 15–20h) · **total da v1: 37h**
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · M5: 3h (estimativa era 8–12h) · M6: 2h (estimativa era 15–20h) · **total da v1: 37h** · **v2 até agora: 2,5h** · **total do projeto: 39,5h**
 **Estimativa da v1:** ~~120–180h~~ → ~~55–85h (08/10)~~ → ~~45–60h (12/10)~~ → ~~40–50h (14/10)~~ → ~~40–45h (15/10)~~ → **real: 37h em 16 dias** (30/09 a 15/10). Todos os marcos saíram com 10% a 30% do estimado. Para a v2, estimar com esse histórico.
+
+## v2 (ADR 0025)
+
+**Parte legal (libera o go-live):**
+- [x] **Cancelamento antes do envio** (PR #73, ADR 0031, 19/10): `Cancel()` de `Paid`/`Picking` (só o dono; outro cliente → 404, depois do envio → 409), estoque devolvido na mesma transação, reembolso pelo job (`RefundProcessor`, que substituiu o `OutOfStockRefunder`); o `pi_` passa a ser guardado em toda confirmação e, nos pedidos antigos, é buscado na Stripe pela sessão. **Escrito pelo autor:** `Cancel`/`MarkRefunded`/`??=` no `Order`, `RefundProcessor`, `CancellationService`. **Em produção:** pedido `6ea74fa5` (Pix de 15/10, sem `pi_` guardado) cancelado → reembolsado pela busca da sessão
+- [x] **Direito de arrependimento** (PR #74, ADR 0032, 19/10): texto do CDC art. 49 e do Decreto 7.962 art. 5º conferido no Planalto; `DeliveredAt` (migration `AddOrderDeliveredAt`); `Withdraw(now)` de `Shipped` ou `Delivered` há até 7 dias (`CanWithdraw`, mesma regra para o botão e o domínio) → `Withdrawn`; job reembolsa na hora → `AwaitingReturn`; admin confirma a devolução e escolhe "volta ao estoque" → `Returned`. **Escrito pelo autor:** as 5 lacunas do `Order`, o `RefundProcessor`, o `WithdrawalService` e o `ConfirmReturnAsync` (este sem esqueleto, só com a explicação). **256 testes.** **Em produção:** pedido `f3cccfbd` (cartão) entregue → desistência → reembolso em ~3 min → devolução com estoque de 1 para 2
+- [ ] **Exclusão de conta** (LGPD): definida no `DEFINICOES.md` §6 (pedidos ficam com `CustomerId` nulo, snapshot anonimizado depois do prazo legal, bloqueio com pedido em andamento); precisa de sessão de definição + ADR
+
+**Depois:** tela de admin com cadastro de produtos · endereços salvos · conciliação · site em inglês · login com Google · Payment Element · frete real · pré-venda (ordem sugerida em 19/10, ainda não decidida)
 
 ## Marcos da v1
 
@@ -135,9 +144,9 @@
 
 ## Próximos passos
 
-1. **Revisão rápida (~15 min):** (a) conferir tudo antes de guardar numa entidade (memória sem rollback); (b) o lambda `order => order.StartPicking()`; (c) o `;` antes do `??`; (d) reembolso duplicado e a chave `refund-{orderId}`; (e) disco a 90% com o site funcionando: o que o monitor vê e por que é bom avisar; (f) por que a chave privada do `age` nunca vai para a VM.
-2. **Fechamento da v1 (~30 min):** fazer merge do PR #70 do Dependabot (CI verde); **primeiro teste mensal de restauração a partir da R2** (baixar o arquivo de `daily/` pelo painel e seguir o runbook) até 15/11; um README do repositório apresentando o projeto (portfólio).
-3. **Planejar a v2** (ADR 0025): começar pela parte legal (cancelamento, direito de arrependimento, exclusão de conta), com uma sessão de definição antes de qualquer código.
+1. **Exclusão de conta (LGPD):** sessão de definição (o que apagar, o que anonimizar, quando bloquear) + ADR 0033, e depois o código em passos com lacunas, como no cancelamento e no arrependimento.
+2. **Melhorias pequenas vistas no teste de 19/10:** lista **"Meus pedidos"** no menu do cliente (hoje ele só chega ao pedido pelo link da compra, e precisa achar o pedido para cancelar ou desistir) e "Últimas **1 unidades**" → "Última unidade".
+3. **Pendências da v1:** merge do PR #70 do Dependabot; **teste mensal de restauração a partir da R2 até 15/11** (runbook `docs/runbooks/backup.md`).
 
 ## Bloqueios
 
@@ -145,6 +154,9 @@ _Nenhum._
 
 ## Questões em aberto
 
+- **Arrependimento, pendente para o go-live (ADR 0032):** o Decreto 7.962 § 4º pede que a loja **envie** a confirmação (hoje ela só aparece na página; a loja não envia e-mail); quem paga o **frete de volta** e como o cliente devolve o pacote (a lei não diz no texto conferido; definir com orientação jurídica e informar nos termos de uso). Prazo contado como 7 × 24 h exatas a partir do `DeliveredAt`.
+- Pedidos entregues antes de 19/10 não têm `DeliveredAt` e não mostram o botão de desistência (só o `04bd9d69`, de teste).
+- **Dados pessoais reais em produção:** um pedido de 16/10 (Pix de 17/10) tem nome e endereço que parecem reais (teste de outra pessoa). Não publicar prints da página do admin sem cortar; é um caso para a exclusão de conta.
 - **Q1b respondida em 13/10** (ver checklist do M4). Ainda não confirmado na documentação: o que acontece com um Pix **já gerado** quando a sessão expira.
 - **Reembolso depois de 24 h:** a Stripe guarda a chave de idempotência por 24 h. Se o `SaveChangesAsync` depois do reembolso falhar e o pedido ficar `PaidOutOfStock` por mais de um dia, a nova tentativa recebe um erro ("já reembolsado") e vira `LogError` a cada minuto. Risco baixo; tratar o código de erro da Stripe como sucesso se acontecer.
 - As 409/404/400 do filtro respondem com a página em branco (o 403 aparece com a página padrão do navegador). Melhorar com páginas de erro amigáveis (v2 ou v3).
@@ -174,6 +186,14 @@ _Nenhum._
 **Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 19/10/2026: v2 começou: cancelamento e direito de arrependimento em produção (2,5h)
+- Pasta de memórias apagada do repositório (era só para sincronizar PC e notebook). O autor dispensou a revisão e o README e foi direto para a v2.
+- **Cancelamento** (PR #73, ADR 0031): o autor escolheu "Pago ou Em separação" e "guardar o `pi_` + buscar pela sessão" para os pedidos antigos. Escreveu `Order` (lacunas certas), `RefundProcessor` e `CancellationService`. Em produção, o pedido `6ea74fa5` foi cancelado e reembolsado pela busca da sessão (o Claude tinha dito que esse caminho não seria testado em produção, e foi).
+- **Arrependimento** (PR #74, ADR 0032): o Planalto recusou a conexão do Claude e **o autor colou os textos da lei**; decisões do autor: reembolso na hora, admin decide o estoque, vale também a caminho. Escreveu 5/5 lacunas do `Order` de primeira, `RefundProcessor`, `WithdrawalService` (faltou o `cancellationToken` no `SaveChangesAsync`; commit de correção) e o `ConfirmReturnAsync` **sem esqueleto**, só pela explicação. Refatoração `CanWithdraw` (De Morgan) para a página e o domínio usarem a mesma regra. **256 testes.** Teste em produção completo (compra → entrega → desistência → reembolso → devolução com estoque).
+- Tropeços: `if(` sem espaço (o `dotnet format` corrige); commit feito antes da correção (resolvido com outro commit); explicação resumida demais do passo 4 ("Que?"; refeita com tabela comparando com o `CancellationService`); o CI da `main` demorou a aparecer depois do merge do #74 (apareceu sozinho).
+- Achados no teste: falta "Meus pedidos" no menu; "Últimas 1 unidades".
+- Verificações: por que o reembolso fica no job (sem resposta), `is not null` antes do `.Value`, 302 × 409 no esqueleto e estoque com `ConfirmReturn` recusado (sem resposta). O autor diz que nada ficou confuso.
 
 ### 15/10/2026 (2ª sessão): M6 inteiro e **v1 concluída** (2h)
 - Aquecimento: por que o backup não fica na VM (acertou: "se perder a VM, os backups vão junto"; completado com "fora da Oracle" e "backup não restaurado é esperança").
@@ -251,18 +271,11 @@ _Nenhum._
 - **Segurança:** a senha do admin de produção foi colada no chat (texto + print); o autor decidiu não trocar agora. Fica no checklist do M6.
 - Verificações: chave no banco × cookie no navegador (acertou com ajuste), "e-mail ou senha" genérico (acertou), POST no logout (sem resposta). O autor diz que nada ficou confuso.
 
-### 05/10/2026 (3ª sessão): 150 caracteres e cadastro de clientes no ar (2h)
-- Regra dos 150 caracteres no `Product` com TDD (vermelho → verde), constante `MaxNameLength` como fonte única (PR #26). Erros no caminho: `Name` (propriedade) em vez de `name.Length`; um `migrations remove` sem `add` antes, que só não apagou a `AddIdentity` porque não conectou no banco (usar `has-pending-model-changes` para conferir o modelo).
-- Cadastro completo em 5 passos (PR #27): porta na Application, `AccountService`, página MVC com ViewModel, mensagens em pt-BR, teste da página com antiforgery. Arquivos `.cshtml.cs` de Razor Page que sobravam do modelo do VS foram apagados (usar "Razor View - Empty").
-- Sabotagens: `RequireUniqueEmail = false` **não** fez o teste falhar, porque `UserName = email` tem índice **único** no banco (o `EmailIndex` não é único): é essa a garantia real. Sem o filtro de antiforgery, o POST sem token virou 302 (conta criada).
-- Incidente do GitHub Actions travou o CI do PR #26 por horas; resolvido com "Re-run failed jobs" depois.
-- Achado nos logs de produção: chaves do Data Protection dentro do container (mudam a cada deploy). Entra antes do login.
-- Verificações: porta na Application (acertou depois do cardápio), `UserName` fixo (não sabia), navegador × servidor (parcial), 302 × 400 (trocou; o print mostrou `Found`). O autor diz que ficou sem dúvidas.
-
 ## Histórico
 
 _(sessões antigas resumidas em uma linha cada)_
 
+- **05/10/2026 (3ª sessão, 2h):** regra dos 150 caracteres no `Product` com TDD (PR #26); cadastro de clientes em 5 passos (PR #27); a garantia de e-mail único é o índice do `UserName`.
 - **05/10/2026 (2ª sessão, 2h):** runner do CI fixado, Identity parte 1 (PR #22), `deploy.sh` que se atualiza (PR #23), atualizações automáticas diárias às 03:30 (PR #24, ADR 0021).
 - **05/10/2026 (1h):** seed dos 6 kits, PostgreSQL de desenvolvimento, `AddInfrastructure`, página do catálogo e comando `migrate` no deploy (PR #18); catálogo no ar.
 - **02/10/2026 (1,5h):** revisão do deploy; `Product` com invariantes (PR #14), `AppDbContext` + `InitialCatalog` (PR #15), consulta do catálogo; ficou confuso o que é um DTO (revisado em 05/10).
