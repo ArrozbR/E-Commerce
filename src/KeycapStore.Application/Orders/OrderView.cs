@@ -14,4 +14,6 @@ public sealed record OrderView(
     IReadOnlyList<OrderLineView> Lines,
     decimal ShippingFee,
     decimal Total,
-    ShippingAddress ShippingAddress);
+    ShippingAddress ShippingAddress,
+    bool CanWithdraw,
+    DateTimeOffset? WithdrawalDeadline);

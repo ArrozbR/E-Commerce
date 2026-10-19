@@ -62,3 +62,17 @@
     </form>
     <p class="text-muted small mt-1">Você pode cancelar até o pedido ser enviado. O valor é devolvido automaticamente.</p>
 }
+
+@if (Model.CanWithdraw)
+{
+    <form asp-action="Withdraw" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Desistir da compra? O valor pago será devolvido e você precisará devolver o produto.');">
+        <button type="submit" class="btn btn-outline-danger">Desistir da compra</button>
+    </form>
+    <p class="text-muted small mt-1">
+        Direito de arrependimento (CDC, art. 49):
+        @(Model.WithdrawalDeadline is { } deadline
+            ? $"você pode desistir até {TimeZoneInfo.ConvertTime(deadline, brasilia).ToString("dd/MM/yyyy HH:mm", brl)}."
+            : "você pode desistir até 7 dias depois de receber o pedido.")
+        O valor é devolvido automaticamente em alguns minutos; depois, devolva o produto à loja.
+    </p>
+}

@@ -13,4 +13,7 @@ public enum OrderStatus
     Shipped,
     Delivered,
     Cancelled,
+    Withdrawn,
+    AwaitingReturn,
+    Returned,
 }

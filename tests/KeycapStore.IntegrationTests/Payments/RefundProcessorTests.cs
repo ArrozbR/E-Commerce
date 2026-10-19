@@ -46,6 +46,18 @@ public class RefundProcessorTests(PostgresFixture postgres) : IClassFixture<Post
         return SaveAsync(factory, order);
     }
 
+    private static Task<Guid> WithdrawnOrderAsync(WebApplicationFactory<Program> factory)
+    {
+        var order = NewOrder();
+        order.AttachStripeSession($"cs_test_{order.Id:N}");
+        order.ConfirmPayment("pi_test_withdrawn");
+        order.StartPicking();
+        order.MarkShipped("BR123456789");
+        order.MarkDelivered(DateTimeOffset.UtcNow);
+        order.Withdraw(DateTimeOffset.UtcNow);
+        return SaveAsync(factory, order);
+    }
+
     private static Task<Guid> PaidOrderAsync(WebApplicationFactory<Program> factory)
     {
         var order = NewOrder();
@@ -103,6 +115,32 @@ public class RefundProcessorTests(PostgresFixture postgres) : IClassFixture<Post
 
         Assert.Equal(OrderStatus.Refunded, await StatusAsync(factory, orderId));
         Assert.Contains((orderId, $"pi_from_cs_test_{orderId:N}"), stripe.Refunds);
+    }
+
+    [Fact]
+    public async Task Withdrawn_IsRefundedRightAway_AndWaitsForTheProductToComeBack()
+    {
+        var stripe = new FakePaymentGateway();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(stripe);
+        var orderId = await WithdrawnOrderAsync(factory);
+
+        await RefundAsync(factory);
+
+        Assert.Equal(OrderStatus.AwaitingReturn, await StatusAsync(factory, orderId));
+        Assert.Contains((orderId, "pi_test_withdrawn"), stripe.Refunds);
+    }
+
+    [Fact]
+    public async Task AwaitingReturn_IsNotRefundedTwice()
+    {
+        var stripe = new FakePaymentGateway();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(stripe);
+        var orderId = await WithdrawnOrderAsync(factory);
+
+        await RefundAsync(factory);
+        await RefundAsync(factory);
+
+        Assert.Single(stripe.Refunds, refund => refund.OrderId == orderId);
     }
 
     [Fact]

@@ -3,6 +3,7 @@
 public sealed class Order
 {
     public const int MaxTrackingCodeLength = 50;
+    public static readonly TimeSpan WithdrawalPeriod = TimeSpan.FromDays(7);
 
     private readonly List<OrderItem> _items = [];
 
@@ -17,6 +18,7 @@ public sealed class Order
     public string? StripeSessionId { get; private set; }
     public string? StripePaymentIntentId { get; private set; }
     public string? TrackingCode { get; private set; }
+    public DateTimeOffset? DeliveredAt { get; private set; }
 
     private Order()
     {
@@ -146,6 +148,12 @@ public sealed class Order
 
     public void MarkRefunded()
     {
+        if (Status is OrderStatus.Withdrawn)
+        {
+            Status = OrderStatus.AwaitingReturn;
+            return;
+        }
+
         if (Status is not (OrderStatus.PaidOutOfStock or OrderStatus.Cancelled))
         {
             throw new InvalidOrderTransitionException(Status, OrderStatus.Refunded);
@@ -179,12 +187,14 @@ public sealed class Order
         Status = OrderStatus.Shipped;
     }
 
-    public void MarkDelivered()
+    public void MarkDelivered(DateTimeOffset deliveredAt)
     {
         if (Status is not OrderStatus.Shipped)
         {
             throw new InvalidOrderTransitionException(Status, OrderStatus.Delivered);
         }
+
+        DeliveredAt = deliveredAt;
 
         Status = OrderStatus.Delivered;
     }
@@ -197,5 +207,33 @@ public sealed class Order
         }
 
         Status = OrderStatus.Cancelled;
+    }
+
+    public bool CanWithdraw(DateTimeOffset now)
+    {
+        bool inTransit = Status is OrderStatus.Shipped;
+        bool withinPeriod = Status is OrderStatus.Delivered && DeliveredAt is not null && now <= DeliveredAt.Value + WithdrawalPeriod;
+
+        return inTransit || withinPeriod;
+    }
+
+    public void Withdraw(DateTimeOffset now)
+    {
+        if (!CanWithdraw(now))
+        {
+            throw new InvalidOrderTransitionException(Status, OrderStatus.Withdrawn);
+        }
+
+        Status = OrderStatus.Withdrawn;
+    }
+
+    public void ConfirmReturn()
+    {
+        if (Status is not OrderStatus.AwaitingReturn)
+        {
+            throw new InvalidOrderTransitionException(Status, OrderStatus.Returned);
+        }
+
+        Status = OrderStatus.Returned;
     }
 }

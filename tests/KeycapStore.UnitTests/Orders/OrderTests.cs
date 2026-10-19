@@ -408,7 +408,7 @@ public class OrderTests
         order.StartPicking();
         order.MarkShipped("BR123456789");
 
-        order.MarkDelivered();
+        order.MarkDelivered(DateTimeOffset.UnixEpoch);
 
         Assert.Equal(OrderStatus.Delivered, order.Status);
     }
@@ -419,7 +419,7 @@ public class OrderTests
         var order = PaidOrder();
         order.StartPicking();
 
-        var ex = Assert.Throws<InvalidOrderTransitionException>(order.MarkDelivered);
+        var ex = Assert.Throws<InvalidOrderTransitionException>(() => order.MarkDelivered(DateTimeOffset.UnixEpoch));
 
         Assert.Equal(OrderStatus.Picking, ex.From);
         Assert.Equal(OrderStatus.Picking, order.Status);
@@ -499,5 +499,107 @@ public class OrderTests
         order.MarkRefunded();
 
         Assert.Equal(OrderStatus.Refunded, order.Status);
+    }
+
+    private static readonly DateTimeOffset DeliveryDay = new(2026, 10, 20, 15, 0, 0, TimeSpan.Zero);
+
+    private static Order ShippedOrder()
+    {
+        var order = PaidOrder();
+        order.StartPicking();
+        order.MarkShipped("BR123456789");
+        return order;
+    }
+
+    private static Order DeliveredOrder()
+    {
+        var order = ShippedOrder();
+        order.MarkDelivered(DeliveryDay);
+        return order;
+    }
+
+    [Fact]
+    public void MarkDelivered_RecordsWhen()
+    {
+        var order = DeliveredOrder();
+
+        Assert.Equal(DeliveryDay, order.DeliveredAt);
+    }
+
+    [Fact]
+    public void Withdraw_WhileShipped_GoesToWithdrawn()
+    {
+        var order = ShippedOrder();
+
+        order.Withdraw(DeliveryDay);
+
+        Assert.Equal(OrderStatus.Withdrawn, order.Status);
+    }
+
+    [Fact]
+    public void Withdraw_OnTheLastMomentOfTheSevenDays_IsAccepted()
+    {
+        var order = DeliveredOrder();
+
+        order.Withdraw(DeliveryDay + Order.WithdrawalPeriod);
+
+        Assert.Equal(OrderStatus.Withdrawn, order.Status);
+    }
+
+    [Fact]
+    public void Withdraw_AfterTheSevenDays_Throws()
+    {
+        var order = DeliveredOrder();
+
+        var ex = Assert.Throws<InvalidOrderTransitionException>(() => order.Withdraw(DeliveryDay + Order.WithdrawalPeriod + TimeSpan.FromSeconds(1)));
+
+        Assert.Equal(OrderStatus.Delivered, ex.From);
+        Assert.Equal(OrderStatus.Delivered, order.Status);
+    }
+
+    [Fact]
+    public void Withdraw_BeforeShipping_Throws()
+    {
+        var order = PaidOrder();
+
+        var ex = Assert.Throws<InvalidOrderTransitionException>(() => order.Withdraw(DeliveryDay));
+
+        Assert.Equal(OrderStatus.Paid, ex.From);
+        Assert.Equal(OrderStatus.Paid, order.Status);
+    }
+
+    [Fact]
+    public void MarkRefunded_FromWithdrawn_WaitsForTheProductToComeBack()
+    {
+        var order = DeliveredOrder();
+        order.Withdraw(DeliveryDay);
+
+        order.MarkRefunded();
+
+        Assert.Equal(OrderStatus.AwaitingReturn, order.Status);
+    }
+
+    [Fact]
+    public void ConfirmReturn_AfterTheRefund_GoesToReturned()
+    {
+        var order = DeliveredOrder();
+        order.Withdraw(DeliveryDay);
+        order.MarkRefunded();
+
+        order.ConfirmReturn();
+
+        Assert.Equal(OrderStatus.Returned, order.Status);
+    }
+
+    [Fact]
+    public void ConfirmReturn_BeforeTheRefund_Throws()
+    {
+        var order = DeliveredOrder();
+        order.Withdraw(DeliveryDay);
+
+        var ex = Assert.Throws<InvalidOrderTransitionException>(order.ConfirmReturn);
+
+        Assert.Equal(OrderStatus.Withdrawn, ex.From);
+        Assert.Equal(OrderStatus.Withdrawn, order.Status);
     }
 }
