@@ -17,6 +17,9 @@ public static class OrderStatusText
         OrderStatus.Shipped => "Enviado",
         OrderStatus.Delivered => "Entregue",
         OrderStatus.Cancelled => "Cancelado (reembolso em andamento)",
+        OrderStatus.Withdrawn => "Desistência registrada (reembolso em andamento)",
+        OrderStatus.AwaitingReturn => "Reembolsado, aguardando a devolução do produto",
+        OrderStatus.Returned => "Devolvido",
         _ => status.ToString(),
     };
 }

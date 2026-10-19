@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeycapStore.Infrastructure.Orders;
 
-internal sealed class ShippingService(AppDbContext db) : IShippingService
+internal sealed class ShippingService(AppDbContext db, TimeProvider clock) : IShippingService
 {
     public Task StartPickingAsync(Guid orderId, CancellationToken cancellationToken = default) =>
         ApplyAsync(orderId, order => order.StartPicking(), cancellationToken);
@@ -16,7 +16,7 @@ internal sealed class ShippingService(AppDbContext db) : IShippingService
         ApplyAsync(orderId, order => order.MarkShipped(trackingCode), cancellationToken);
 
     public Task DeliverAsync(Guid orderId, CancellationToken cancellationToken = default) =>
-        ApplyAsync(orderId, order => order.MarkDelivered(), cancellationToken);
+        ApplyAsync(orderId, order => order.MarkDelivered(clock.GetUtcNow()), cancellationToken);
 
     private async Task ApplyAsync(Guid orderId, Action<Order> transition, CancellationToken cancellationToken)
     {

@@ -75,6 +75,7 @@ public class AdminShippingActionsTests(PostgresFixture postgres) : IClassFixture
         var order = await OrderAsync(factory, orderId);
         Assert.Equal(OrderStatus.Delivered, order.Status);
         Assert.Equal("BR123456789", order.TrackingCode);
+        Assert.NotNull(order.DeliveredAt);
     }
 
     [Fact]
