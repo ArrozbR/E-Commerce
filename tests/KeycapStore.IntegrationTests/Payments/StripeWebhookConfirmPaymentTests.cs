@@ -70,6 +70,19 @@ public class StripeWebhookConfirmPaymentTests(PostgresFixture postgres) : IClass
     }
 
     [Fact]
+    public async Task Completed_AndPaid_KeepsThePaymentIntentForFutureRefunds()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var (orderId, _) = await PlaceOrderAsync(factory, "customer-paid-intent");
+
+        await SendAsync(factory, StripeWebhookSigner.CheckoutCompleted("evt_test_paid_intent", orderId, OrderTotalInCents));
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Equal($"pi_test_{orderId:N}", await db.Orders.Where(o => o.Id == orderId).Select(o => o.StripePaymentIntentId).SingleAsync());
+    }
+
+    [Fact]
     public async Task Completed_ButUnpaid_LeavesTheOrderAwaitingConfirmation()
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();

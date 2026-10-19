@@ -16,6 +16,7 @@ public static class OrderStatusText
         OrderStatus.Picking => "Em separação",
         OrderStatus.Shipped => "Enviado",
         OrderStatus.Delivered => "Entregue",
+        OrderStatus.Cancelled => "Cancelado (reembolso em andamento)",
         _ => status.ToString(),
     };
 }
