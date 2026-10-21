@@ -286,8 +286,8 @@ O reembolso de Pix é aceito em até 90 dias depois do pagamento.
 | Histórico de pedidos | `Pedido` | Execução do contrato, financeiro |
 
 - **Logs registram só IDs**, nunca e-mail, nome ou endereço.
-- **Exclusão de conta (definida agora, implementada na v2):** apaga a conta do Identity; mantém os pedidos com `ClienteId = null`; mantém o snapshot de nome e endereço pelo prazo legal e depois anonimiza; bloqueia a exclusão enquanto houver pedidos em andamento.
-- **Desde a v1:** o `Pedido` não depende da existência da conta (`ClienteId` anulável, endereço como snapshot).
+- **Exclusão de conta (v2, ADR 0033):** apaga a conta do Identity (confirmada com a senha; admin não se exclui pela página); mantém os pedidos com `CustomerId = null`; mantém o snapshot de nome e endereço pelo prazo legal e depois anonimiza (job pendente da Q5); bloqueia a exclusão enquanto houver pedido não finalizado, inclusive entregue dentro dos 7 dias de arrependimento.
+- **Desde a v1:** o `Pedido` não depende da existência da conta (sem FK para `AspNetUsers`, endereço como snapshot). O `CustomerId` passou a aceitar vazio na v2 (ADR 0033).
 
 **Infraestrutura**
 - O PostgreSQL **não publica nenhuma porta**. A aplicação escuta só em `127.0.0.1`. O Docker passa por cima do UFW, então nunca se publica em `0.0.0.0`.

@@ -98,4 +98,30 @@ public class OrderPersistenceTests(PostgresFixture postgres) : IClassFixture<Pos
             Assert.Equal("cs_test_persistencia", saved.StripeSessionId);
         }
     }
+
+    [Fact]
+    public async Task Order_WithoutCustomer_CanBeSavedAndReadBack()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var order = new Order("customer-leaving", DateTimeOffset.UnixEpoch,
+            [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba);
+        order.Expire();
+        order.DetachCustomer(DateTimeOffset.UnixEpoch);
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Orders.Add(order);
+            await db.SaveChangesAsync();
+        }
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var saved = await db.Orders.SingleAsync(o => o.Id == order.Id);
+
+            Assert.Null(saved.CustomerId);
+            Assert.Equal("Bruno Lima", saved.ShippingAddress.RecipientName);
+        }
+    }
 }
