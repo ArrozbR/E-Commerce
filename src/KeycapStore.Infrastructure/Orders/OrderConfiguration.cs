@@ -14,8 +14,7 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasKey(o => o.Id);
 
         builder.Property(o => o.CustomerId)
-            .HasMaxLength(450)
-            .IsRequired();
+            .HasMaxLength(450);
         builder.HasIndex(o => o.CustomerId);
 
         builder.Property(o => o.Status)

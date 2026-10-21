@@ -602,4 +602,96 @@ public class OrderTests
         Assert.Equal(OrderStatus.Withdrawn, ex.From);
         Assert.Equal(OrderStatus.Withdrawn, order.Status);
     }
+
+    private static Order OrderIn(string situation)
+    {
+        var order = NewOrder();
+        switch (situation)
+        {
+            case "expired":
+                order.Expire();
+                break;
+            case "failed":
+                order.MarkFailed();
+                break;
+            case "refunded":
+                order.ConfirmPayment();
+                order.Cancel();
+                order.MarkRefunded();
+                break;
+            case "returned":
+                order = DeliveredOrder();
+                order.Withdraw(DeliveryDay);
+                order.MarkRefunded();
+                order.ConfirmReturn();
+                break;
+            case "paid":
+                order.ConfirmPayment();
+                break;
+            case "shipped":
+                order = ShippedOrder();
+                break;
+            case "cancelled":
+                order.ConfirmPayment();
+                order.Cancel();
+                break;
+            case "awaitingReturn":
+                order = DeliveredOrder();
+                order.Withdraw(DeliveryDay);
+                order.MarkRefunded();
+                break;
+        }
+
+        return order;
+    }
+
+    [Theory]
+    [InlineData("expired")]
+    [InlineData("failed")]
+    [InlineData("refunded")]
+    [InlineData("returned")]
+    public void IsFinished_ClosedOrders_AreFinished(string situation)
+    {
+        Assert.True(OrderIn(situation).IsFinished(DeliveryDay));
+    }
+
+    [Theory]
+    [InlineData("awaitingPayment")]
+    [InlineData("paid")]
+    [InlineData("shipped")]
+    [InlineData("cancelled")]
+    [InlineData("awaitingReturn")]
+    public void IsFinished_OrdersStillMoving_AreNotFinished(string situation)
+    {
+        Assert.False(OrderIn(situation).IsFinished(DeliveryDay));
+    }
+
+    [Fact]
+    public void IsFinished_Delivered_OnlyAfterTheWithdrawalPeriod()
+    {
+        var order = DeliveredOrder();
+
+        Assert.False(order.IsFinished(DeliveryDay + Order.WithdrawalPeriod));
+        Assert.True(order.IsFinished(DeliveryDay + Order.WithdrawalPeriod + TimeSpan.FromSeconds(1)));
+    }
+
+    [Fact]
+    public void DetachCustomer_WhenFinished_RemovesTheCustomer()
+    {
+        var order = OrderIn("expired");
+
+        order.DetachCustomer(DeliveryDay);
+
+        Assert.Null(order.CustomerId);
+    }
+
+    [Fact]
+    public void DetachCustomer_WhenNotFinished_Throws_AndKeepsTheCustomer()
+    {
+        var order = OrderIn("paid");
+
+        Assert.Throws<InvalidOperationException>(() => order.DetachCustomer(DeliveryDay));
+
+        Assert.Equal("customer-1", order.CustomerId);
+    }
 }

@@ -8,7 +8,7 @@ public sealed class Order
     private readonly List<OrderItem> _items = [];
 
     public Guid Id { get; private set; }
-    public string CustomerId { get; private set; }
+    public string? CustomerId { get; private set; }
     public OrderStatus Status { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public IReadOnlyList<OrderItem> Items => _items;
@@ -22,7 +22,6 @@ public sealed class Order
 
     private Order()
     {
-        CustomerId = null!;
         ShippingAddress = null!;
     }
 
@@ -235,5 +234,23 @@ public sealed class Order
         }
 
         Status = OrderStatus.Returned;
+    }
+
+    public bool IsFinished(DateTimeOffset now)
+    {
+        bool closed = Status is (OrderStatus.Expired or OrderStatus.Failed or OrderStatus.Refunded or OrderStatus.Returned);
+        bool deliveredAndPastWithdrawal = Status is OrderStatus.Delivered && !CanWithdraw(now);
+
+        return closed || deliveredAndPastWithdrawal;
+    }
+
+    public void DetachCustomer(DateTimeOffset now)
+    {
+        if (!IsFinished(now))
+        {
+            throw new InvalidOperationException("Só um pedido finalizado pode ficar sem dono.");
+        }
+
+        CustomerId = null;
     }
 }
