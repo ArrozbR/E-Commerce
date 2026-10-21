@@ -14,7 +14,6 @@ namespace KeycapStore.IntegrationTests.Identity;
 
 public class AccountDeletionTests(PostgresFixture postgres) : IClassFixture<PostgresFixture>
 {
-    private const string Password = "Senha-Forte-123";
 
     private static readonly Guid KitAurora = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e01");
 
@@ -24,7 +23,7 @@ public class AccountDeletionTests(PostgresFixture postgres) : IClassFixture<Post
     private static async Task<string> RegisterAsync(WebApplicationFactory<Program> factory, string email)
     {
         await using var scope = factory.Services.CreateAsyncScope();
-        await scope.ServiceProvider.GetRequiredService<IAccountService>().RegisterAsync(email, Password);
+        await scope.ServiceProvider.GetRequiredService<IAccountService>().RegisterAsync(email, PageClient.Password);
         var users = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
         return (await users.FindByEmailAsync(email))!.Id;
     }
@@ -80,7 +79,7 @@ public class AccountDeletionTests(PostgresFixture postgres) : IClassFixture<Post
         var orderId = await SaveOrderAsync(factory, customerId, o => o.Expire());
         await SaveCartAsync(factory, customerId);
 
-        var result = await DeleteAsync(factory, customerId, Password);
+        var result = await DeleteAsync(factory, customerId, PageClient.Password);
 
         Assert.Equal(AccountDeletionResult.Deleted, result);
         Assert.Equal((false, null, false), await StateAsync(factory, customerId, orderId));
@@ -94,7 +93,7 @@ public class AccountDeletionTests(PostgresFixture postgres) : IClassFixture<Post
         var orderId = await SaveOrderAsync(factory, customerId, o => o.ConfirmPayment());
         await SaveCartAsync(factory, customerId);
 
-        var result = await DeleteAsync(factory, customerId, Password);
+        var result = await DeleteAsync(factory, customerId, PageClient.Password);
 
         Assert.Equal(AccountDeletionResult.HasOpenOrders, result);
         Assert.Equal((true, customerId, true), await StateAsync(factory, customerId, orderId));
@@ -113,7 +112,7 @@ public class AccountDeletionTests(PostgresFixture postgres) : IClassFixture<Post
             o.MarkDelivered(DateTimeOffset.UtcNow.AddDays(-2));
         });
 
-        var result = await DeleteAsync(factory, customerId, Password);
+        var result = await DeleteAsync(factory, customerId, PageClient.Password);
 
         Assert.Equal(AccountDeletionResult.HasOpenOrders, result);
         Assert.Equal((true, customerId, false), await StateAsync(factory, customerId, orderId));
@@ -140,7 +139,7 @@ public class AccountDeletionTests(PostgresFixture postgres) : IClassFixture<Post
         Assert.True((await factory.Services.CreateAdminAsync("admin-quer-sair@example.com")).Succeeded);
         var orderId = await SaveOrderAsync(factory, customerId, o => o.Expire());
 
-        var result = await DeleteAsync(factory, customerId, Password);
+        var result = await DeleteAsync(factory, customerId, PageClient.Password);
 
         Assert.Equal(AccountDeletionResult.IsAdmin, result);
         Assert.Equal((true, customerId, false), await StateAsync(factory, customerId, orderId));
