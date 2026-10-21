@@ -1,0 +1,37 @@
+@model DeleteAccountViewModel
+@{
+    ViewData["Title"] = "Minha conta";
+}
+
+<h1>Minha conta</h1>
+<p class="text-muted">Conectado como @User.Identity?.Name</p>
+
+<h2 class="h4 mt-4">Excluir minha conta</h2>
+<div class="row">
+    <div class="col-md-7">
+        <p>
+            Ao excluir a conta, o seu e-mail e a sua senha são apagados e você não consegue mais entrar.
+            Os pedidos já feitos continuam registrados, sem ligação com a conta, pelo prazo que a lei exige para registros de venda.
+        </p>
+        <p>
+            A exclusão só é possível quando todos os seus pedidos estiverem finalizados,
+            inclusive o prazo de 7 dias para desistir depois da entrega.
+        </p>
+
+        <form asp-action="Delete" method="post" onsubmit="return confirm('Excluir a conta? Esta ação não pode ser desfeita.');">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-danger">Excluir minha conta</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
