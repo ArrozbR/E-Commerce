@@ -391,7 +391,7 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 - [ ] Pix ativado no modo de produção
 
 **Legal (bloqueios)**
-- [ ] **parte legal da v2 entregue:** cancelamento, direito de arrependimento (CDC) e exclusão de conta (LGPD)
+- [x] **parte legal da v2 entregue:** cancelamento, direito de arrependimento (CDC) e exclusão de conta (LGPD) (21/10/2026, ADRs 0031–0033)
 - [ ] termos de uso
 - [ ] política de privacidade (incluindo o compartilhamento de dados com a Stripe e seus parceiros)
 - [ ] prazo legal de retenção dos pedidos definido

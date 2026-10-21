@@ -2,9 +2,9 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** **v2, parte legal (ADR 0025): 2 de 3 peças em produção** (cancelamento, ADR 0031, e direito de arrependimento, ADR 0032, em 19/10/2026). Falta a exclusão de conta (LGPD). 🎉 **v1 concluída em 15/10/2026**: todos os critérios de pronto do `DEFINICOES.md` §1 cumpridos em produção. **M6 concluído em 15/10/2026** (`/health`, Serilog, Dependabot, backup diário criptografado na Cloudflare R2 com restauração testada, healthchecks.io, UptimeRobot). **M5 concluído em 15/10/2026** (página mínima de envio só para o papel Admin, separar → enviar com rastreio → entregar, comando `reset-admin-password`; pedido levado até "Entregue" em produção). **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
+**Marco atual:** 🎉 **v2, parte legal (ADR 0025) concluída em 21/10/2026**: cancelamento (ADR 0031), direito de arrependimento (ADR 0032) e exclusão de conta (ADR 0033), todos em produção. O go-live ainda depende de itens fora do código (prazo de guarda, termos, política de privacidade, nota fiscal; `DEFINICOES.md` §11). Próximo: melhorias pequenas e a escolha da ordem da segunda parte da v2. 🎉 **v1 concluída em 15/10/2026**: todos os critérios de pronto do `DEFINICOES.md` §1 cumpridos em produção. **M6 concluído em 15/10/2026** (`/health`, Serilog, Dependabot, backup diário criptografado na Cloudflare R2 com restauração testada, healthchecks.io, UptimeRobot). **M5 concluído em 15/10/2026** (página mínima de envio só para o papel Admin, separar → enviar com rastreio → entregar, comando `reset-admin-password`; pedido levado até "Entregue" em produção). **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · M5: 3h (estimativa era 8–12h) · M6: 2h (estimativa era 15–20h) · **total da v1: 37h** · **v2 até agora: 2,5h** · **total do projeto: 39,5h**
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · M5: 3h (estimativa era 8–12h) · M6: 2h (estimativa era 15–20h) · **total da v1: 37h** · **v2 até agora: 3,5h** (parte legal inteira) · **total do projeto: 40,5h**
 **Estimativa da v1:** ~~120–180h~~ → ~~55–85h (08/10)~~ → ~~45–60h (12/10)~~ → ~~40–50h (14/10)~~ → ~~40–45h (15/10)~~ → **real: 37h em 16 dias** (30/09 a 15/10). Todos os marcos saíram com 10% a 30% do estimado. Para a v2, estimar com esse histórico.
 
 ## v2 (ADR 0025)
@@ -12,7 +12,7 @@
 **Parte legal (libera o go-live):**
 - [x] **Cancelamento antes do envio** (PR #73, ADR 0031, 19/10): `Cancel()` de `Paid`/`Picking` (só o dono; outro cliente → 404, depois do envio → 409), estoque devolvido na mesma transação, reembolso pelo job (`RefundProcessor`, que substituiu o `OutOfStockRefunder`); o `pi_` passa a ser guardado em toda confirmação e, nos pedidos antigos, é buscado na Stripe pela sessão. **Escrito pelo autor:** `Cancel`/`MarkRefunded`/`??=` no `Order`, `RefundProcessor`, `CancellationService`. **Em produção:** pedido `6ea74fa5` (Pix de 15/10, sem `pi_` guardado) cancelado → reembolsado pela busca da sessão
 - [x] **Direito de arrependimento** (PR #74, ADR 0032, 19/10): texto do CDC art. 49 e do Decreto 7.962 art. 5º conferido no Planalto; `DeliveredAt` (migration `AddOrderDeliveredAt`); `Withdraw(now)` de `Shipped` ou `Delivered` há até 7 dias (`CanWithdraw`, mesma regra para o botão e o domínio) → `Withdrawn`; job reembolsa na hora → `AwaitingReturn`; admin confirma a devolução e escolhe "volta ao estoque" → `Returned`. **Escrito pelo autor:** as 5 lacunas do `Order`, o `RefundProcessor`, o `WithdrawalService` e o `ConfirmReturnAsync` (este sem esqueleto, só com a explicação). **256 testes.** **Em produção:** pedido `f3cccfbd` (cartão) entregue → desistência → reembolso em ~3 min → devolução com estoque de 1 para 2
-- [ ] **Exclusão de conta** (LGPD): definida no `DEFINICOES.md` §6 (pedidos ficam com `CustomerId` nulo, snapshot anonimizado depois do prazo legal, bloqueio com pedido em andamento); precisa de sessão de definição + ADR
+- [x] **Exclusão de conta** (PR #76, ADR 0033, 21/10): LGPD art. 5º, 15, 16 e 18 conferidos no Planalto (texto colado pelo autor). Página "Minha conta" com a senha atual (conta para o bloqueio de 3 tentativas); admin recusado; bloqueio com pedido não finalizado (`IsFinished(now)`: `Expired`/`Failed`/`Refunded`/`Returned`, ou `Delivered` fora dos 7 dias); numa transação, pedidos sem dono (`DetachCustomer`, `CustomerId` opcional, migration `MakeOrderCustomerIdOptional`), carrinho e conta apagados; sessão encerrada. Nome e endereço ficam até o prazo legal (job pendente da Q5). **Escrito pelo autor:** `IsFinished`/`DetachCustomer` (faltou o `throw`, visto antes de rodar) e as 4 lacunas do `AccountDeletionService`, todas certas. **279 testes.** **Em produção:** senha errada → recusa; pedido pago → recusa; cancelado e reembolsado → conta excluída, login recusado, pedido `367475d3` no banco com `CustomerId` vazio e o nome ainda guardado
 
 **Depois:** tela de admin com cadastro de produtos · endereços salvos · conciliação · site em inglês · login com Google · Payment Element · frete real · pré-venda (ordem sugerida em 19/10, ainda não decidida)
 
@@ -144,9 +144,9 @@
 
 ## Próximos passos
 
-1. **Exclusão de conta (LGPD):** sessão de definição (o que apagar, o que anonimizar, quando bloquear) + ADR 0033, e depois o código em passos com lacunas, como no cancelamento e no arrependimento.
-2. **Melhorias pequenas vistas no teste de 19/10:** lista **"Meus pedidos"** no menu do cliente (hoje ele só chega ao pedido pelo link da compra, e precisa achar o pedido para cancelar ou desistir) e "Últimas **1 unidades**" → "Última unidade".
-3. **Pendências da v1:** merge do PR #70 do Dependabot; **teste mensal de restauração a partir da R2 até 15/11** (runbook `docs/runbooks/backup.md`).
+1. **Melhorias pequenas vistas nos testes de 19/10:** lista **"Meus pedidos"** (só os do cliente logado, com teste do curioso) e "Últimas **1 unidades**" → "Última unidade".
+2. **Pendências da v1:** merge do PR #70 do Dependabot; **teste mensal de restauração a partir da R2 até 15/11** (runbook `docs/runbooks/backup.md`).
+3. **Escolher a ordem da segunda parte da v2** (sugestão de 19/10: cadastro de produtos pelo admin → endereços salvos → conciliação → inglês → Google → Payment Element → frete real → pré-venda) e registrar no `DEFINICOES.md`.
 
 ## Bloqueios
 
@@ -154,9 +154,12 @@ _Nenhum._
 
 ## Questões em aberto
 
+- **Exclusão de conta, pendente para o go-live (ADR 0033):** prazo de guarda (Q5) e o **job de anonimização** de nome e endereço; **avisar a Stripe** da eliminação (LGPD art. 18, § 6º; conferir na documentação dela o que dá para apagar); os dados da conta ficam nos **backups** até 29 dias (informar na política de privacidade). Corrida conhecida: pedido criado em outra aba no instante da exclusão.
+- **`.gitleaksignore`** (21/10): um falso positivo registrado (senha de teste `Senha-Forte-123` no commit `330c28f`, regra `generic-api-key`). Senhas de teste usam `PageClient.Password`.
+- **GitHub Actions travado (21/10):** o job do gitleaks ficou "in progress" com a execução já "success", travando o merge; resolvido com "Re-run all jobs". Se repetir, fechar e reabrir o PR.
 - **Arrependimento, pendente para o go-live (ADR 0032):** o Decreto 7.962 § 4º pede que a loja **envie** a confirmação (hoje ela só aparece na página; a loja não envia e-mail); quem paga o **frete de volta** e como o cliente devolve o pacote (a lei não diz no texto conferido; definir com orientação jurídica e informar nos termos de uso). Prazo contado como 7 × 24 h exatas a partir do `DeliveredAt`.
 - Pedidos entregues antes de 19/10 não têm `DeliveredAt` e não mostram o botão de desistência (só o `04bd9d69`, de teste).
-- **Dados pessoais reais em produção:** um pedido de 16/10 (Pix de 17/10) tem nome e endereço que parecem reais (teste de outra pessoa). Não publicar prints da página do admin sem cortar; é um caso para a exclusão de conta.
+- **Dados pessoais reais em produção:** um pedido de 16/10 (Pix de 17/10) tem nome e endereço que parecem reais (teste de outra pessoa). Não publicar prints da página do admin sem cortar. A pessoa pode excluir a conta quando o pedido estiver finalizado; nome e endereço só somem com o job de anonimização.
 - **Q1b respondida em 13/10** (ver checklist do M4). Ainda não confirmado na documentação: o que acontece com um Pix **já gerado** quando a sessão expira.
 - **Reembolso depois de 24 h:** a Stripe guarda a chave de idempotência por 24 h. Se o `SaveChangesAsync` depois do reembolso falhar e o pedido ficar `PaidOutOfStock` por mais de um dia, a nova tentativa recebe um erro ("já reembolsado") e vira `LogError` a cada minuto. Risco baixo; tratar o código de erro da Stripe como sucesso se acontecer.
 - As 409/404/400 do filtro respondem com a página em branco (o 403 aparece com a página padrão do navegador). Melhorar com páginas de erro amigáveis (v2 ou v3).
@@ -172,7 +175,6 @@ _Nenhum._
 - **Corrida no primeiro carrinho:** duas abas criando o primeiro carrinho do mesmo cliente ao mesmo tempo → o índice único recusa o segundo (correto), mas aquele clique vê uma página de erro. Melhoria: tentar de novo uma vez. Baixa prioridade.
 - O login ignora o `ReturnUrl` (quem tenta abrir `/Cart` sem login cai no catálogo depois de entrar, e não no carrinho).
 - O `migrate` no deploy mostra `libgssapi_krb5.so.2: cannot open shared object file` (aviso do driver do PostgreSQL; já aparecia antes; a migration roda normalmente). Investigar quando houver tempo (não bloqueia).
-- O `CustomerId` do pedido é obrigatório no banco e no domínio; o `DEFINICOES.md` prevê torná-lo opcional quando houver exclusão de conta (v2).
 - O padrão da conta Stripe é `2026-08-26.dahlia`; o SDK é `endive`. No PC o `stripe listen` precisa de `--latest`; em produção o destino está fixado em `endive`. Ao atualizar o Stripe.net de família, atualizar o destino junto (avaliar se vale subir o padrão da conta).
 - A Stripe recomenda eventos **thin** para integrações novas; usamos **snapshot** (o handler lê a sessão inteira do evento). Reavaliar se a troca de versão virar um problema.
 - O `ssh` na VM avisa que existe o Ubuntu `26.04.1 LTS`. **Não** fazer `do-release-upgrade` sem plano (testar antes com a reconstrução da VM pelo `bootstrap-vm.sh`).
@@ -186,6 +188,13 @@ _Nenhum._
 **Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 21/10/2026: exclusão de conta e **parte legal da v2 concluída** (1h)
+- Aquecimento: por que não apagar os pedidos com a conta (acertou a ideia: "precisam ser rastreados"; corrigido: pelo prazo da obrigação legal, não para sempre). O Planalto recusou a conexão do Claude de novo e o autor colou a LGPD.
+- Decisões do autor (todas as recomendadas): bloqueio por qualquer pedido não finalizado, inclusive entregue dentro dos 7 dias; nome e endereço só depois do prazo legal; confirmação pela senha; admin não se exclui. ADR 0033; `DEFINICOES.md` §6 corrigido (dizia que o `CustomerId` já aceitava vazio desde a v1).
+- Código em 3 passos (PR #76): domínio (autor; o `throw` faltou no `DetachCustomer`, apontado antes de rodar os testes), serviço (autor, 4/4 lacunas de primeira; respondeu na prática por que conferir todos os pedidos antes de mexer em algum), página (Claude; sabotagem sem o "sair da conta" → teste vermelho). **279 testes.** Teste em produção completo, com o pedido sem dono conferido no `psql`.
+- Tropeços: senha de teste com hífens escrita pelo Claude disparou o gitleaks (`generic-api-key`; corrigido com `PageClient.Password` + `.gitleaksignore`); o job do gitleaks ficou travado "em andamento" no GitHub (resolvido com "Re-run all jobs").
+- Verificações: `Cancelled` conta como finalizado (sem resposta), conferir tudo antes de tirar o dono (respondida pelo código), pedido sem dono invisível para clientes (explicada com o resultado do `psql`). O autor diz que nada ficou confuso.
 
 ### 19/10/2026: v2 começou: cancelamento e direito de arrependimento em produção (2,5h)
 - Pasta de memórias apagada do repositório (era só para sincronizar PC e notebook). O autor dispensou a revisão e o README e foi direto para a v2.
@@ -263,18 +272,11 @@ _Nenhum._
 - Tropeços: `CartService` criado primeiro na Application (movido para a Infrastructure); uma linha de teste colada dentro do teste errado (instrução ambígua do Claude; resolvido trocando o arquivo inteiro).
 - Verificações: carrinho sem estoque (parcial: "ainda não verificamos"; explicado que é de propósito e que a proteção é a reserva no "Finalizar"); `SaveChangesAsync` (não sabia); somar × trocar (não sabia). O autor diz que nada ficou confuso, mas as duas últimas respostas foram "não sei" no fim de 3h: revisar no início da próxima sessão.
 
-### 06/10/2026: Data Protection, login, logout, `create-admin` e **M1 concluído** (2h)
-- Chaves do Data Protection no PostgreSQL (PR #29) + ADR 0022 (PR #30). A sabotagem mostrou que, no PC, as chaves também vão para `%LOCALAPPDATA%\ASP.NET\DataProtection-Keys`: por isso o teste confere o **banco**. A chave `key-2d5f...` sobreviveu a um deploy.
-- Login (PR #31), logout + menu (PR #32), `create-admin` (PR #33, ADR 0023). O Claude passou a testar cada passo numa cópia separada (scratchpad) antes de entregar as instruções.
-- Tropeços: banco do PC sem a migration nova (`relation "DataProtectionKeys" does not exist`; resolvido com `-- migrate`); CI do PR #32 nunca disparou (resolvido fechando e reabrindo o PR).
-- Decisões do autor: bloqueio em 3 tentativas; sem seed de admin; promover conta existente.
-- **Segurança:** a senha do admin de produção foi colada no chat (texto + print); o autor decidiu não trocar agora. Fica no checklist do M6.
-- Verificações: chave no banco × cookie no navegador (acertou com ajuste), "e-mail ou senha" genérico (acertou), POST no logout (sem resposta). O autor diz que nada ficou confuso.
-
 ## Histórico
 
 _(sessões antigas resumidas em uma linha cada)_
 
+- **06/10/2026 (2h):** chaves do Data Protection no PostgreSQL (PR #29, ADR 0022), login com bloqueio em 3 tentativas (PR #31), logout + menu (PR #32), `create-admin` (PR #33, ADR 0023); **M1 concluído**.
 - **05/10/2026 (3ª sessão, 2h):** regra dos 150 caracteres no `Product` com TDD (PR #26); cadastro de clientes em 5 passos (PR #27); a garantia de e-mail único é o índice do `UserName`.
 - **05/10/2026 (2ª sessão, 2h):** runner do CI fixado, Identity parte 1 (PR #22), `deploy.sh` que se atualiza (PR #23), atualizações automáticas diárias às 03:30 (PR #24, ADR 0021).
 - **05/10/2026 (1h):** seed dos 6 kits, PostgreSQL de desenvolvimento, `AddInfrastructure`, página do catálogo e comando `migrate` no deploy (PR #18); catálogo no ar.
