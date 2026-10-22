@@ -17,3 +17,5 @@ public sealed record OrderView(
     ShippingAddress ShippingAddress,
     bool CanWithdraw,
     DateTimeOffset? WithdrawalDeadline);
+
+public sealed record OrderSummaryView(Guid Id, OrderStatus Status, DateTimeOffset CreatedAt, decimal Total);

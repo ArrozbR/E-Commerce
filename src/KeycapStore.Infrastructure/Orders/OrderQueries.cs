@@ -25,4 +25,14 @@ internal sealed class OrderQueries(AppDbContext db, TimeProvider clock) : IOrder
         return new OrderView(order.Id, order.Status, order.CreatedAt, lines, order.ShippingFee, order.Total, order.ShippingAddress,
             order.CanWithdraw(clock.GetUtcNow()), order.DeliveredAt + Order.WithdrawalPeriod);
     }
+
+    public async Task<IReadOnlyList<OrderSummaryView>> ListForCustomerAsync(string customerId, CancellationToken cancellationToken = default)
+    {
+        var orders = await db.Orders.AsNoTracking()
+            .Where(o => o.CustomerId == customerId)
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return orders.Select(o => new OrderSummaryView(o.Id, o.Status, o.CreatedAt, o.Total)).ToList();
+    }
 }
