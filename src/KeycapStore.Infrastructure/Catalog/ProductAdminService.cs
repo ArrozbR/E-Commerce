@@ -1,4 +1,4 @@
-using KeycapStore.Application.Catalog;
+﻿using KeycapStore.Application.Catalog;
 using KeycapStore.Domain.Catalog;
 using KeycapStore.Infrastructure.Persistence;
 
@@ -8,6 +8,15 @@ namespace KeycapStore.Infrastructure.Catalog;
 
 internal sealed class ProductAdminService(AppDbContext db) : IProductAdminService
 {
+    public async Task<IReadOnlyList<AdminProductView>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        return await db.Products
+            .AsNoTracking()
+            .OrderBy(p => p.Name)
+            .Select(p => new AdminProductView(p.Id, p.Name, p.Price, p.Stock, p.IsActive))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Guid> CreateAsync(string name, decimal price, int stock, CancellationToken cancellationToken = default)
     {
         var product = new Product(name, price, stock);
