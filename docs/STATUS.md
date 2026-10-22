@@ -2,9 +2,9 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** 🎉 **v2, parte legal (ADR 0025) concluída em 21/10/2026**: cancelamento (ADR 0031), direito de arrependimento (ADR 0032) e exclusão de conta (ADR 0033), todos em produção. O go-live ainda depende de itens fora do código (prazo de guarda, termos, política de privacidade, nota fiscal; `DEFINICOES.md` §11). Próximo: melhorias pequenas e a escolha da ordem da segunda parte da v2. 🎉 **v1 concluída em 15/10/2026**: todos os critérios de pronto do `DEFINICOES.md` §1 cumpridos em produção. **M6 concluído em 15/10/2026** (`/health`, Serilog, Dependabot, backup diário criptografado na Cloudflare R2 com restauração testada, healthchecks.io, UptimeRobot). **M5 concluído em 15/10/2026** (página mínima de envio só para o papel Admin, separar → enviar com rastreio → entregar, comando `reset-admin-password`; pedido levado até "Entregue" em produção). **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
+**Marco atual:** **v2, segunda parte (ordem decidida em 22/10, `DEFINICOES.md` §12): item 1, cadastro de produtos pelo admin (ADR 0034), concluído em 22/10/2026**; próximo: endereços salvos. 🎉 **v2, parte legal (ADR 0025) concluída em 21/10/2026**: cancelamento (ADR 0031), direito de arrependimento (ADR 0032) e exclusão de conta (ADR 0033), todos em produção. O go-live ainda depende de itens fora do código (prazo de guarda, termos, política de privacidade, nota fiscal; `DEFINICOES.md` §11). 🎉 **v1 concluída em 15/10/2026**: todos os critérios de pronto do `DEFINICOES.md` §1 cumpridos em produção. **M6 concluído em 15/10/2026** (`/health`, Serilog, Dependabot, backup diário criptografado na Cloudflare R2 com restauração testada, healthchecks.io, UptimeRobot). **M5 concluído em 15/10/2026** (página mínima de envio só para o papel Admin, separar → enviar com rastreio → entregar, comando `reset-admin-password`; pedido levado até "Entregue" em produção). **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · M5: 3h (estimativa era 8–12h) · M6: 2h (estimativa era 15–20h) · **total da v1: 37h** · **v2 até agora: 3,5h** (parte legal inteira) · **total do projeto: 40,5h**
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · M5: 3h (estimativa era 8–12h) · M6: 2h (estimativa era 15–20h) · **total da v1: 37h** · **v2 até agora: 5,5h** (parte legal: 3,5h; segunda parte: 2h) · **total do projeto: 42,5h**
 **Estimativa da v1:** ~~120–180h~~ → ~~55–85h (08/10)~~ → ~~45–60h (12/10)~~ → ~~40–50h (14/10)~~ → ~~40–45h (15/10)~~ → **real: 37h em 16 dias** (30/09 a 15/10). Todos os marcos saíram com 10% a 30% do estimado. Para a v2, estimar com esse histórico.
 
 ## v2 (ADR 0025)
@@ -14,7 +14,17 @@
 - [x] **Direito de arrependimento** (PR #74, ADR 0032, 19/10): texto do CDC art. 49 e do Decreto 7.962 art. 5º conferido no Planalto; `DeliveredAt` (migration `AddOrderDeliveredAt`); `Withdraw(now)` de `Shipped` ou `Delivered` há até 7 dias (`CanWithdraw`, mesma regra para o botão e o domínio) → `Withdrawn`; job reembolsa na hora → `AwaitingReturn`; admin confirma a devolução e escolhe "volta ao estoque" → `Returned`. **Escrito pelo autor:** as 5 lacunas do `Order`, o `RefundProcessor`, o `WithdrawalService` e o `ConfirmReturnAsync` (este sem esqueleto, só com a explicação). **256 testes.** **Em produção:** pedido `f3cccfbd` (cartão) entregue → desistência → reembolso em ~3 min → devolução com estoque de 1 para 2
 - [x] **Exclusão de conta** (PR #76, ADR 0033, 21/10): LGPD art. 5º, 15, 16 e 18 conferidos no Planalto (texto colado pelo autor). Página "Minha conta" com a senha atual (conta para o bloqueio de 3 tentativas); admin recusado; bloqueio com pedido não finalizado (`IsFinished(now)`: `Expired`/`Failed`/`Refunded`/`Returned`, ou `Delivered` fora dos 7 dias); numa transação, pedidos sem dono (`DetachCustomer`, `CustomerId` opcional, migration `MakeOrderCustomerIdOptional`), carrinho e conta apagados; sessão encerrada. Nome e endereço ficam até o prazo legal (job pendente da Q5). **Escrito pelo autor:** `IsFinished`/`DetachCustomer` (faltou o `throw`, visto antes de rodar) e as 4 lacunas do `AccountDeletionService`, todas certas. **279 testes.** **Em produção:** senha errada → recusa; pedido pago → recusa; cancelado e reembolsado → conta excluída, login recusado, pedido `367475d3` no banco com `CustomerId` vazio e o nome ainda guardado
 
-**Depois:** tela de admin com cadastro de produtos · endereços salvos · conciliação · site em inglês · login com Google · Payment Element · frete real · pré-venda (ordem sugerida em 19/10, ainda não decidida)
+**Melhorias pequenas (22/10, PR #78):** lista **"Meus pedidos"** (só os do cliente logado, do mais novo ao mais antigo; `OrderQueries` com o `Where`/`OrderBy` **escritos pelo autor**; pedido sem dono não aparece para ninguém) e "Última unidade" no catálogo. **283 testes.** Conferido em produção.
+
+**Segunda parte (ordem decidida em 22/10):**
+- [x] **1. Cadastro de produtos pelo admin** (PR #79, ADR 0034, 22/10): `Product.Update`/`Activate`/`Deactivate` e `IsActive` (migration `AddProductIsActive`, padrão verdadeiro); inativo some do catálogo, não entra no carrinho (404), aparece "Indisponível" com aviso no carrinho e **não é reservado** (`&& p.IsActive` no `WHERE` do "Finalizar" e do `TryReserveStockAsync`; a devolução de estoque soma mesmo em inativo); `ProductAdminService` com ajuste **por diferença** (`WHERE stock + delta >= 0`, 10 ajustes simultâneos testados); página `/admin/products` (um `POST` por ação, preço digitado com vírgula e convertido sempre em pt-BR, mensagens por `TempData`). **Escrito pelo autor:** os métodos do `Product`, as 2 lacunas da reserva (a 2ª primeiro dentro do `SetProperty`, não compilava) e as 2 do ajuste (primeiro `p.Stock > 0`; os testes pegaram). **322 testes.** **Em produção:** 6 kits ativos depois da migration, kit criado (49,90), ajuste −5 recusado, item inativo "Indisponível" no carrinho, "Finalizar pedido" recusado com a mensagem, cliente → 403 em `/admin/products`. O "Kit Teste Admin" ficou inativo
+- [ ] 2. Endereços salvos
+- [ ] 3. Conciliação com a Stripe
+- [ ] 4. Site em inglês
+- [ ] 5. Login com Google
+- [ ] 6. Payment Element
+- [ ] 7. Frete real
+- [ ] 8. Pré-venda
 
 ## Marcos da v1
 
@@ -37,7 +47,7 @@
 - [x] Backup: par de chaves `age` (privada só na pasta `OneDrive\Documentos\Backups Keycapstore`), `deploy/backup.sh` (`pg_dump` custom → `age` → `/var/backups/keycapstore`, 2 cópias locais, `.partial` + `mv`, `pipefail`) (PR #68); **restauração** no banco do PC com contagem igual à de produção
 - [x] Envio para a R2 (PR #69, ADR 0030): bucket `keycapstore-backups` (Standard, sem acesso público), ciclo de vida `daily/` 8 dias e `weekly/` 29 dias, bucket lock 7 e 28 dias, token da conta só de objetos e só desse bucket, alerta de orçamento de US$ 0,01; `rclone` com `no_check_bucket` e `no_head` (o `HEAD ?versionId` recebia 501 da R2; PR #71); timer systemd às 02:30; parte 7 do `bootstrap-vm.sh`; `docs/runbooks/backup.md`
 - [x] healthchecks.io (`keycapstore-backup`, 1 dia + 2 h de folga, alerta por e-mail; recriado depois de a primeira URL aparecer no chat) e UptimeRobot no `/health` (5 min, e-mail)
-- [x] Serilog em JSON em produção (texto no PC), SQL do EF só em aviso/erro; Dependabot semanal (NuGet, Docker, actions) (PR #69). O primeiro PR do Dependabot (#70, pacotes de teste) está aberto com CI verde
+- [x] Serilog em JSON em produção (texto no PC), SQL do EF só em aviso/erro; Dependabot semanal (NuGet, Docker, actions) (PR #69). O primeiro PR do Dependabot (#70, pacotes de teste) foi juntado
 - [x] Alertas de webhook: a Stripe envia e-mail sozinha quando um destino falha (documentação)
 
 ## Checklist do M5
@@ -144,9 +154,9 @@
 
 ## Próximos passos
 
-1. **Melhorias pequenas vistas nos testes de 19/10:** lista **"Meus pedidos"** (só os do cliente logado, com teste do curioso) e "Últimas **1 unidades**" → "Última unidade".
-2. **Pendências da v1:** merge do PR #70 do Dependabot; **teste mensal de restauração a partir da R2 até 15/11** (runbook `docs/runbooks/backup.md`).
-3. **Escolher a ordem da segunda parte da v2** (sugestão de 19/10: cadastro de produtos pelo admin → endereços salvos → conciliação → inglês → Google → Payment Element → frete real → pré-venda) e registrar no `DEFINICOES.md`.
+1. **Endereços salvos** (item 2 da segunda parte): começar pelo ADR (quantos endereços, endereço padrão, o que a exclusão de conta faz com eles, o pedido continua com a cópia do endereço).
+2. **Teste mensal de restauração a partir da R2 até 22/11/2026** (runbook `docs/runbooks/backup.md`).
+3. (pequena, opcional) Esconder o "Finalizar compra" do carrinho quando houver item indisponível.
 
 ## Bloqueios
 
@@ -169,8 +179,9 @@ _Nenhum._
 - Q3: **respondida** (sem capacidade A1 em 30/09); seguir tentando para migrar da Micro
 - Q4: **respondida em 15/10** (ADR 0030): R2, healthchecks.io e UptimeRobot.
 - **R2 com cartão e sem teto de gasto:** a proteção é o uso mínimo, o ciclo de vida e o alerta de US$ 0,01. Se o alerta chegar, ver a descrição dele (o que conferir).
-- **Teste de restauração mensal** (ADR 0018): o próximo, a partir da R2, até 15/11/2026; registrar no runbook.
+- **Teste de restauração mensal** (ADR 0018): feito a partir da R2 em 22/10 (contagem igual à de produção); o próximo até 22/11/2026; registrar no runbook.
 - Q5: prazo legal de retenção dos pedidos (produção, não é código)
+- **Produtos (ADR 0034):** com item indisponível, o carrinho avisa, mas o botão "Finalizar compra" continua e o cliente só é recusado depois de preencher o endereço. Os ajustes de estoque não guardam histórico (quem ajustou, quanto, por quê); avaliar se fizer falta.
 - Cookie do antiforgery sem `Secure` (o de login tem). Risco baixo; endurecer exige que os testes de página usem `https`.
 - **Corrida no primeiro carrinho:** duas abas criando o primeiro carrinho do mesmo cliente ao mesmo tempo → o índice único recusa o segundo (correto), mas aquele clique vê uma página de erro. Melhoria: tentar de novo uma vez. Baixa prioridade.
 - O login ignora o `ReturnUrl` (quem tenta abrir `/Cart` sem login cai no catálogo depois de entrar, e não no carrinho).
@@ -188,6 +199,13 @@ _Nenhum._
 **Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 22/10/2026: "Meus pedidos", restauração da R2 e **cadastro de produtos pelo admin** (2h)
+- Aquecimento: um curioso com o link do pedido de outro cliente (respondido pelo filtro `Id` + `CustomerId`, 404). "Meus pedidos" + "Última unidade" (PR #78, `Where`/`OrderBy` do autor); o autor lembrou que pedido de conta excluída não deve aparecer para ninguém (`CustomerId` nulo nunca é igual).
+- **Restauração mensal a partir da R2:** dump de 22/10 baixado, decifrado e restaurado em `restore_test`, contagem por status igual à de produção (filtrada pela hora do backup). Tropeço: `psql -c` com `\"` no PowerShell 5.1 (erro do Claude, já conhecido); resolvido digitando dentro do `psql`.
+- Ordem da segunda parte da v2 decidida (a sugerida). Cadastro de produtos (ADR 0034, PR #79): decisões do autor: estoque por ajuste, ativo/inativo, só nome/preço/estoque. 4 passos: domínio (autor), reserva com `IsActive` (autor; a lacuna 2 foi dentro do `SetProperty`), serviço com ajuste atômico (autor; `p.Stock > 0` corrigido para `p.Stock + delta >= 0` com explicação passo a passo), página (Claude; sabotagem sem `[Authorize]` → 2 testes vermelhos). **322 testes.** Teste completo em produção.
+- Tropeços: a migration saiu com `defaultValue: false` e foi corrigida antes do deploy; um teste do Claude desativava o kit do seed e quebrou outros 3 (trocado por um produto próprio); o PR não aparece sozinho depois do push (criar em "New pull request").
+- Verificações: pedido pago de produto desativado e o estoque no cancelamento (acertou); `p.Stock` do banco × lido antes (sem resposta; explicado); por que conferir o estoque além do 403 (acertou). O autor diz que nada ficou confuso.
 
 ### 21/10/2026: exclusão de conta e **parte legal da v2 concluída** (1h)
 - Aquecimento: por que não apagar os pedidos com a conta (acertou a ideia: "precisam ser rastreados"; corrigido: pelo prazo da obrigação legal, não para sempre). O Planalto recusou a conexão do Claude de novo e o autor colou a LGPD.
@@ -265,17 +283,11 @@ _Nenhum._
 - Tropeços: o esqueleto do `CheckoutService` não compilava (parâmetro `clock` sem uso + `TreatWarningsAsErrors`; erro do Claude, que só testou a versão completa); o `GetAsync` inteiro foi colado **dentro** do método (instrução ambígua "olhe o `GetAsync`"); arquivos do item 5 no lugar errado (testes colados sobre o `CheckoutPageTests`, view em `Views/Checkout`, controller faltando) e o `git add` recusou tudo; resolvido com `git restore` e recriando os arquivos.
 - Verificações: atomicidade do "ler e depois gravar" (acertou), `IsUnique` no `CustomerId` do pedido (não sabia), `db.Carts` × `db.Orders` (não sabia; depois acertou "só a cesta existe"), `reserved == 0` (acertou com ajuste), `CommitAsync` (não sabia), `ModelState` × navegador (acertou), 404 × 403 (não sabia), quando o estoque cai (acertou: só no "Finalizar"). O autor diz que nada ficou confuso, mas pediu para ir mais devagar no esqueleto ("tô entendendo nada"): explicar linha a linha **antes** de pedir código.
 
-### 07/10/2026: `Order`, carrinho completo do domínio à página (3h)
-- Aquecimento: fábrica de testes num lugar só (PR #35). `Order` escrito pelo autor, com 12 testes (PR #36); o arquivo de teste estava no projeto de integração e foi movido para o de unidade.
-- Carrinho em 6 PRs (#37 a #41): entidade (o `RemoveItem` saiu primeiro com a lógica invertida; o teste pegou), banco com índice único por cliente, serviço com preços do catálogo, página com `[Authorize]`, mudar a quantidade e remover. **62 testes.** Módulo renomeado para `Carts` por conflito de nome com a classe.
-- Sabotagens: sem `[Authorize]` a página abriu com 200 e "carrinho vazio" (o `!` escondeu o `null`); sem `SaveChangesAsync` o item continuou no banco.
-- Tropeços: `CartService` criado primeiro na Application (movido para a Infrastructure); uma linha de teste colada dentro do teste errado (instrução ambígua do Claude; resolvido trocando o arquivo inteiro).
-- Verificações: carrinho sem estoque (parcial: "ainda não verificamos"; explicado que é de propósito e que a proteção é a reserva no "Finalizar"); `SaveChangesAsync` (não sabia); somar × trocar (não sabia). O autor diz que nada ficou confuso, mas as duas últimas respostas foram "não sei" no fim de 3h: revisar no início da próxima sessão.
-
 ## Histórico
 
 _(sessões antigas resumidas em uma linha cada)_
 
+- **07/10/2026 (3h):** `Order` com 12 testes (PR #36) e carrinho em 6 PRs (#37 a #41), do domínio à página; módulo renomeado para `Carts`; 62 testes.
 - **06/10/2026 (2h):** chaves do Data Protection no PostgreSQL (PR #29, ADR 0022), login com bloqueio em 3 tentativas (PR #31), logout + menu (PR #32), `create-admin` (PR #33, ADR 0023); **M1 concluído**.
 - **05/10/2026 (3ª sessão, 2h):** regra dos 150 caracteres no `Product` com TDD (PR #26); cadastro de clientes em 5 passos (PR #27); a garantia de e-mail único é o índice do `UserName`.
 - **05/10/2026 (2ª sessão, 2h):** runner do CI fixado, Identity parte 1 (PR #22), `deploy.sh` que se atualiza (PR #23), atualizações automáticas diárias às 03:30 (PR #24, ADR 0021).
