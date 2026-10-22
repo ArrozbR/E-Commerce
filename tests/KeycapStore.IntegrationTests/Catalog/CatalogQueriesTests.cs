@@ -66,4 +66,25 @@ public class CatalogQueriesTests(PostgresFixture postgres) : IClassFixture<Postg
             Assert.Equal(0, mare.Stock);
         }
     }
+
+    [Fact]
+    public async Task ListProductsAsync_HidesProductsTakenOffSale()
+    {
+        var inactive = new Product("Test Kit Fora de Venda", 100m, 5);
+        inactive.Deactivate();
+
+        await using (var db = CreateContext())
+        {
+            await db.Database.MigrateAsync();
+            db.Products.Add(inactive);
+            await db.SaveChangesAsync();
+        }
+
+        await using (var db = CreateContext())
+        {
+            var products = await new CatalogQueries(db).ListProductsAsync();
+
+            Assert.DoesNotContain(products, p => p.Id == inactive.Id);
+        }
+    }
 }

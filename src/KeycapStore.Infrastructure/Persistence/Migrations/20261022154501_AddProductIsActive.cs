@@ -16,7 +16,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                 table: "products",
                 type: "boolean",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: true);
 
             migrationBuilder.UpdateData(
                 table: "products",

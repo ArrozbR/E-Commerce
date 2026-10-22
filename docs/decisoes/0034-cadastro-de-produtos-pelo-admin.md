@@ -26,7 +26,8 @@ Dois riscos:
 4. **Ativo / inativo** (`Product.IsActive`, verdadeiro para todos os produtos existentes):
    - inativo **some do catálogo** e **não entra no carrinho** (404, como um produto inexistente);
    - **nenhuma reserva acontece para produto inativo:** a condição da reserva passa a ser `WHERE id = @id AND stock >= @qty AND is_active`, tanto no "Finalizar" quanto na nova reserva do pagamento atrasado (`TryReserveStockAsync`). Uma regra só: inativo não está à venda;
-   - um carrinho com item inativo falha no "Finalizar" com a mensagem de indisponível, e nada é reservado (a transação inteira volta, como hoje);
+   - o **carrinho avisa** "indisponível" no próprio item inativo (o cliente não descobre só no "Finalizar"); se mesmo assim tentar finalizar, falha com a mensagem de indisponível, e nada é reservado (a transação inteira volta, como hoje);
+   - a migration cria a coluna com **padrão verdadeiro**: qualquer produto que já exista no banco continua à venda, seja do seed ou não;
    - **pedidos já reservados ou pagos não mudam:** a separação, o envio, o cancelamento e as devoluções continuam normais, e a devolução de estoque (cancelamento, expiração, devolução) soma no produto mesmo inativo;
    - reativar devolve o produto à venda com o estoque que ele tiver.
 5. **Página:** dentro da área de admin (`[Authorize(Roles = Roles.Admin)]`), um `POST` por ação (criar, editar, ajustar estoque, ativar, desativar), como na página de envio. Nenhum `PATCH` genérico.

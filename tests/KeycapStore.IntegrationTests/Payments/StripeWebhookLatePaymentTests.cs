@@ -156,4 +156,23 @@ public class StripeWebhookLatePaymentTests(PostgresFixture postgres) : IClassFix
         Assert.Equal(OrderStatus.PaidOutOfStock, (await OrderAsync(factory, orderId)).Status);
         Assert.Equal(5, await StockAsync(factory, productIds[0]));
     }
+
+    [Fact]
+    public async Task PaidAfterExpired_ProductTakenOffSale_GoesToPaidOutOfStock()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var (orderId, productIds, total) = await PlaceOrderAsync(factory, "customer-late-inactive");
+        await SendAsync(factory, StripeWebhookSigner.CheckoutExpired("evt_late_expired_inactive", orderId));
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Products.Where(p => p.Id == productIds[0]).ExecuteUpdateAsync(s => s.SetProperty(p => p.IsActive, false));
+        }
+
+        var response = await SendAsync(factory, StripeWebhookSigner.CheckoutCompleted("evt_late_paid_inactive", orderId, total));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(OrderStatus.PaidOutOfStock, (await OrderAsync(factory, orderId)).Status);
+        Assert.Equal(5, await StockAsync(factory, productIds[0]));
+    }
 }

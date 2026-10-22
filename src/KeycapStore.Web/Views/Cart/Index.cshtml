@@ -26,7 +26,13 @@ else
             @foreach (var line in Model.Lines)
             {
                 <tr>
-                    <td>@line.ProductName</td>
+                    <td>
+                        @line.ProductName
+                        @if (!line.IsAvailable)
+                        {
+                            <br /><span class="badge bg-secondary">Indisponível</span>
+                        }
+                    </td>
                     <td class="text-end">@line.UnitPrice.ToString("C", brl)</td>
                     <td class="text-end">
                         <form asp-action="ChangeQuantity" method="post" class="d-inline-flex gap-2">
@@ -53,6 +59,11 @@ else
             </tr>
         </tfoot>
     </table>
+
+    @if (Model.HasUnavailableItems)
+    {
+        <p class="text-danger text-end">Um item do carrinho não está mais à venda. Remova-o para finalizar a compra.</p>
+    }
 
     <div class="text-end">
         <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary">Finalizar compra</a>
