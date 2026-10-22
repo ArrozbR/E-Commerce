@@ -422,7 +422,7 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 **Roadmap depois da v1** (cada item é independente; a ordem é decidida depois da v1):
 - **v2 (tudo o que não é visual, ADR 0025):**
   1. **primeiro (libera o go-live):** direitos do consumidor e do titular (cancelamento, arrependimento, exclusão de conta);
-  2. **depois:** site em inglês (bandeira pt-BR/en no menu), tela de admin com cadastro de produtos, Payment Element embutido, conciliação com a Stripe, frete real (Correios ou Melhor Envio), pré-venda, endereços salvos, login com Google.
+  2. **depois, nesta ordem (decidida em 22/10/2026):** (1) tela de admin com cadastro de produtos; (2) endereços salvos; (3) conciliação com a Stripe; (4) site em inglês (bandeira pt-BR/en no menu); (5) login com Google; (6) Payment Element embutido; (7) frete real (Correios ou Melhor Envio); (8) pré-venda. Critério: primeiro o que é pequeno e só .NET, depois o que depende de serviço externo, por último o que muda decisões centrais (D07, ADR 0024, modelo de estoque).
 - **v3:** reformulação visual, mantendo MVC + Razor.
 - **Não há v4.** Continuam fora: variações de produto (SKU), boleto e compra como convidado.
 
@@ -436,7 +436,7 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 | D02 | Modo teste, pronto para produção | Dinheiro real |
 | D03 | Keycaps em lotes limitados, marcas fictícias, sem variações, sem pré-venda | Café, prints, livros, produto digital |
 | D04 | Catálogo público; conta obrigatória para comprar | Catálogo fechado; compra como convidado |
-| D05 | Produtos via seed; endpoints de admin só para o envio, com uma página mínima de envio (ADR 0028) (na v1; tela de admin com cadastro de produtos na v2, ADR 0025) | Interface de admin completa na v1 |
+| D05 | Produtos via seed; endpoints de admin só para o envio, com uma página mínima de envio (ADR 0028) (na v1; tela de admin com cadastro de produtos na v2, ADR 0025 e ADR 0034: estoque por ajuste atômico, produto ativo/inativo) | Interface de admin completa na v1 |
 | D06 | ~~Frete fixo~~ Frete por estado (ADR 0024); endereço como snapshot no pedido | Integração com Correios ou Melhor Envio |
 | D07 | Stripe Checkout hospedado (Payment Element na ~~v3~~ v2, ADR 0025) | Payment Element na v1 |
 | D08 | Cartão + Pix; o handler decide pelo `payment_status` | Boleto |

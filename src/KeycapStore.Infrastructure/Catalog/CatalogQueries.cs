@@ -11,6 +11,7 @@ public sealed class CatalogQueries(AppDbContext db) : ICatalogQueries
     {
         return await db.Products
             .AsNoTracking()
+            .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
             .Select(p => new ProductSummary(p.Id, p.Name, p.Price, p.Stock))
             .ToListAsync(cancellationToken);

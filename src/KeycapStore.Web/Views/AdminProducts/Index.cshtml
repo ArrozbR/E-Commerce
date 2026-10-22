@@ -1,0 +1,83 @@
+@using KeycapStore.Web.Models
+@model IReadOnlyList<KeycapStore.Application.Catalog.AdminProductView>
+@{
+    ViewData["Title"] = "Produtos";
+}
+
+<h1>Produtos</h1>
+
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<h2 class="h5 mt-4">Novo produto</h2>
+<form asp-action="Create" method="post" class="row g-2 align-items-end mb-4">
+    <div class="col-md-5">
+        <label for="new-name" class="form-label">Nome</label>
+        <input id="new-name" name="Name" class="form-control" maxlength="@KeycapStore.Domain.Catalog.Product.MaxNameLength" required />
+    </div>
+    <div class="col-md-2">
+        <label for="new-price" class="form-label">Preço (R$)</label>
+        <input id="new-price" name="Price" class="form-control" placeholder="199,90" inputmode="decimal" required />
+    </div>
+    <div class="col-md-2">
+        <label for="new-stock" class="form-label">Estoque inicial</label>
+        <input id="new-stock" name="Stock" type="number" min="0" max="@AdminLimits.MaxStockChange" value="0" class="form-control" required />
+    </div>
+    <div class="col-md-3">
+        <button type="submit" class="btn btn-primary">Criar produto</button>
+    </div>
+</form>
+
+<table class="table align-middle">
+    <thead>
+        <tr>
+            <th>Nome e preço</th>
+            <th class="text-end">Estoque</th>
+            <th>Ajustar estoque</th>
+            <th>Situação</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            <tr class="@(product.IsActive ? "" : "table-secondary")">
+                <td>
+                    <form asp-action="Edit" asp-route-id="@product.Id" method="post" class="d-flex gap-1">
+                        <input name="Name" value="@product.Name" class="form-control form-control-sm" maxlength="@KeycapStore.Domain.Catalog.Product.MaxNameLength" required />
+                        <input name="Price" value="@ProductFormViewModel.FormatPrice(product.Price)" class="form-control form-control-sm" style="max-width: 7rem" inputmode="decimal" required />
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Salvar</button>
+                    </form>
+                </td>
+                <td class="text-end"><strong>@product.Stock</strong></td>
+                <td>
+                    <form asp-action="AdjustStock" asp-route-id="@product.Id" method="post" class="d-flex gap-1">
+                        <input name="delta" type="number" min="-@AdminLimits.MaxStockChange" max="@AdminLimits.MaxStockChange" placeholder="+10 ou -2" class="form-control form-control-sm" style="max-width: 8rem" required />
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Ajustar</button>
+                    </form>
+                </td>
+                <td>
+                    @if (product.IsActive)
+                    {
+                        <span class="badge bg-success">À venda</span>
+                        <form asp-action="Deactivate" asp-route-id="@product.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Tirar de venda</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Fora de venda</span>
+                        <form asp-action="Activate" asp-route-id="@product.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-success">Voltar à venda</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

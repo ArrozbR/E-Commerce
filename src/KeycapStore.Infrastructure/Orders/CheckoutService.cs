@@ -27,12 +27,15 @@ internal sealed class CheckoutService(AppDbContext db, TimeProvider clock, IPaym
         foreach (var item in cart.Items.OrderBy(i => i.ProductId))
         {
             var reserved = await db.Products
-                .Where(p => p.Id == item.ProductId && p.Stock >= item.Quantity)
+                .Where(p => p.Id == item.ProductId && p.Stock >= item.Quantity && p.IsActive)
                 .ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, p => p.Stock - item.Quantity), cancellationToken);
 
             if (reserved == 0)
             {
-                return PlaceOrderResult.Failure($"{products[item.ProductId].Name} não tem estoque suficiente.");
+                var product = products[item.ProductId];
+                return PlaceOrderResult.Failure(product.IsActive
+                    ? $"{product.Name} não tem estoque suficiente."
+                    : $"{product.Name} não está mais à venda. Remova do carrinho para continuar.");
             }
         }
 

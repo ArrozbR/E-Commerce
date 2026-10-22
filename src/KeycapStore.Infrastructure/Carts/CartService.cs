@@ -13,7 +13,7 @@ internal sealed class CartService(AppDbContext db) : ICartService
     {
         var cart = await db.Carts.SingleOrDefaultAsync(c => c.CustomerId == customerId, cancellationToken);
 
-        if (!await db.Products.AnyAsync(p => p.Id == productId, cancellationToken))
+        if (!await db.Products.AnyAsync(p => p.Id == productId && p.IsActive, cancellationToken))
         {
             throw new ProductNotFoundException(productId);
         }
@@ -68,7 +68,7 @@ internal sealed class CartService(AppDbContext db) : ICartService
             .ToDictionaryAsync(p => p.Id, cancellationToken);
 
         var lines = cart.Items
-            .Select(i => new CartLineView(i.ProductId, products[i.ProductId].Name, products[i.ProductId].Price, i.Quantity))
+            .Select(i => new CartLineView(i.ProductId, products[i.ProductId].Name, products[i.ProductId].Price, i.Quantity, products[i.ProductId].IsActive))
             .OrderBy(l => l.ProductName)
             .ToList();
 

@@ -34,6 +34,7 @@ public static class DependencyInjection
             .SetApplicationName("KeycapStore");
 
         services.AddScoped<ICatalogQueries, CatalogQueries>();
+        services.AddScoped<IProductAdminService, ProductAdminService>();
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<ICheckoutService, CheckoutService>();
         services.AddScoped<IOrderQueries, OrderQueries>();

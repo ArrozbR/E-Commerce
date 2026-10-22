@@ -82,12 +82,13 @@ Ordem obrigatória:
 - `Product.Stock` = quantidade **disponível para venda**. Reservar = decrementar. Liberar = incrementar.
 - **Reserva** em "Finalizar", na mesma transação que cria o pedido, **atômica e condicional**:
   ```sql
-  UPDATE products SET stock = stock - @qty WHERE id = @id AND stock >= @qty
+  UPDATE products SET stock = stock - @qty WHERE id = @id AND stock >= @qty AND is_active
   ```
-  (ou `ExecuteUpdateAsync` equivalente). Se afetar 0 linhas, a transação inteira é desfeita, e o cliente vê "esgotado". **Nunca ler o estoque, checar em C# e depois gravar.**
+  (ou `ExecuteUpdateAsync` equivalente). Se afetar 0 linhas, a transação inteira é desfeita, e o cliente vê "esgotado". **Nunca ler o estoque, checar em C# e depois gravar.** Produto inativo não é reservado, nem no "Finalizar" nem na nova reserva do pagamento atrasado (ADR 0034).
 - **Liberação SÓ por evento da Stripe** (`expired`, `async_payment_failed`). **Nunca por timer próprio.**
 - **Única exceção (D35):** um job libera pedidos `AwaitingPayment` **sem `StripeSessionId`** há mais de 10 minutos. Sem sessão, não existe forma de pagar.
 - Se a criação da sessão na Stripe falhar: `MarkFailed()` + liberar estoque (compensação).
+- **Ajuste de estoque pelo admin (ADR 0034):** sempre por diferença, `UPDATE products SET stock = stock + @delta WHERE id = @id AND stock + @delta >= 0`. Nunca gravar um valor final de estoque lido antes.
 - **Cancelamento pelo cliente (ADR 0031):** `Cancel()` + liberar estoque, na mesma transação.
 - **Arrependimento (ADR 0032):** a desistência **não** mexe no estoque (o produto está com o cliente). O estoque volta só em `ConfirmReturn()`, se o admin marcar, na mesma transação.
 - A confirmação de pagamento **não** mexe no estoque (ele já foi reservado). Se a reserva tiver sido liberada: tentar reservar de novo de forma atômica. Se conseguir → `Paid`. Se não → `PaidOutOfStock` → reembolso automático (`refund-{orderId}`) → `Refunded`. Se o reembolso falhar, o pedido continua em `PaidOutOfStock` e gera um alerta.

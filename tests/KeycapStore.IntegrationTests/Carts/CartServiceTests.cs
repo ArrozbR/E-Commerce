@@ -108,4 +108,39 @@ public class CartServiceTests(PostgresFixture postgres) : IClassFixture<Postgres
         Assert.Empty(view.Lines);
         Assert.Equal(0m, view.Total);
     }
+
+    [Fact]
+    public async Task AddItem_ProductTakenOffSale_IsTreatedAsNotFound()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var product = new KeycapStore.Domain.Catalog.Product("Kit Fora de Venda", 100m, 5);
+        product.Deactivate();
+        db.Products.Add(product);
+        await db.SaveChangesAsync();
+
+        var carts = scope.ServiceProvider.GetRequiredService<ICartService>();
+
+        await Assert.ThrowsAsync<KeycapStore.Domain.Catalog.ProductNotFoundException>(() => carts.AddItemAsync("customer-off-sale", product.Id, 1));
+    }
+
+    [Fact]
+    public async Task Get_ItemTakenOffSaleAfterwards_IsShownAsUnavailable()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        await using var scope = factory.Services.CreateAsyncScope();
+        var carts = scope.ServiceProvider.GetRequiredService<ICartService>();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var product = new KeycapStore.Domain.Catalog.Product("Kit Sai de Venda", 100m, 5);
+        db.Products.Add(product);
+        await db.SaveChangesAsync();
+        await carts.AddItemAsync("customer-unavailable", product.Id, 1);
+        await db.Products.Where(p => p.Id == product.Id).ExecuteUpdateAsync(s => s.SetProperty(p => p.IsActive, false));
+
+        var view = await carts.GetAsync("customer-unavailable");
+
+        Assert.False(Assert.Single(view.Lines).IsAvailable);
+        Assert.True(view.HasUnavailableItems);
+    }
 }

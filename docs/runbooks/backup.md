@@ -81,7 +81,7 @@ docker compose exec db pg_restore -U keycapstore -d restore_test --no-owner /tmp
 
 ### 3. Conferir
 
-Compare com a mesma consulta em produção.
+Entre no `psql` e digite a consulta **lá dentro** (passar o SQL pelo `-c` no PowerShell 5.1 estraga as aspas):
 
 ```powershell
 docker compose exec db psql -U keycapstore -d restore_test
@@ -90,6 +90,18 @@ docker compose exec db psql -U keycapstore -d restore_test
 ```sql
 SELECT "Status", count(*) FROM orders GROUP BY "Status" ORDER BY "Status";
 ```
+
+Em produção, conte **só os pedidos criados antes do backup** (a hora está no nome do arquivo, em UTC; `20261022T053150Z` vira `2026-10-22T05:31:50Z`):
+
+```bash
+cd /opt/keycapstore && sudo docker compose exec db psql -U keycapstore -d keycapstore
+```
+
+```sql
+SELECT "Status", count(*) FROM orders WHERE "CreatedAt" < 'HORA_DO_BACKUP' GROUP BY "Status" ORDER BY "Status";
+```
+
+As duas listas devem ser iguais. (Um pedido antigo que mudou de situação depois do backup também gera diferença; se aparecer, confira se é o caso antes de suspeitar do backup.)
 
 ### 4. Limpar
 
@@ -112,3 +124,4 @@ docker compose exec db psql -U keycapstore -d postgres -c "DROP DATABASE restore
 | Data | Backup | Resultado |
 |---|---|---|
 | 15/10/2026 | `keycapstore-20261015T145913Z.dump.age` (da VM) | ✅ contagem por status igual à de produção (2 Delivered, 2 Expired, 1 Failed, 1 Paid, 1 Picking, 2 Shipped) |
+| 22/10/2026 | `keycapstore-20261022T053150Z.dump.age` (**da R2**, `daily/`, sem usar a VM) | ✅ contagem por status igual à de produção até a hora do backup (2 Delivered, 2 Expired, 2 Failed, 2 Paid, 1 Picking, 2 Refunded, 1 Returned, 2 Shipped). Próximo teste até 22/11/2026 |

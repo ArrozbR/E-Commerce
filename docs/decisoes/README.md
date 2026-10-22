@@ -41,3 +41,4 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0031](0031-cancelamento-pelo-cliente-antes-do-envio.md) | Cancelamento pelo cliente antes do envio, com reembolso automático |
 | [0032](0032-direito-de-arrependimento.md) | Direito de arrependimento: reembolso na hora e devolução conferida pelo admin |
 | [0033](0033-exclusao-de-conta.md) | Exclusão de conta: a conta some, os pedidos ficam sem dono e o endereço espera o prazo legal |
+| [0034](0034-cadastro-de-produtos-pelo-admin.md) | Cadastro de produtos pelo admin: estoque por ajuste atômico e produto ativo/inativo |

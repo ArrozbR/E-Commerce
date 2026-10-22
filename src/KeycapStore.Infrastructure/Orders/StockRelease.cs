@@ -27,7 +27,7 @@ internal static class StockRelease
         foreach (var item in order.Items.OrderBy(i => i.ProductId))
         {
             var reserved = await db.Products
-                .Where(p => p.Id == item.ProductId && p.Stock >= item.Quantity)
+                .Where(p => p.Id == item.ProductId && p.Stock >= item.Quantity && p.IsActive)
                 .ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, p => p.Stock - item.Quantity), cancellationToken);
 
             if (reserved == 0)

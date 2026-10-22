@@ -115,4 +115,29 @@ public class CheckoutServiceTests(PostgresFixture postgres) : IClassFixture<Post
         Assert.Single(results, r => r.Succeeded);
         Assert.Equal(0, await StockOfAsync(factory, lastUnit));
     }
+
+    [Fact]
+    public async Task PlaceOrder_WithAProductTakenOffSale_ChangesNothing()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var available = await NewProductAsync(factory, "Kit Teste Ativo", stock: 5);
+        var inactive = await NewProductAsync(factory, "Kit Teste Inativo", stock: 5);
+        await AddToCartAsync(factory, "customer-inactive", available, 1);
+        await AddToCartAsync(factory, "customer-inactive", inactive, 1);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Products.Where(p => p.Id == inactive).ExecuteUpdateAsync(s => s.SetProperty(p => p.IsActive, false));
+        }
+
+        var result = await PlaceOrderAsync(factory, "customer-inactive");
+
+        Assert.False(result.Succeeded);
+        Assert.Contains("Kit Teste Inativo não está mais à venda", result.Error);
+        Assert.Equal(5, await StockOfAsync(factory, available));
+        Assert.Equal(5, await StockOfAsync(factory, inactive));
+
+        await using var check = factory.Services.CreateAsyncScope();
+        Assert.False(await check.ServiceProvider.GetRequiredService<AppDbContext>().Orders.AnyAsync(o => o.CustomerId == "customer-inactive"));
+    }
 }
