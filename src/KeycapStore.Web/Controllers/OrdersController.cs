@@ -15,6 +15,14 @@ public sealed class OrdersController(IOrderQueries orders, ICancellationService 
 {
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
+    [HttpGet("orders")]
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+    {
+        var list = await orders.ListForCustomerAsync(CustomerId, cancellationToken);
+
+        return View(list);
+    }
+
     [HttpGet]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {

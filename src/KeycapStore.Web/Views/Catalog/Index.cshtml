@@ -20,6 +20,10 @@
                     {
                         <span class="badge bg-secondary">Esgotado</span>
                     }
+                    else if (product.Stock == 1)
+                    {
+                        <span class="badge bg-warning text-dark">Última unidade</span>
+                    }
                     else if (product.Stock <= 3)
                     {
                         <span class="badge bg-warning text-dark">Últimas @product.Stock unidades</span>

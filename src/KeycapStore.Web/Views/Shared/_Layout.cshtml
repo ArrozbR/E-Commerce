@@ -31,6 +31,9 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Cart" asp-action="Index">Carrinho</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">Meus pedidos</a>
+                            </li>
                             @if (User.IsInRole(KeycapStore.Application.Identity.Roles.Admin))
                             {
                                 <li class="nav-item">
