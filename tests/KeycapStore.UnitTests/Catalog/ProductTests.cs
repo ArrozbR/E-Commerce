@@ -71,4 +71,67 @@ public class ProductTests
 
         Assert.Throws<ArgumentOutOfRangeException>(() => new Product(name, 100, 10));
     }
+
+    [Fact]
+    public void NewProduct_IsActive()
+    {
+        var product = new Product("Kit Aurora (base)", 349.90m, 40);
+
+        Assert.True(product.IsActive);
+    }
+
+    [Fact]
+    public void Update_ChangesNameAndPrice_AndKeepsTheStock()
+    {
+        var product = new Product("Kit Aurora (base)", 349.90m, 40);
+
+        product.Update("Kit Aurora (base) v2", 399.90m);
+
+        Assert.Equal("Kit Aurora (base) v2", product.Name);
+        Assert.Equal(399.90m, product.Price);
+        Assert.Equal(40, product.Stock);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void Update_WithPriceZeroOrNegative_Throws_AndKeepsTheOldValues(int price)
+    {
+        var product = new Product("Kit Aurora (base)", 349.90m, 40);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => product.Update("Outro nome", price));
+
+        Assert.Equal("Kit Aurora (base)", product.Name);
+        Assert.Equal(349.90m, product.Price);
+    }
+
+    [Fact]
+    public void Update_WithNameWhiteSpace_Throws()
+    {
+        var product = new Product("Kit Aurora (base)", 349.90m, 40);
+
+        Assert.Throws<ArgumentException>(() => product.Update("   ", 399.90m));
+
+        Assert.Equal(349.90m, product.Price);
+    }
+
+    [Fact]
+    public void Update_WithNameOver150Characters_Throws()
+    {
+        var product = new Product("Kit Aurora (base)", 349.90m, 40);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => product.Update(new string('a', Product.MaxNameLength + 1), 399.90m));
+    }
+
+    [Fact]
+    public void Deactivate_ThenActivate_GoesBackOnSale()
+    {
+        var product = new Product("Kit Aurora (base)", 349.90m, 40);
+
+        product.Deactivate();
+        Assert.False(product.IsActive);
+
+        product.Activate();
+        Assert.True(product.IsActive);
+    }
 }

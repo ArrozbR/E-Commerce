@@ -46,6 +46,9 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -66,6 +69,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e01"),
+                            IsActive = true,
                             Name = "Kit Aurora (base)",
                             Price = 349.90m,
                             Stock = 40
@@ -73,6 +77,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e02"),
+                            IsActive = true,
                             Name = "Kit Aurora (novelties)",
                             Price = 129.90m,
                             Stock = 3
@@ -80,6 +85,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e03"),
+                            IsActive = true,
                             Name = "Kit Maré (base)",
                             Price = 319.90m,
                             Stock = 25
@@ -87,6 +93,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e04"),
+                            IsActive = true,
                             Name = "Kit Maré (modificadores)",
                             Price = 149.90m,
                             Stock = 0
@@ -94,6 +101,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e05"),
+                            IsActive = true,
                             Name = "Kit Zéfiro (base)",
                             Price = 299.90m,
                             Stock = 12
@@ -101,6 +109,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e06"),
+                            IsActive = true,
                             Name = "Kit Zéfiro (teclas de função)",
                             Price = 89.90m,
                             Stock = 2

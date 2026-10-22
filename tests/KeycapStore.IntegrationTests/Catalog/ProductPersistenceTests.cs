@@ -38,4 +38,39 @@ public class ProductPersistenceTests(PostgresFixture postgres) : IClassFixture<P
             Assert.Equal(product.Stock, saved.Stock);
         }
     }
+
+    [Fact]
+    public async Task SeededProducts_StayOnSale_AfterTheMigration()
+    {
+        await using var db = CreateContext();
+        await db.Database.MigrateAsync();
+
+        var inactive = await db.Products.CountAsync(p => !p.IsActive);
+
+        Assert.Equal(0, inactive);
+    }
+
+    [Fact]
+    public async Task InactiveProduct_IsSavedAndReadBack()
+    {
+        await using (var db = CreateContext())
+        {
+            await db.Database.MigrateAsync();
+        }
+
+        var product = new Product("Kit Fora de Venda", 100m, 5);
+        product.Deactivate();
+
+        await using (var db = CreateContext())
+        {
+            db.Products.Add(product);
+            await db.SaveChangesAsync();
+        }
+
+        await using (var db = CreateContext())
+        {
+            var saved = await db.Products.SingleAsync(p => p.Id == product.Id);
+            Assert.False(saved.IsActive);
+        }
+    }
 }

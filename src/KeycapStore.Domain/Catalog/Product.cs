@@ -8,6 +8,7 @@ public sealed class Product
     public string Name { get; private set; }
     public decimal Price { get; private set; }
     public int Stock { get; private set; }
+    public bool IsActive { get; private set; }
 
     public Product(string name, decimal price, int stock)
     {
@@ -20,5 +21,26 @@ public sealed class Product
         Name = name;
         Price = price;
         Stock = stock;
+        IsActive = true;
+    }
+
+    public void Update(string name, decimal price)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(name.Length, MaxNameLength);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(price);
+
+        Name = name;
+        Price = price;
+    }
+
+    public void Deactivate()
+    {
+        IsActive = false;
+    }
+
+    public void Activate()
+    {
+        IsActive = true;
     }
 }
