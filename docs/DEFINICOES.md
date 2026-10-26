@@ -50,7 +50,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 | Pré-venda (*group buy*) | ~~futuro (v3+)~~ **v2** (ADR 0025) | Muda o modelo de estoque (vagas, prazos longos, reembolsos parciais). |
 | Variações de produto (SKU) | fora | Cada kit é um produto próprio, como no mercado real. |
 | Boleto | fora | É lento, raramente é pago e prende estoque por dias. |
-| Endereços salvos na conta | ~~futuro~~ **v2** (ADR 0025) | Conveniência, não essencial. |
+| Endereços salvos na conta | ~~futuro~~ **v2** (ADR 0025; ADR 0035: um por cliente) | Conveniência, não essencial. Só preenche o checkout; o pedido guarda a própria cópia. |
 | Login externo (Google etc.) | ~~futuro~~ **v2** (ADR 0025) | Dependência externa sem ganho de aprendizado na v1. |
 | Compra como convidado | fora | Decisão: conta obrigatória para comprar. |
 | Site em inglês (troca pt-BR/en por bandeira no menu) | **v2** (ADR 0025) | A v1 é só em português. |
@@ -283,10 +283,11 @@ O reembolso de Pix é aceito em até 90 dias depois do pagamento.
 |---|---|---|
 | E-mail, hash da senha | Identity | Conta e login |
 | Nome do destinatário, endereço | Snapshot `EnderecoEntrega` no `Pedido` | Entrega |
+| Endereço salvo (v2, ADR 0035) | Tabela própria, um por cliente | Preencher o checkout; apagado pelo cliente ou com a conta |
 | Histórico de pedidos | `Pedido` | Execução do contrato, financeiro |
 
 - **Logs registram só IDs**, nunca e-mail, nome ou endereço.
-- **Exclusão de conta (v2, ADR 0033):** apaga a conta do Identity (confirmada com a senha; admin não se exclui pela página); mantém os pedidos com `CustomerId = null`; mantém o snapshot de nome e endereço pelo prazo legal e depois anonimiza (job pendente da Q5); bloqueia a exclusão enquanto houver pedido não finalizado, inclusive entregue dentro dos 7 dias de arrependimento.
+- **Exclusão de conta (v2, ADR 0033):** apaga a conta do Identity (confirmada com a senha; admin não se exclui pela página); mantém os pedidos com `CustomerId = null`; mantém o snapshot de nome e endereço pelo prazo legal e depois anonimiza (job pendente da Q5); bloqueia a exclusão enquanto houver pedido não finalizado, inclusive entregue dentro dos 7 dias de arrependimento. O endereço salvo (ADR 0035) é apagado na mesma transação.
 - **Desde a v1:** o `Pedido` não depende da existência da conta (sem FK para `AspNetUsers`, endereço como snapshot). O `CustomerId` passou a aceitar vazio na v2 (ADR 0033).
 
 **Infraestrutura**
@@ -437,7 +438,7 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 | D03 | Keycaps em lotes limitados, marcas fictícias, sem variações, sem pré-venda | Café, prints, livros, produto digital |
 | D04 | Catálogo público; conta obrigatória para comprar | Catálogo fechado; compra como convidado |
 | D05 | Produtos via seed; endpoints de admin só para o envio, com uma página mínima de envio (ADR 0028) (na v1; tela de admin com cadastro de produtos na v2, ADR 0025 e ADR 0034: estoque por ajuste atômico, produto ativo/inativo) | Interface de admin completa na v1 |
-| D06 | ~~Frete fixo~~ Frete por estado (ADR 0024); endereço como snapshot no pedido | Integração com Correios ou Melhor Envio |
+| D06 | ~~Frete fixo~~ Frete por estado (ADR 0024); endereço como snapshot no pedido (o endereço salvo da v2 só preenche o checkout, ADR 0035) | Integração com Correios ou Melhor Envio |
 | D07 | Stripe Checkout hospedado (Payment Element na ~~v3~~ v2, ADR 0025) | Payment Element na v1 |
 | D08 | Cartão + Pix; o handler decide pelo `payment_status` | Boleto |
 | D09 | Webhook assinado como fonte da verdade; a página de retorno só consulta o backend | Confiar no redirecionamento; polling na Stripe como fonte principal |

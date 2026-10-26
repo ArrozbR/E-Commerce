@@ -1,4 +1,4 @@
-using KeycapStore.Application.Identity;
+﻿using KeycapStore.Application.Identity;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.AspNetCore.Identity;
@@ -53,6 +53,8 @@ internal sealed class AccountDeletionService(
         {
             db.Carts.Remove(cart);
         }
+
+        await db.SavedAddresses.Where(a => a.CustomerId == customerId).ExecuteDeleteAsync(cancellationToken);
 
         await db.SaveChangesAsync(cancellationToken);
 

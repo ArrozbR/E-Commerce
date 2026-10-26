@@ -42,4 +42,7 @@ public sealed class CheckoutViewModel
     [RegularExpression(@"^\d{5}-?\d{3}$", ErrorMessage = "CEP inválido. Use 8 números, como 01310-100.")]
     [Display(Name = "CEP")]
     public string PostalCode { get; set; } = string.Empty;
+
+    [Display(Name = "Salvar este endereço na minha conta para as próximas compras")]
+    public bool SaveAddress { get; set; }
 }

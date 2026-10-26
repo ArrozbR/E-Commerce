@@ -12,12 +12,32 @@ namespace KeycapStore.Web.Controllers;
 
 [Authorize]
 [DomainExceptionFilter]
-public sealed class CheckoutController(ICheckoutService checkout) : Controller
+public sealed class CheckoutController(ICheckoutService checkout, ISavedAddressService savedAddresses) : Controller
 {
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     [HttpGet]
-    public IActionResult Index() => View();
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+    {
+        var saved = await savedAddresses.GetAsync(CustomerId, cancellationToken);
+        if (saved is null)
+        {
+            return View();
+        }
+
+        ViewData["FromSavedAddress"] = true;
+        return View(new CheckoutViewModel
+        {
+            RecipientName = saved.RecipientName,
+            Street = saved.Street,
+            Number = saved.Number,
+            Complement = saved.Complement,
+            District = saved.District,
+            City = saved.City,
+            State = saved.State,
+            PostalCode = saved.PostalCode,
+        });
+    }
 
     [HttpPost]
     public async Task<IActionResult> Index(CheckoutViewModel model, CancellationToken cancellationToken)
@@ -37,6 +57,11 @@ public sealed class CheckoutController(ICheckoutService checkout) : Controller
         {
             ModelState.AddModelError(string.Empty, result.Error!);
             return View(model);
+        }
+
+        if (model.SaveAddress)
+        {
+            await savedAddresses.SaveAsync(CustomerId, address, cancellationToken);
         }
 
         var orderId = result.OrderId!.Value;
