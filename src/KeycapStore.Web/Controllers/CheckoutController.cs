@@ -1,7 +1,6 @@
 ﻿using System.Security.Claims;
 
 using KeycapStore.Application.Orders;
-using KeycapStore.Domain.Orders;
 using KeycapStore.Web.Filters;
 using KeycapStore.Web.Models;
 
@@ -19,24 +18,16 @@ public sealed class CheckoutController(ICheckoutService checkout, ISavedAddressS
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
+        var model = new CheckoutViewModel();
+
         var saved = await savedAddresses.GetAsync(CustomerId, cancellationToken);
-        if (saved is null)
+        if (saved is not null)
         {
-            return View();
+            model.CopyFrom(saved);
+            ViewData["FromSavedAddress"] = true;
         }
 
-        ViewData["FromSavedAddress"] = true;
-        return View(new CheckoutViewModel
-        {
-            RecipientName = saved.RecipientName,
-            Street = saved.Street,
-            Number = saved.Number,
-            Complement = saved.Complement,
-            District = saved.District,
-            City = saved.City,
-            State = saved.State,
-            PostalCode = saved.PostalCode,
-        });
+        return View(model);
     }
 
     [HttpPost]
@@ -47,9 +38,7 @@ public sealed class CheckoutController(ICheckoutService checkout, ISavedAddressS
             return View(model);
         }
 
-        var address = new ShippingAddress(
-            model.RecipientName, model.Street, model.Number, model.Complement,
-            model.District, model.City, model.State, model.PostalCode);
+        var address = model.ToShippingAddress();
 
         var result = await checkout.PlaceOrderAsync(CustomerId, address, cancellationToken);
 
