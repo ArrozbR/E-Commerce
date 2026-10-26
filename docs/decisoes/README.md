@@ -42,3 +42,4 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0032](0032-direito-de-arrependimento.md) | Direito de arrependimento: reembolso na hora e devolução conferida pelo admin |
 | [0033](0033-exclusao-de-conta.md) | Exclusão de conta: a conta some, os pedidos ficam sem dono e o endereço espera o prazo legal |
 | [0034](0034-cadastro-de-produtos-pelo-admin.md) | Cadastro de produtos pelo admin: estoque por ajuste atômico e produto ativo/inativo |
+| [0035](0035-endereco-salvo-na-conta.md) | Endereço salvo na conta: um por cliente, só para preencher o checkout |
