@@ -1,4 +1,4 @@
-using KeycapStore.Application.Identity;
+﻿using KeycapStore.Application.Identity;
 using KeycapStore.Domain.Carts;
 using KeycapStore.Domain.Orders;
 using KeycapStore.Infrastructure.Identity;
@@ -52,6 +52,21 @@ public class AccountDeletionTests(PostgresFixture postgres) : IClassFixture<Post
         await db.SaveChangesAsync();
     }
 
+    private static async Task SaveAddressAsync(WebApplicationFactory<Program> factory, string customerId)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.SavedAddresses.Add(new SavedAddress(customerId, Curitiba));
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task<bool> HasSavedAddressAsync(WebApplicationFactory<Program> factory, string customerId)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.SavedAddresses.AnyAsync(a => a.CustomerId == customerId);
+    }
+
     private static async Task<AccountDeletionResult> DeleteAsync(WebApplicationFactory<Program> factory, string customerId, string password)
     {
         await using var scope = factory.Services.CreateAsyncScope();
@@ -83,6 +98,33 @@ public class AccountDeletionTests(PostgresFixture postgres) : IClassFixture<Post
 
         Assert.Equal(AccountDeletionResult.Deleted, result);
         Assert.Equal((false, null, false), await StateAsync(factory, customerId, orderId));
+    }
+
+    [Fact]
+    public async Task DeletedAccount_TakesTheSavedAddressWithIt()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var customerId = await RegisterAsync(factory, "leva-o-endereco@example.com");
+        await SaveAddressAsync(factory, customerId);
+
+        var result = await DeleteAsync(factory, customerId, PageClient.Password);
+
+        Assert.Equal(AccountDeletionResult.Deleted, result);
+        Assert.False(await HasSavedAddressAsync(factory, customerId));
+    }
+
+    [Fact]
+    public async Task RefusedDeletion_KeepsTheSavedAddress()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var customerId = await RegisterAsync(factory, "endereco-fica@example.com");
+        await SaveOrderAsync(factory, customerId, o => o.ConfirmPayment());
+        await SaveAddressAsync(factory, customerId);
+
+        var result = await DeleteAsync(factory, customerId, PageClient.Password);
+
+        Assert.Equal(AccountDeletionResult.HasOpenOrders, result);
+        Assert.True(await HasSavedAddressAsync(factory, customerId));
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 
 using KeycapStore.Application.Identity;
+using KeycapStore.Application.Orders;
 using KeycapStore.Web.Models;
 
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KeycapStore.Web.Controllers;
 
-public sealed class AccountController(IAccountService accounts, IAccountDeletionService deletions) : Controller
+public sealed class AccountController(
+    IAccountService accounts,
+    IAccountDeletionService deletions,
+    ISavedAddressService savedAddresses) : Controller
 {
     [HttpGet]
     public IActionResult Register() => View();
@@ -73,7 +77,11 @@ public sealed class AccountController(IAccountService accounts, IAccountDeletion
 
     [Authorize]
     [HttpGet]
-    public IActionResult Delete() => View();
+    public async Task<IActionResult> Delete(CancellationToken cancellationToken)
+    {
+        await LoadSavedAddressAsync(cancellationToken);
+        return View();
+    }
 
     [Authorize]
     [HttpPost]
@@ -81,6 +89,7 @@ public sealed class AccountController(IAccountService accounts, IAccountDeletion
     {
         if (!ModelState.IsValid)
         {
+            await LoadSavedAddressAsync(cancellationToken);
             return View(model);
         }
 
@@ -102,9 +111,27 @@ public sealed class AccountController(IAccountService accounts, IAccountDeletion
             _ => "Não foi possível excluir a conta.",
         });
 
+        await LoadSavedAddressAsync(cancellationToken);
         return View(model);
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> RemoveSavedAddress(CancellationToken cancellationToken)
+    {
+        var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        await savedAddresses.RemoveAsync(customerId, cancellationToken);
+
+        TempData["Message"] = "Endereço salvo removido.";
+        return RedirectToAction(nameof(Delete));
     }
 
     [HttpGet]
     public IActionResult Deleted() => View();
+
+    private async Task LoadSavedAddressAsync(CancellationToken cancellationToken)
+    {
+        var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        ViewData["SavedAddress"] = await savedAddresses.GetAsync(customerId, cancellationToken);
+    }
 }
