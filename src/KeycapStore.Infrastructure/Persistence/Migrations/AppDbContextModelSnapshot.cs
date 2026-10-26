@@ -166,6 +166,17 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.ToTable("orders", (string)null);
                 });
 
+            modelBuilder.Entity("KeycapStore.Domain.Orders.SavedAddress", b =>
+                {
+                    b.Property<string>("CustomerId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("CustomerId");
+
+                    b.ToTable("saved_addresses", (string)null);
+                });
+
             modelBuilder.Entity("KeycapStore.Infrastructure.Payments.ProcessedStripeEvent", b =>
                 {
                     b.Property<string>("EventId")
@@ -434,42 +445,6 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("KeycapStore.Domain.Orders.Order", b =>
                 {
-                    b.OwnsMany("KeycapStore.Domain.Orders.OrderItem", "Items", b1 =>
-                        {
-                            b1.Property<Guid>("OrderId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<Guid>("ProductId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("ProductName")
-                                .IsRequired()
-                                .HasMaxLength(150)
-                                .HasColumnType("character varying(150)");
-
-                            b1.Property<int>("Quantity")
-                                .HasColumnType("integer");
-
-                            b1.Property<decimal>("UnitPrice")
-                                .HasPrecision(10, 2)
-                                .HasColumnType("numeric(10,2)");
-
-                            b1.HasKey("OrderId", "ProductId");
-
-                            b1.HasIndex("ProductId");
-
-                            b1.ToTable("order_items", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("OrderId");
-
-                            b1.HasOne("KeycapStore.Domain.Catalog.Product", null)
-                                .WithMany()
-                                .HasForeignKey("ProductId")
-                                .OnDelete(DeleteBehavior.Restrict)
-                                .IsRequired();
-                        });
-
                     b.OwnsOne("KeycapStore.Domain.Orders.ShippingAddress", "ShippingAddress", b1 =>
                         {
                             b1.Property<Guid>("OrderId")
@@ -530,9 +505,111 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                                 .HasForeignKey("OrderId");
                         });
 
+                    b.OwnsMany("KeycapStore.Domain.Orders.OrderItem", "Items", b1 =>
+                        {
+                            b1.Property<Guid>("OrderId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<Guid>("ProductId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("ProductName")
+                                .IsRequired()
+                                .HasMaxLength(150)
+                                .HasColumnType("character varying(150)");
+
+                            b1.Property<int>("Quantity")
+                                .HasColumnType("integer");
+
+                            b1.Property<decimal>("UnitPrice")
+                                .HasPrecision(10, 2)
+                                .HasColumnType("numeric(10,2)");
+
+                            b1.HasKey("OrderId", "ProductId");
+
+                            b1.HasIndex("ProductId");
+
+                            b1.ToTable("order_items", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrderId");
+
+                            b1.HasOne("KeycapStore.Domain.Catalog.Product", null)
+                                .WithMany()
+                                .HasForeignKey("ProductId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+                        });
+
                     b.Navigation("Items");
 
                     b.Navigation("ShippingAddress")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("KeycapStore.Domain.Orders.SavedAddress", b =>
+                {
+                    b.OwnsOne("KeycapStore.Domain.Orders.ShippingAddress", "Address", b1 =>
+                        {
+                            b1.Property<string>("SavedAddressCustomerId")
+                                .HasColumnType("character varying(450)");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("City");
+
+                            b1.Property<string>("Complement")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("Complement");
+
+                            b1.Property<string>("District")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("District");
+
+                            b1.Property<string>("Number")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("character varying(20)")
+                                .HasColumnName("Number");
+
+                            b1.Property<string>("PostalCode")
+                                .IsRequired()
+                                .HasMaxLength(8)
+                                .HasColumnType("character varying(8)")
+                                .HasColumnName("PostalCode");
+
+                            b1.Property<string>("RecipientName")
+                                .IsRequired()
+                                .HasMaxLength(150)
+                                .HasColumnType("character varying(150)")
+                                .HasColumnName("RecipientName");
+
+                            b1.Property<string>("State")
+                                .IsRequired()
+                                .HasMaxLength(2)
+                                .HasColumnType("character varying(2)")
+                                .HasColumnName("State");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)")
+                                .HasColumnName("Street");
+
+                            b1.HasKey("SavedAddressCustomerId");
+
+                            b1.ToTable("saved_addresses");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SavedAddressCustomerId");
+                        });
+
+                    b.Navigation("Address")
                         .IsRequired();
                 });
 
