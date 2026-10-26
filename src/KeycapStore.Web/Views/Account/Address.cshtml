@@ -1,0 +1,24 @@
+@model AddressViewModel
+@{
+    ViewData["Title"] = "Endereço salvo";
+}
+
+<h1>Endereço salvo</h1>
+<p class="text-muted">Ele preenche o formulário do checkout nas próximas compras. Salvar aqui substitui o endereço salvo antes, e os pedidos já feitos não mudam.</p>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Address" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <partial name="_AddressFields" model="Model" />
+
+            <button type="submit" class="btn btn-primary">Salvar endereço</button>
+            <a asp-action="Delete" class="btn btn-link">Voltar para Minha conta</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

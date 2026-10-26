@@ -22,12 +22,14 @@
     </p>
     <p class="text-muted">Ele só preenche o formulário do checkout. Os pedidos já feitos guardam o próprio endereço e não mudam.</p>
     <form asp-action="RemoveSavedAddress" method="post">
+        <a asp-action="Address" class="btn btn-outline-primary">Alterar endereço</a>
         <button type="submit" class="btn btn-outline-secondary">Remover endereço salvo</button>
     </form>
 }
 else
 {
-    <p class="text-muted">Nenhum endereço salvo. Para salvar, marque a caixa no checkout ao finalizar uma compra.</p>
+    <p class="text-muted">Nenhum endereço salvo. Você pode cadastrar um agora ou marcar a caixa no checkout ao finalizar uma compra.</p>
+    <a asp-action="Address" class="btn btn-outline-primary">Cadastrar endereço</a>
 }
 
 <h2 class="h4 mt-4">Excluir minha conta</h2>

@@ -116,6 +116,39 @@ public sealed class AccountController(
     }
 
     [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Address(CancellationToken cancellationToken)
+    {
+        var model = new AddressViewModel();
+
+        var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var saved = await savedAddresses.GetAsync(customerId, cancellationToken);
+        if (saved is not null)
+        {
+            model.CopyFrom(saved);
+        }
+
+        return View(model);
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> Address(AddressViewModel model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        await savedAddresses.SaveAsync(customerId, model.ToShippingAddress(), cancellationToken);
+
+        TempData["Message"] = "Endereço salvo.";
+        return RedirectToAction(nameof(Delete));
+    }
+
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> RemoveSavedAddress(CancellationToken cancellationToken)
     {

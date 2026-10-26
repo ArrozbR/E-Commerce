@@ -50,7 +50,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 | Pré-venda (*group buy*) | ~~futuro (v3+)~~ **v2** (ADR 0025) | Muda o modelo de estoque (vagas, prazos longos, reembolsos parciais). |
 | Variações de produto (SKU) | fora | Cada kit é um produto próprio, como no mercado real. |
 | Boleto | fora | É lento, raramente é pago e prende estoque por dias. |
-| Endereços salvos na conta | ~~futuro~~ **v2** (ADR 0025; ADR 0035: um por cliente) | Conveniência, não essencial. Só preenche o checkout; o pedido guarda a própria cópia. |
+| Endereços salvos na conta | ~~futuro~~ **v2** (ADR 0025; ADR 0035: um por cliente; ADR 0036: também pela "Minha conta") | Conveniência, não essencial. Só preenche o checkout; o pedido guarda a própria cópia. |
 | Login externo (Google etc.) | ~~futuro~~ **v2** (ADR 0025) | Dependência externa sem ganho de aprendizado na v1. |
 | Compra como convidado | fora | Decisão: conta obrigatória para comprar. |
 | Site em inglês (troca pt-BR/en por bandeira no menu) | **v2** (ADR 0025) | A v1 é só em português. |
@@ -283,7 +283,7 @@ O reembolso de Pix é aceito em até 90 dias depois do pagamento.
 |---|---|---|
 | E-mail, hash da senha | Identity | Conta e login |
 | Nome do destinatário, endereço | Snapshot `EnderecoEntrega` no `Pedido` | Entrega |
-| Endereço salvo (v2, ADR 0035) | Tabela própria, um por cliente | Preencher o checkout; apagado pelo cliente ou com a conta |
+| Endereço salvo (v2, ADR 0035/0036) | Tabela própria, um por cliente | Preencher o checkout; salvo pelo checkout ou pela "Minha conta"; apagado pelo cliente ou com a conta |
 | Histórico de pedidos | `Pedido` | Execução do contrato, financeiro |
 
 - **Logs registram só IDs**, nunca e-mail, nome ou endereço.
