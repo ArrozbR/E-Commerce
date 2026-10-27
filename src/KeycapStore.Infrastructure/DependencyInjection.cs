@@ -51,6 +51,7 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
         services.AddSingleton<IPaymentGateway, StripePaymentGateway>();
+        services.AddScoped<CheckoutSessionTransitions>();
         services.AddScoped<IPaymentWebhookHandler, StripeWebhookHandler>();
         services.AddScoped<IRefundProcessor, RefundProcessor>();
 
