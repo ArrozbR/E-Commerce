@@ -34,7 +34,7 @@ public sealed class AccountController(
         {
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, error);
+                ModelState.AddModelError(string.Empty, text[error].Value);
             }
 
             return View(model);
@@ -61,7 +61,7 @@ public sealed class AccountController(
         {
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, error);
+                ModelState.AddModelError(string.Empty, text[error].Value);
             }
 
             return View(model);

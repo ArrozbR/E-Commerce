@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -179,5 +179,41 @@
   </data>
   <data name="Não foi possível excluir a conta." xml:space="preserve">
     <value>The account could not be deleted.</value>
+  </data>
+  <data name="Seu carrinho está vazio." xml:space="preserve">
+    <value>Your cart is empty.</value>
+  </data>
+  <data name="{0} não tem estoque suficiente." xml:space="preserve">
+    <value>{0} does not have enough stock.</value>
+  </data>
+  <data name="{0} não está mais à venda. Remova do carrinho para continuar." xml:space="preserve">
+    <value>{0} is no longer for sale. Remove it from your cart to continue.</value>
+  </data>
+  <data name="Não foi possível finalizar o pedido." xml:space="preserve">
+    <value>The order could not be placed.</value>
+  </data>
+  <data name="E-mail ou senha inválidos." xml:space="preserve">
+    <value>Invalid e-mail or password.</value>
+  </data>
+  <data name="Este e-mail já está cadastrado." xml:space="preserve">
+    <value>This e-mail is already registered.</value>
+  </data>
+  <data name="A senha precisa ter pelo menos 6 caracteres." xml:space="preserve">
+    <value>The password needs at least 6 characters.</value>
+  </data>
+  <data name="A senha precisa ter pelo menos um símbolo (ex.: #, @, !)." xml:space="preserve">
+    <value>The password needs at least one symbol (e.g. #, @, !).</value>
+  </data>
+  <data name="A senha precisa ter pelo menos um número (0-9)." xml:space="preserve">
+    <value>The password needs at least one digit (0-9).</value>
+  </data>
+  <data name="A senha precisa ter pelo menos uma letra minúscula (a-z)." xml:space="preserve">
+    <value>The password needs at least one lowercase letter (a-z).</value>
+  </data>
+  <data name="A senha precisa ter pelo menos uma letra maiúscula (A-Z)." xml:space="preserve">
+    <value>The password needs at least one uppercase letter (A-Z).</value>
+  </data>
+  <data name="Não foi possível concluir. Tente novamente." xml:space="preserve">
+    <value>Could not complete. Please try again.</value>
   </data>
 </root>
