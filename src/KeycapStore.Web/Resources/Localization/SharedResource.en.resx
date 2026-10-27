@@ -216,4 +216,37 @@
   <data name="Não foi possível concluir. Tente novamente." xml:space="preserve">
     <value>Could not complete. Please try again.</value>
   </data>
+  <data name="Preço inválido: use {0} para os centavos (ex.: {1}), sem {2}, maior que zero." xml:space="preserve">
+    <value>Invalid price: use a {0} for the cents (e.g. {1}), no {2}, greater than zero.</value>
+  </data>
+  <data name="vírgula" xml:space="preserve">
+    <value>period</value>
+  </data>
+  <data name="ponto" xml:space="preserve">
+    <value>comma</value>
+  </data>
+  <data name="Produto &quot;{0}&quot; criado." xml:space="preserve">
+    <value>Product "{0}" created.</value>
+  </data>
+  <data name="Produto &quot;{0}&quot; atualizado." xml:space="preserve">
+    <value>Product "{0}" updated.</value>
+  </data>
+  <data name="Informe um ajuste diferente de zero, entre -{0} e {0}." xml:space="preserve">
+    <value>Enter a non-zero adjustment between -{0} and {0}.</value>
+  </data>
+  <data name="Estoque ajustado em {0}." xml:space="preserve">
+    <value>Stock adjusted by {0}.</value>
+  </data>
+  <data name="Ajuste recusado: o estoque ficaria negativo." xml:space="preserve">
+    <value>Adjustment refused: the stock would go negative.</value>
+  </data>
+  <data name="Produto de volta à venda." xml:space="preserve">
+    <value>Product back on sale.</value>
+  </data>
+  <data name="Produto tirado de venda." xml:space="preserve">
+    <value>Product taken off sale.</value>
+  </data>
+  <data name="Dados inválidos." xml:space="preserve">
+    <value>Invalid data.</value>
+  </data>
 </root>

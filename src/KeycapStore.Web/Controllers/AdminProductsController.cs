@@ -1,20 +1,22 @@
+﻿using System.Globalization;
+
 using KeycapStore.Application.Catalog;
 using KeycapStore.Application.Identity;
 using KeycapStore.Web.Filters;
+using KeycapStore.Web.Localization;
 using KeycapStore.Web.Models;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace KeycapStore.Web.Controllers;
 
 [Authorize(Roles = Roles.Admin)]
 [DomainExceptionFilter]
 [Route("admin/products")]
-public sealed class AdminProductsController(IProductAdminService products) : Controller
+public sealed class AdminProductsController(IProductAdminService products, IStringLocalizer<SharedResource> text) : Controller
 {
-    private const string InvalidPrice = "Preço inválido: use vírgula para os centavos (ex.: 199,90), sem ponto, maior que zero.";
-
     [HttpGet("")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
@@ -33,12 +35,12 @@ public sealed class AdminProductsController(IProductAdminService products) : Con
 
         if (!model.TryGetPrice(out var price))
         {
-            return BackWithError(InvalidPrice);
+            return BackWithError(text["Preço inválido: use {0} para os centavos (ex.: {1}), sem {2}, maior que zero.", text["vírgula"], ProductFormViewModel.FormatPrice(199.90m), text["ponto"]].Value);
         }
 
         await products.CreateAsync(model.Name.Trim(), price, model.Stock, cancellationToken);
 
-        return BackWithMessage($"Produto \"{model.Name.Trim()}\" criado.");
+        return BackWithMessage(text["Produto \"{0}\" criado.", model.Name.Trim()].Value);
     }
 
     [HttpPost("{id:guid}/edit")]
@@ -51,12 +53,12 @@ public sealed class AdminProductsController(IProductAdminService products) : Con
 
         if (!model.TryGetPrice(out var price))
         {
-            return BackWithError(InvalidPrice);
+            return BackWithError(text["Preço inválido: use {0} para os centavos (ex.: {1}), sem {2}, maior que zero.", text["vírgula"], ProductFormViewModel.FormatPrice(199.90m), text["ponto"]].Value);
         }
 
         await products.UpdateAsync(id, model.Name.Trim(), price, cancellationToken);
 
-        return BackWithMessage($"Produto \"{model.Name.Trim()}\" atualizado.");
+        return BackWithMessage(text["Produto \"{0}\" atualizado.", model.Name.Trim()].Value);
     }
 
     [HttpPost("{id:guid}/adjust-stock")]
@@ -64,14 +66,14 @@ public sealed class AdminProductsController(IProductAdminService products) : Con
     {
         if (!ModelState.IsValid || delta == 0 || delta < -AdminLimits.MaxStockChange || delta > AdminLimits.MaxStockChange)
         {
-            return BackWithError($"Informe um ajuste diferente de zero, entre -{AdminLimits.MaxStockChange} e {AdminLimits.MaxStockChange}.");
+            return BackWithError(text["Informe um ajuste diferente de zero, entre -{0} e {0}.", AdminLimits.MaxStockChange].Value);
         }
 
         var result = await products.AdjustStockAsync(id, delta, cancellationToken);
 
         return result == StockAdjustmentResult.Adjusted
-            ? BackWithMessage($"Estoque ajustado em {delta:+#;-#}.")
-            : BackWithError("Ajuste recusado: o estoque ficaria negativo.");
+            ? BackWithMessage(text["Estoque ajustado em {0}.", delta.ToString("+#;-#", CultureInfo.InvariantCulture)].Value)
+            : BackWithError(text["Ajuste recusado: o estoque ficaria negativo."].Value);
     }
 
     [HttpPost("{id:guid}/activate")]
@@ -79,7 +81,7 @@ public sealed class AdminProductsController(IProductAdminService products) : Con
     {
         await products.ActivateAsync(id, cancellationToken);
 
-        return BackWithMessage("Produto de volta à venda.");
+        return BackWithMessage(text["Produto de volta à venda."].Value);
     }
 
     [HttpPost("{id:guid}/deactivate")]
@@ -87,12 +89,12 @@ public sealed class AdminProductsController(IProductAdminService products) : Con
     {
         await products.DeactivateAsync(id, cancellationToken);
 
-        return BackWithMessage("Produto tirado de venda.");
+        return BackWithMessage(text["Produto tirado de venda."].Value);
     }
 
     private string FirstError() =>
         ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).FirstOrDefault(m => m.Length > 0)
-        ?? "Dados inválidos.";
+        ?? text["Dados inválidos."].Value;
 
     private RedirectToActionResult BackWithMessage(string message)
     {

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Envio de pedidos" xml:space="preserve">
+    <value>Order shipping</value>
+  </data>
+  <data name="Nenhum pedido para separar, enviar, entregar ou receber de volta." xml:space="preserve">
+    <value>No orders to prepare, ship, deliver or receive back.</value>
+  </data>
+  <data name="Pedido" xml:space="preserve">
+    <value>Order</value>
+  </data>
+  <data name="Itens" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Entrega" xml:space="preserve">
+    <value>Delivery</value>
+  </data>
+  <data name="Situação" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Ação" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="CEP {0}" xml:space="preserve">
+    <value>Postal code {0}</value>
+  </data>
+  <data name="Rastreio: {0}" xml:space="preserve">
+    <value>Tracking: {0}</value>
+  </data>
+  <data name="Iniciar separação" xml:space="preserve">
+    <value>Start preparing</value>
+  </data>
+  <data name="Código de rastreio" xml:space="preserve">
+    <value>Tracking code</value>
+  </data>
+  <data name="Marcar como enviado" xml:space="preserve">
+    <value>Mark as shipped</value>
+  </data>
+  <data name="Marcar como entregue" xml:space="preserve">
+    <value>Mark as delivered</value>
+  </data>
+  <data name="Cliente desistiu; aguardando o reembolso automático." xml:space="preserve">
+    <value>Customer withdrew; awaiting the automatic refund.</value>
+  </data>
+  <data name="Volta ao estoque" xml:space="preserve">
+    <value>Back to stock</value>
+  </data>
+  <data name="Devolução recebida" xml:space="preserve">
+    <value>Return received</value>
+  </data>
+</root>

@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
 using KeycapStore.Domain.Catalog;
@@ -9,8 +9,6 @@ public class ProductFormViewModel
 {
     public const decimal MaxPrice = 99_999_999.99m;
 
-    private static readonly CultureInfo PtBr = CultureInfo.GetCultureInfo("pt-BR");
-
     [Required(ErrorMessage = "Informe o nome.")]
     [StringLength(Product.MaxNameLength, ErrorMessage = "O nome pode ter até {1} caracteres.")]
     public string Name { get; set; } = string.Empty;
@@ -19,12 +17,12 @@ public class ProductFormViewModel
     public string Price { get; set; } = string.Empty;
 
     public bool TryGetPrice(out decimal price) =>
-        decimal.TryParse(Price, NumberStyles.AllowDecimalPoint, PtBr, out price)
+        decimal.TryParse(Price, NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out price)
         && price > 0
         && price <= MaxPrice
         && decimal.Round(price, 2) == price;
 
-    public static string FormatPrice(decimal price) => price.ToString("0.00", PtBr);
+    public static string FormatPrice(decimal price) => price.ToString("0.00", CultureInfo.CurrentCulture);
 }
 
 public sealed class NewProductViewModel : ProductFormViewModel
