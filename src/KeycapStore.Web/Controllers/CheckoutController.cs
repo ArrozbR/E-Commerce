@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Globalization;
+using System.Security.Claims;
 
 using KeycapStore.Application.Orders;
 using KeycapStore.Web.Filters;
@@ -45,7 +46,7 @@ public sealed class CheckoutController(
 
         var address = model.ToShippingAddress();
 
-        var result = await checkout.PlaceOrderAsync(CustomerId, address, cancellationToken);
+        var result = await checkout.PlaceOrderAsync(CustomerId, address, CultureInfo.CurrentUICulture.Name, cancellationToken);
 
         if (!result.Succeeded)
         {

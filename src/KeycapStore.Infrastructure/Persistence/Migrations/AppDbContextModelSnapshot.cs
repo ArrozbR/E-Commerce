@@ -132,6 +132,11 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset?>("DeliveredAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
                     b.Property<decimal>("ShippingFee")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");

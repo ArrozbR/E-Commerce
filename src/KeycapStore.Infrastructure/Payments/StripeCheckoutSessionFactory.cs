@@ -11,21 +11,26 @@ public static class StripeCheckoutSessionFactory
 
     public const long PixExpiresAfterSeconds = 1800;
 
+    public const string EnglishLanguage = "en-US";
+
     public static SessionCreateOptions BuildOptions(Order order, Uri successUrl, Uri cancelUrl)
     {
+        var english = order.Language == EnglishLanguage;
+
         var lineItems = order.Items
             .Select(i => LineItem(i.ProductName, i.UnitPrice, i.Quantity))
             .ToList();
 
         if (order.ShippingFee > 0)
         {
-            lineItems.Add(LineItem("Frete", order.ShippingFee, 1));
+            lineItems.Add(LineItem(english ? "Shipping" : "Frete", order.ShippingFee, 1));
         }
 
         return new SessionCreateOptions
         {
             Mode = "payment",
             UiMode = "hosted_page",
+            Locale = english ? "en" : "pt-BR",
             LineItems = lineItems,
             ClientReferenceId = order.Id.ToString(),
             Metadata = new Dictionary<string, string> { ["order_id"] = order.Id.ToString() },

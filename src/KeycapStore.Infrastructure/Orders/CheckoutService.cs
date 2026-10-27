@@ -9,7 +9,11 @@ namespace KeycapStore.Infrastructure.Orders;
 
 internal sealed class CheckoutService(AppDbContext db, TimeProvider clock, IPaymentGateway payments) : ICheckoutService
 {
-    public async Task<PlaceOrderResult> PlaceOrderAsync(string customerId, ShippingAddress shippingAddress, CancellationToken cancellationToken = default)
+    public async Task<PlaceOrderResult> PlaceOrderAsync(
+        string customerId,
+        ShippingAddress shippingAddress,
+        string language = Order.DefaultLanguage,
+        CancellationToken cancellationToken = default)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
 
@@ -40,7 +44,7 @@ internal sealed class CheckoutService(AppDbContext db, TimeProvider clock, IPaym
         }
 
         var items = cart.Items.Select(i => new OrderItem(i.ProductId, products[i.ProductId].Name, products[i.ProductId].Price, i.Quantity));
-        var order = new Order(customerId, clock.GetUtcNow(), items, shippingAddress);
+        var order = new Order(customerId, clock.GetUtcNow(), items, shippingAddress, language);
 
         db.Orders.Add(order);
         db.Carts.Remove(cart);
