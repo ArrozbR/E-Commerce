@@ -54,6 +54,7 @@ public static class DependencyInjection
         services.AddScoped<CheckoutSessionTransitions>();
         services.AddScoped<IPaymentWebhookHandler, StripeWebhookHandler>();
         services.AddScoped<IRefundProcessor, RefundProcessor>();
+        services.AddScoped<IPaymentReconciler, PaymentReconciler>();
 
         services.AddIdentityCore<IdentityUser>(options =>
         {

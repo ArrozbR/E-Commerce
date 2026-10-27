@@ -15,6 +15,12 @@ public sealed class FakePaymentGateway : IPaymentGateway
 
     public ConcurrentQueue<(Guid OrderId, string PaymentIntentId)> Refunds { get; } = [];
 
+    public bool FailSessionLookups { get; set; }
+
+    public ConcurrentDictionary<string, CheckoutSessionState> Sessions { get; } = [];
+
+    public ConcurrentQueue<string> SessionLookups { get; } = [];
+
     public Task<CheckoutSession> CreateCheckoutSessionAsync(Order order, Uri successUrl, Uri cancelUrl, CancellationToken cancellationToken = default)
     {
         RequestedOrders.Add(order.Id);
@@ -41,5 +47,20 @@ public sealed class FakePaymentGateway : IPaymentGateway
     public Task<string> GetPaymentIntentIdAsync(string checkoutSessionId, CancellationToken cancellationToken = default)
     {
         return Task.FromResult($"pi_from_{checkoutSessionId}");
+    }
+
+    public Task<CheckoutSessionState> GetCheckoutSessionAsync(string checkoutSessionId, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(checkoutSessionId);
+        SessionLookups.Enqueue(checkoutSessionId);
+
+        if (FailSessionLookups)
+        {
+            throw new PaymentGatewayException("Stripe fora do ar (simulado).");
+        }
+
+        return Task.FromResult(Sessions.TryGetValue(checkoutSessionId, out var state)
+            ? state
+            : new CheckoutSessionState("open", "unpaid", null, null, null));
     }
 }
