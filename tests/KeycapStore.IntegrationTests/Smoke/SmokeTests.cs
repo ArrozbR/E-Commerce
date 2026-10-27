@@ -11,7 +11,7 @@ public class SmokeTests(PostgresFixture postgres) : IClassFixture<PostgresFixtur
     [Fact]
     public async Task HomePage_ShouldRespondOk()
     {
-        await using var factory = postgres.CreateFactory();
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
 
         var client = factory.CreateClient();
 

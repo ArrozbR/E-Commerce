@@ -1,0 +1,13 @@
+@using KeycapStore.Web.Localization
+@{
+    var returnUrl = $"{Context.Request.Path}{Context.Request.QueryString}";
+    var current = System.Globalization.CultureInfo.CurrentUICulture.Name;
+}
+
+<form asp-controller="Language" asp-action="Set" method="post" class="d-flex">
+    <input type="hidden" name="returnUrl" value="@returnUrl" />
+    <button type="submit" name="culture" value="@SiteCultures.Portuguese" title="Português"
+            class="btn btn-link text-dark @(current == SiteCultures.Portuguese ? "fw-bold" : "")">🇧🇷 PT</button>
+    <button type="submit" name="culture" value="@SiteCultures.English" title="English"
+            class="btn btn-link text-dark @(current == SiteCultures.English ? "fw-bold" : "")">🇺🇸 EN</button>
+</form>

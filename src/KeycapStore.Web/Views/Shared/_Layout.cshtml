@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.Name">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,53 +21,54 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Catalog" asp-action="Index">Catálogo</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Catalog" asp-action="Index">@Localizer["Catálogo"]</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Cart" asp-action="Index">Carrinho</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Cart" asp-action="Index">@Localizer["Carrinho"]</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">Meus pedidos</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">@Localizer["Meus pedidos"]</a>
                             </li>
                             @if (User.IsInRole(KeycapStore.Application.Identity.Roles.Admin))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" href="/admin/orders">Envio</a>
+                                    <a class="nav-link text-dark" href="/admin/orders">@Localizer["Envio"]</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" href="/admin/products">Produtos</a>
+                                    <a class="nav-link text-dark" href="/admin/products">@Localizer["Produtos"]</a>
                                 </li>
                             }
                             <li class="nav-item">
-                                <span class="nav-link text-dark">Olá, @User.Identity.Name</span>
+                                <span class="nav-link text-dark">@Localizer["Olá, {0}", User.Identity.Name!]</span>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Delete">Minha conta</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Delete">@Localizer["Minha conta"]</a>
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="nav-link btn btn-link text-dark">Sair</button>
+                                    <button type="submit" class="nav-link btn btn-link text-dark">@Localizer["Sair"]</button>
                                 </form>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Criar conta</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">@Localizer["Criar conta"]</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Entrar</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">@Localizer["Entrar"]</a>
                             </li>
                         }
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">@Localizer["Privacidade"]</a>
                         </li>
                     </ul>
+                    <partial name="_LanguagePartial" />
                 </div>
             </div>
         </nav>
@@ -80,7 +81,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2026 - KeycapStore.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2026 - KeycapStore.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">@Localizer["Privacidade"]</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
