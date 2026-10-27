@@ -1,23 +1,23 @@
-﻿@using KeycapStore.Web.Models
+@using KeycapStore.Web.Models
 @model IReadOnlyList<KeycapStore.Application.Orders.OrderSummaryView>
 @{
-    ViewData["Title"] = "Meus pedidos";
+    ViewData["Title"] = Localizer["Meus pedidos"].Value;
 }
 
-<h1>Meus pedidos</h1>
+<h1>@Localizer["Meus pedidos"]</h1>
 
 @if (Model.Count == 0)
 {
-    <p>Você ainda não fez nenhum pedido. <a asp-controller="Catalog" asp-action="Index">Ver o catálogo</a></p>
+    <p>@Localizer["Você ainda não fez nenhum pedido."] <a asp-controller="Catalog" asp-action="Index">@Localizer["Ver o catálogo"]</a></p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Data</th>
-                <th>Situação</th>
-                <th class="text-end">Total</th>
+                <th>@Localizer["Data"]</th>
+                <th>@Localizer["Situação"]</th>
+                <th class="text-end">@Localizer["Total"]</th>
                 <th></th>
             </tr>
         </thead>
@@ -28,7 +28,7 @@ else
                     <td>@Display.DateAndTime(order.CreatedAt)</td>
                     <td>@OrderStatusText.For(order.Status)</td>
                     <td class="text-end">@Display.Price(order.Total)</td>
-                    <td class="text-end"><a asp-action="Details" asp-route-id="@order.Id">Ver o pedido</a></td>
+                    <td class="text-end"><a asp-action="Details" asp-route-id="@order.Id">@Localizer["Ver o pedido"]</a></td>
                 </tr>
             }
         </tbody>

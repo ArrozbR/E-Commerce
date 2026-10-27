@@ -1,23 +1,23 @@
-﻿@model KeycapStore.Application.Carts.CartView
+@model KeycapStore.Application.Carts.CartView
 @{
-    ViewData["Title"] = "Carrinho";
+    ViewData["Title"] = Localizer["Carrinho"].Value;
 }
 
-<h1 class="mb-4">Carrinho</h1>
+<h1 class="mb-4">@Localizer["Carrinho"]</h1>
 
 @if (Model.Lines.Count == 0)
 {
-    <p>Seu carrinho está vazio. <a asp-controller="Catalog" asp-action="Index">Ver o catálogo</a></p>
+    <p>@Localizer["Seu carrinho está vazio."] <a asp-controller="Catalog" asp-action="Index">@Localizer["Ver o catálogo"]</a></p>
 }
 else
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Produto</th>
-                <th class="text-end">Preço</th>
-                <th class="text-end">Quantidade</th>
-                <th class="text-end">Subtotal</th>
+                <th>@Localizer["Produto"]</th>
+                <th class="text-end">@Localizer["Preço"]</th>
+                <th class="text-end">@Localizer["Quantidade"]</th>
+                <th class="text-end">@Localizer["Subtotal"]</th>
                 <th></th>
             </tr>
         </thead>
@@ -29,7 +29,7 @@ else
                         @line.ProductName
                         @if (!line.IsAvailable)
                         {
-                            <br /><span class="badge bg-secondary">Indisponível</span>
+                            <br /><span class="badge bg-secondary">@Localizer["Indisponível"]</span>
                         }
                     </td>
                     <td class="text-end">@Display.Price(line.UnitPrice)</td>
@@ -37,14 +37,14 @@ else
                         <form asp-action="ChangeQuantity" method="post" class="d-inline-flex gap-2">
                             <input type="hidden" name="productId" value="@line.ProductId" />
                             <input type="number" name="quantity" value="@line.Quantity" min="1" class="form-control form-control-sm" style="width: 5rem" />
-                            <button type="submit" class="btn btn-outline-secondary btn-sm">Atualizar</button>
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">@Localizer["Atualizar"]</button>
                         </form>
                     </td>
                     <td class="text-end">@Display.Price(line.LineTotal)</td>
                     <td class="text-end">
                         <form asp-action="Remove" method="post">
                             <input type="hidden" name="productId" value="@line.ProductId" />
-                            <button type="submit" class="btn btn-outline-danger btn-sm">Remover</button>
+                            <button type="submit" class="btn btn-outline-danger btn-sm">@Localizer["Remover"]</button>
                         </form>
                     </td>
                 </tr>
@@ -52,7 +52,7 @@ else
         </tbody>
         <tfoot>
             <tr>
-                <th colspan="3" class="text-end">Total</th>
+                <th colspan="3" class="text-end">@Localizer["Total"]</th>
                 <th class="text-end">@Display.Price(Model.Total)</th>
                 <th></th>
             </tr>
@@ -61,10 +61,10 @@ else
 
     @if (Model.HasUnavailableItems)
     {
-        <p class="text-danger text-end">Um item do carrinho não está mais à venda. Remova-o para finalizar a compra.</p>
+        <p class="text-danger text-end">@Localizer["Um item do carrinho não está mais à venda. Remova-o para finalizar a compra."]</p>
     }
 
     <div class="text-end">
-        <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary">Finalizar compra</a>
+        <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary">@Localizer["Finalizar compra"]</a>
     </div>
 }

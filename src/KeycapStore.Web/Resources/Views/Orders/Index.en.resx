@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Meus pedidos" xml:space="preserve">
+    <value>My orders</value>
+  </data>
+  <data name="Você ainda não fez nenhum pedido." xml:space="preserve">
+    <value>You have not placed any orders yet.</value>
+  </data>
+  <data name="Ver o catálogo" xml:space="preserve">
+    <value>Browse the catalog</value>
+  </data>
+  <data name="Data" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Situação" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Ver o pedido" xml:space="preserve">
+    <value>View order</value>
+  </data>
+</root>

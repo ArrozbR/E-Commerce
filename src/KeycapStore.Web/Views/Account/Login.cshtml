@@ -1,9 +1,9 @@
 ﻿@model LoginViewModel
 @{
-    ViewData["Title"] = "Entrar";
+    ViewData["Title"] = Localizer["Entrar"].Value;
 }
 
-<h1>Entrar</h1>
+<h1>@Localizer["Entrar"]</h1>
 
 <div class="row">
     <div class="col-md-5">
@@ -22,7 +22,7 @@
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary">Entrar</button>
+            <button type="submit" class="btn btn-primary">@Localizer["Entrar"]</button>
         </form>
     </div>
 </div>

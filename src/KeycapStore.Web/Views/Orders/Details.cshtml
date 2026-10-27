@@ -1,25 +1,25 @@
-﻿@using KeycapStore.Web.Models
+@using KeycapStore.Web.Models
 @model KeycapStore.Application.Orders.OrderView
 @{
-    ViewData["Title"] = "Pedido";
+    ViewData["Title"] = Localizer["Pedido"].Value;
     var status = OrderStatusText.For(Model.Status);
     var address = Model.ShippingAddress;
 }
 
-<h1 class="mb-1">Pedido criado</h1>
+<h1 class="mb-1">@Localizer["Pedido criado"]</h1>
 <p class="text-muted">
-    Número: @Model.Id<br />
-    Feito em @Display.DateAndTime(Model.CreatedAt)<br />
-    Situação: <strong>@status</strong>
+    @Localizer["Número: {0}", Model.Id]<br />
+    @Localizer["Feito em {0}", Display.DateAndTime(Model.CreatedAt)]<br />
+    @Localizer["Situação:"] <strong>@status</strong>
 </p>
 
 <table class="table">
     <thead>
         <tr>
-            <th>Produto</th>
-            <th class="text-end">Preço</th>
-            <th class="text-end">Quantidade</th>
-            <th class="text-end">Subtotal</th>
+            <th>@Localizer["Produto"]</th>
+            <th class="text-end">@Localizer["Preço"]</th>
+            <th class="text-end">@Localizer["Quantidade"]</th>
+            <th class="text-end">@Localizer["Subtotal"]</th>
         </tr>
     </thead>
     <tbody>
@@ -35,42 +35,42 @@
     </tbody>
     <tfoot>
         <tr>
-            <td colspan="3" class="text-end">Frete</td>
-            <td class="text-end">@(Model.ShippingFee == 0 ? "Grátis" : Display.Price(Model.ShippingFee))</td>
+            <td colspan="3" class="text-end">@Localizer["Frete"]</td>
+            <td class="text-end">@(Model.ShippingFee == 0 ? Localizer["Grátis"].Value : Display.Price(Model.ShippingFee))</td>
         </tr>
         <tr>
-            <th colspan="3" class="text-end">Total</th>
+            <th colspan="3" class="text-end">@Localizer["Total"]</th>
             <th class="text-end">@Display.Price(Model.Total)</th>
         </tr>
     </tfoot>
 </table>
 
-<h2 class="h5">Entrega</h2>
+<h2 class="h5">@Localizer["Entrega"]</h2>
 <p>
     @address.RecipientName<br />
     @address.Street, @address.Number@(address.Complement is null ? "" : $" - {address.Complement}")<br />
     @address.District, @address.City - @address.State<br />
-    CEP @address.PostalCode.Insert(5, "-")
+    @Localizer["CEP {0}", address.PostalCode.Insert(5, "-")]
 </p>
 
 @if (Model.Status is KeycapStore.Domain.Orders.OrderStatus.Paid or KeycapStore.Domain.Orders.OrderStatus.Picking)
 {
-    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Cancelar este pedido? O valor pago será devolvido.');">
-        <button type="submit" class="btn btn-outline-danger">Cancelar pedido</button>
+    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Cancelar este pedido? O valor pago será devolvido."]');">
+        <button type="submit" class="btn btn-outline-danger">@Localizer["Cancelar pedido"]</button>
     </form>
-    <p class="text-muted small mt-1">Você pode cancelar até o pedido ser enviado. O valor é devolvido automaticamente.</p>
+    <p class="text-muted small mt-1">@Localizer["Você pode cancelar até o pedido ser enviado. O valor é devolvido automaticamente."]</p>
 }
 
 @if (Model.CanWithdraw)
 {
-    <form asp-action="Withdraw" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Desistir da compra? O valor pago será devolvido e você precisará devolver o produto.');">
-        <button type="submit" class="btn btn-outline-danger">Desistir da compra</button>
+    <form asp-action="Withdraw" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Desistir da compra? O valor pago será devolvido e você precisará devolver o produto."]');">
+        <button type="submit" class="btn btn-outline-danger">@Localizer["Desistir da compra"]</button>
     </form>
     <p class="text-muted small mt-1">
-        Direito de arrependimento (CDC, art. 49):
+        @Localizer["Direito de arrependimento (CDC, art. 49):"]
         @(Model.WithdrawalDeadline is { } deadline
-            ? $"você pode desistir até {Display.DateAndTime(deadline)}."
-            : "você pode desistir até 7 dias depois de receber o pedido.")
-        O valor é devolvido automaticamente em alguns minutos; depois, devolva o produto à loja.
+            ? Localizer["você pode desistir até {0}.", Display.DateAndTime(deadline)]
+            : Localizer["você pode desistir até 7 dias depois de receber o pedido."])
+        @Localizer["O valor é devolvido automaticamente em alguns minutos; depois, devolva o produto à loja."]
     </p>
 }

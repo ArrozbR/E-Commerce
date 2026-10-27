@@ -1,22 +1,24 @@
-﻿@using KeycapStore.Web.Models
+@using KeycapStore.Web.Models
 @model KeycapStore.Application.Orders.OrderView
 @{
-    ViewData["Title"] = "Pagamento";
+    ViewData["Title"] = Localizer["Pagamento"].Value;
 }
 
-<h1 class="mb-3">Obrigado pela compra!</h1>
+<h1 class="mb-3">@Localizer["Obrigado pela compra!"]</h1>
 
-<p>Pedido <strong>@Model.Id</strong></p>
-<p>Situação: <strong id="order-status">@OrderStatusText.For(Model.Status)</strong></p>
-<p id="order-waiting" class="text-muted">Confirmando seu pagamento com a Stripe. Isso costuma levar poucos segundos...</p>
+<p>@Localizer["Pedido"] <strong>@Model.Id</strong></p>
+<p>@Localizer["Situação:"] <strong id="order-status">@OrderStatusText.For(Model.Status)</strong></p>
+<p id="order-waiting" class="text-muted">@Localizer["Confirmando seu pagamento com a Stripe. Isso costuma levar poucos segundos..."]</p>
 
-<a asp-action="Details" asp-route-id="@Model.Id">Ver o pedido</a>
+<a asp-action="Details" asp-route-id="@Model.Id">@Localizer["Ver o pedido"]</a>
 
 <script>
     (function () {
         const statusUrl = "@Url.Action("Status", new { id = Model.Id })";
         const statusText = document.getElementById("order-status");
         const waiting = document.getElementById("order-waiting");
+        const confirmedText = @Json.Serialize(Localizer["Pronto! A situação acima já é a confirmada pela Stripe."].Value);
+        const slowText = @Json.Serialize(Localizer["Ainda não recebemos a confirmação. Ela pode demorar alguns minutos; acompanhe pela página do pedido."].Value);
         let attempts = 0;
 
         async function check() {
@@ -26,7 +28,7 @@
                 const order = await response.json();
                 statusText.textContent = order.text;
                 if (order.status !== "AwaitingPayment") {
-                    waiting.textContent = "Pronto! A situação acima já é a confirmada pela Stripe.";
+                    waiting.textContent = confirmedText;
                     return;
                 }
             }
@@ -34,7 +36,7 @@
             if (attempts < 30) {
                 setTimeout(check, 2000);
             } else {
-                waiting.textContent = "Ainda não recebemos a confirmação. Ela pode demorar alguns minutos; acompanhe pela página do pedido.";
+                waiting.textContent = slowText;
             }
         }
 

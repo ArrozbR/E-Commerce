@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Pedido" xml:space="preserve">
+    <value>Order</value>
+  </data>
+  <data name="Pedido criado" xml:space="preserve">
+    <value>Order placed</value>
+  </data>
+  <data name="Número: {0}" xml:space="preserve">
+    <value>Number: {0}</value>
+  </data>
+  <data name="Feito em {0}" xml:space="preserve">
+    <value>Placed on {0}</value>
+  </data>
+  <data name="Situação:" xml:space="preserve">
+    <value>Status:</value>
+  </data>
+  <data name="Produto" xml:space="preserve">
+    <value>Product</value>
+  </data>
+  <data name="Preço" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="Quantidade" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="Subtotal" xml:space="preserve">
+    <value>Subtotal</value>
+  </data>
+  <data name="Frete" xml:space="preserve">
+    <value>Shipping</value>
+  </data>
+  <data name="Grátis" xml:space="preserve">
+    <value>Free</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Entrega" xml:space="preserve">
+    <value>Delivery</value>
+  </data>
+  <data name="CEP {0}" xml:space="preserve">
+    <value>Postal code {0}</value>
+  </data>
+  <data name="Cancelar este pedido? O valor pago será devolvido." xml:space="preserve">
+    <value>Cancel this order? The amount paid will be refunded.</value>
+  </data>
+  <data name="Cancelar pedido" xml:space="preserve">
+    <value>Cancel order</value>
+  </data>
+  <data name="Você pode cancelar até o pedido ser enviado. O valor é devolvido automaticamente." xml:space="preserve">
+    <value>You can cancel until the order is shipped. The amount is refunded automatically.</value>
+  </data>
+  <data name="Desistir da compra? O valor pago será devolvido e você precisará devolver o produto." xml:space="preserve">
+    <value>Withdraw from this purchase? The amount paid will be refunded and you will need to return the product.</value>
+  </data>
+  <data name="Desistir da compra" xml:space="preserve">
+    <value>Withdraw from purchase</value>
+  </data>
+  <data name="Direito de arrependimento (CDC, art. 49):" xml:space="preserve">
+    <value>Right of withdrawal (Brazilian Consumer Code, art. 49):</value>
+  </data>
+  <data name="você pode desistir até {0}." xml:space="preserve">
+    <value>you can withdraw until {0}.</value>
+  </data>
+  <data name="você pode desistir até 7 dias depois de receber o pedido." xml:space="preserve">
+    <value>you can withdraw up to 7 days after receiving the order.</value>
+  </data>
+  <data name="O valor é devolvido automaticamente em alguns minutos; depois, devolva o produto à loja." xml:space="preserve">
+    <value>The amount is refunded automatically within minutes; then return the product to the store.</value>
+  </data>
+</root>

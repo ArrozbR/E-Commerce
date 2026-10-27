@@ -1,9 +1,9 @@
-﻿@model IReadOnlyList<KeycapStore.Application.Catalog.ProductSummary>
+@model IReadOnlyList<KeycapStore.Application.Catalog.ProductSummary>
 @{
-    ViewData["Title"] = "Catálogo";
+    ViewData["Title"] = Localizer["Catálogo"].Value;
 }
 
-<h1 class="mb-4">Catálogo</h1>
+<h1 class="mb-4">@Localizer["Catálogo"]</h1>
 
 <div class="row">
     @foreach (var product in Model)
@@ -16,27 +16,26 @@
 
                     @if (product.Stock == 0)
                     {
-                        <span class="badge bg-secondary">Esgotado</span>
+                        <span class="badge bg-secondary">@Localizer["Esgotado"]</span>
                     }
                     else if (product.Stock == 1)
                     {
-                        <span class="badge bg-warning text-dark">Última unidade</span>
+                        <span class="badge bg-warning text-dark">@Localizer["Última unidade"]</span>
                     }
                     else if (product.Stock <= 3)
                     {
-                        <span class="badge bg-warning text-dark">Últimas @product.Stock unidades</span>
+                        <span class="badge bg-warning text-dark">@Localizer["Últimas {0} unidades", product.Stock]</span>
                     }
                     else
                     {
-                        <span class="badge bg-success">Em estoque</span>
+                        <span class="badge bg-success">@Localizer["Em estoque"]</span>
                     }
 
-                    
                     @if (product.Stock > 0)
                     {
                         <form asp-controller="Cart" asp-action="Add" method="post" class="mt-3">
                             <input type="hidden" name="productId" value="@product.Id" />
-                            <button type="submit" class="btn btn-primary btn-sm">Adicionar ao carrinho</button>
+                            <button type="submit" class="btn btn-primary btn-sm">@Localizer["Adicionar ao carrinho"]</button>
                         </form>
                     }
                 </div>

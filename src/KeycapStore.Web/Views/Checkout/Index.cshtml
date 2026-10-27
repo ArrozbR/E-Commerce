@@ -1,13 +1,13 @@
-﻿@model CheckoutViewModel
+@model CheckoutViewModel
 @{
-    ViewData["Title"] = "Endereço de entrega";
+    ViewData["Title"] = Localizer["Endereço de entrega"].Value;
 }
 
-<h1>Endereço de entrega</h1>
-<p class="text-muted">Frete grátis para DF, GO, MT, MS, SP e RJ. Para os demais estados, R$ 15,00.</p>
+<h1>@Localizer["Endereço de entrega"]</h1>
+<p class="text-muted">@Localizer["Frete grátis para DF, GO, MT, MS, SP e RJ. Para os demais estados, {0}.", Display.Price(15m)]</p>
 @if (ViewData["FromSavedAddress"] is true)
 {
-    <p class="alert alert-info">Preenchido com o endereço salvo na sua conta. Confira antes de finalizar.</p>
+    <p class="alert alert-info">@Localizer["Preenchido com o endereço salvo na sua conta. Confira antes de finalizar."]</p>
 }
 
 <div class="row">
@@ -22,8 +22,8 @@
                 <label asp-for="SaveAddress" class="form-check-label"></label>
             </div>
 
-            <button type="submit" class="btn btn-primary">Finalizar pedido</button>
-            <a asp-controller="Cart" asp-action="Index" class="btn btn-link">Voltar ao carrinho</a>
+            <button type="submit" class="btn btn-primary">@Localizer["Finalizar pedido"]</button>
+            <a asp-controller="Cart" asp-action="Index" class="btn btn-link">@Localizer["Voltar ao carrinho"]</a>
         </form>
     </div>
 </div>
