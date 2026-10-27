@@ -9,6 +9,8 @@ public interface IPaymentGateway
     Task RefundAsync(Guid orderId, string paymentIntentId, CancellationToken cancellationToken = default);
 
     Task<string> GetPaymentIntentIdAsync(string checkoutSessionId, CancellationToken cancellationToken = default);
+
+    Task<CheckoutSessionState> GetCheckoutSessionAsync(string checkoutSessionId, CancellationToken cancellationToken = default);
 }
 
 public sealed record CheckoutSession(string Id, Uri Url);

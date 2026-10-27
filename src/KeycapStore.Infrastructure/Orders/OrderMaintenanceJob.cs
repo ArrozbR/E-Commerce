@@ -11,14 +11,24 @@ public sealed class OrderMaintenanceJob(IServiceScopeFactory scopes, ILogger<Ord
 {
     private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
 
+    private const int ReconcileEveryTicks = 10;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var timer = new PeriodicTimer(Interval);
+        var ticks = 0;
 
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
+            ticks++;
+
             await RunAsync<IOrphanOrderReleaser>((releaser, ct) => releaser.ReleaseOrphansAsync(ct), stoppingToken);
             await RunAsync<IRefundProcessor>((refunds, ct) => refunds.RefundPendingAsync(ct), stoppingToken);
+
+            if (ticks % ReconcileEveryTicks == 0)
+            {
+                await RunAsync<IPaymentReconciler>((reconciler, ct) => reconciler.ReconcileAsync(ct), stoppingToken);
+            }
         }
     }
 

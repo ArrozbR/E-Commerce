@@ -45,7 +45,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 | Payment Element (formulário embutido) | ~~v3~~ **v2** (ADR 0025) | A interface do cartão não é o diferencial da v1. O Checkout hospedado já resolve PCI, 3DS e expiração. |
 | Web API + SPA (React ou Angular) | ~~v4~~ **não planejado** (ADR 0025) | Não deixa o site mais bonito por si só (isso vem do design). A reformulação visual é a v3, em Razor. |
 | Interface de admin e cadastro de produtos por tela | ~~futuro~~ **v2** (ADR 0025) | Seed resolve a v1. |
-| Job de conciliação com a Stripe | ~~futuro~~ **v2** (ADR 0025) | O webhook é a fonte da verdade, e a conciliação é só rede de segurança. |
+| Job de conciliação com a Stripe | ~~futuro~~ **v2** (ADR 0025; ADR 0037: pedidos parados, a cada 10 min, corrigidos pelo caminho do webhook) | O webhook é a fonte da verdade, e a conciliação é só rede de segurança. |
 | Cálculo de frete (Correios, Melhor Envio) | ~~futuro~~ **v2** (ADR 0025) | Fora da v1: é um poço de complexidade. Na v2, substitui a regra por estado (ADR 0024); verificar o plano gratuito antes. |
 | Pré-venda (*group buy*) | ~~futuro (v3+)~~ **v2** (ADR 0025) | Muda o modelo de estoque (vagas, prazos longos, reembolsos parciais). |
 | Variações de produto (SKU) | fora | Cada kit é um produto próprio, como no mercado real. |
