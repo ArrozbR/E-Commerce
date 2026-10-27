@@ -2,16 +2,22 @@
 
 using KeycapStore.Application.Orders;
 using KeycapStore.Web.Filters;
+using KeycapStore.Web.Localization;
 using KeycapStore.Web.Models;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace KeycapStore.Web.Controllers;
 
 [Authorize]
 [DomainExceptionFilter]
-public sealed class OrdersController(IOrderQueries orders, ICancellationService cancellations, IWithdrawalService withdrawals) : Controller
+public sealed class OrdersController(
+    IOrderQueries orders,
+    ICancellationService cancellations,
+    IWithdrawalService withdrawals,
+    IStringLocalizer<SharedResource> text) : Controller
 {
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -56,7 +62,7 @@ public sealed class OrdersController(IOrderQueries orders, ICancellationService 
             return NotFound();
         }
 
-        return Json(new { status = order.Status.ToString(), text = OrderStatusText.For(order.Status) });
+        return Json(new { status = order.Status.ToString(), text = text[OrderStatusText.For(order.Status)].Value });
     }
 
     [HttpPost("orders/{id:guid}/cancel")]

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Catálogo" xml:space="preserve">
+    <value>Catalog</value>
+  </data>
+  <data name="Carrinho" xml:space="preserve">
+    <value>Cart</value>
+  </data>
+  <data name="Meus pedidos" xml:space="preserve">
+    <value>My orders</value>
+  </data>
+  <data name="Envio" xml:space="preserve">
+    <value>Shipping</value>
+  </data>
+  <data name="Produtos" xml:space="preserve">
+    <value>Products</value>
+  </data>
+  <data name="Olá, {0}" xml:space="preserve">
+    <value>Hello, {0}</value>
+  </data>
+  <data name="Minha conta" xml:space="preserve">
+    <value>My account</value>
+  </data>
+  <data name="Sair" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="Criar conta" xml:space="preserve">
+    <value>Create account</value>
+  </data>
+  <data name="Entrar" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="Privacidade" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+</root>

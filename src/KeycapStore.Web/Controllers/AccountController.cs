@@ -2,17 +2,20 @@
 
 using KeycapStore.Application.Identity;
 using KeycapStore.Application.Orders;
+using KeycapStore.Web.Localization;
 using KeycapStore.Web.Models;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace KeycapStore.Web.Controllers;
 
 public sealed class AccountController(
     IAccountService accounts,
     IAccountDeletionService deletions,
-    ISavedAddressService savedAddresses) : Controller
+    ISavedAddressService savedAddresses,
+    IStringLocalizer<SharedResource> text) : Controller
 {
     [HttpGet]
     public IActionResult Register() => View();
@@ -31,7 +34,7 @@ public sealed class AccountController(
         {
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, error);
+                ModelState.AddModelError(string.Empty, text[error].Value);
             }
 
             return View(model);
@@ -58,7 +61,7 @@ public sealed class AccountController(
         {
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, error);
+                ModelState.AddModelError(string.Empty, text[error].Value);
             }
 
             return View(model);
@@ -102,14 +105,14 @@ public sealed class AccountController(
             return RedirectToAction(nameof(Deleted));
         }
 
-        ModelState.AddModelError(string.Empty, result switch
+        ModelState.AddModelError(string.Empty, text[result switch
         {
             AccountDeletionResult.WrongPassword => "Senha incorreta.",
             AccountDeletionResult.LockedOut => "Muitas tentativas erradas. Tente de novo em alguns minutos.",
             AccountDeletionResult.IsAdmin => "Contas de administrador não podem ser excluídas por esta página.",
             AccountDeletionResult.HasOpenOrders => "Você tem pedidos em andamento. A conta pode ser excluída quando todos estiverem finalizados, inclusive os 7 dias para desistir depois da entrega.",
             _ => "Não foi possível excluir a conta.",
-        });
+        }].Value);
 
         await LoadSavedAddressAsync(cancellationToken);
         return View(model);
@@ -144,7 +147,7 @@ public sealed class AccountController(
 
         await savedAddresses.SaveAsync(customerId, model.ToShippingAddress(), cancellationToken);
 
-        TempData["Message"] = "Endereço salvo.";
+        TempData["Message"] = text["Endereço salvo."].Value;
         return RedirectToAction(nameof(Delete));
     }
 
@@ -155,7 +158,7 @@ public sealed class AccountController(
         var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         await savedAddresses.RemoveAsync(customerId, cancellationToken);
 
-        TempData["Message"] = "Endereço salvo removido.";
+        TempData["Message"] = text["Endereço salvo removido."].Value;
         return RedirectToAction(nameof(Delete));
     }
 

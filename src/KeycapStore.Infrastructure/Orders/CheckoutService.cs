@@ -9,14 +9,18 @@ namespace KeycapStore.Infrastructure.Orders;
 
 internal sealed class CheckoutService(AppDbContext db, TimeProvider clock, IPaymentGateway payments) : ICheckoutService
 {
-    public async Task<PlaceOrderResult> PlaceOrderAsync(string customerId, ShippingAddress shippingAddress, CancellationToken cancellationToken = default)
+    public async Task<PlaceOrderResult> PlaceOrderAsync(
+        string customerId,
+        ShippingAddress shippingAddress,
+        string language = Order.DefaultLanguage,
+        CancellationToken cancellationToken = default)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
 
         var cart = await db.Carts.SingleOrDefaultAsync(c => c.CustomerId == customerId, cancellationToken);
         if (cart is null || cart.Items.Count == 0)
         {
-            return PlaceOrderResult.Failure("Seu carrinho está vazio.");
+            return PlaceOrderResult.Fail(PlaceOrderFailure.EmptyCart);
         }
 
         var productIds = cart.Items.Select(i => i.ProductId).ToList();
@@ -33,14 +37,14 @@ internal sealed class CheckoutService(AppDbContext db, TimeProvider clock, IPaym
             if (reserved == 0)
             {
                 var product = products[item.ProductId];
-                return PlaceOrderResult.Failure(product.IsActive
-                    ? $"{product.Name} não tem estoque suficiente."
-                    : $"{product.Name} não está mais à venda. Remova do carrinho para continuar.");
+                return PlaceOrderResult.Fail(
+                    product.IsActive ? PlaceOrderFailure.OutOfStock : PlaceOrderFailure.NoLongerForSale,
+                    product.Name);
             }
         }
 
         var items = cart.Items.Select(i => new OrderItem(i.ProductId, products[i.ProductId].Name, products[i.ProductId].Price, i.Quantity));
-        var order = new Order(customerId, clock.GetUtcNow(), items, shippingAddress);
+        var order = new Order(customerId, clock.GetUtcNow(), items, shippingAddress, language);
 
         db.Orders.Add(order);
         db.Carts.Remove(cart);

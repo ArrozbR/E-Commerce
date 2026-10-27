@@ -1,17 +1,23 @@
-﻿using System.Security.Claims;
+﻿using System.Globalization;
+using System.Security.Claims;
 
 using KeycapStore.Application.Orders;
 using KeycapStore.Web.Filters;
+using KeycapStore.Web.Localization;
 using KeycapStore.Web.Models;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace KeycapStore.Web.Controllers;
 
 [Authorize]
 [DomainExceptionFilter]
-public sealed class CheckoutController(ICheckoutService checkout, ISavedAddressService savedAddresses) : Controller
+public sealed class CheckoutController(
+    ICheckoutService checkout,
+    ISavedAddressService savedAddresses,
+    IStringLocalizer<SharedResource> text) : Controller
 {
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -40,11 +46,11 @@ public sealed class CheckoutController(ICheckoutService checkout, ISavedAddressS
 
         var address = model.ToShippingAddress();
 
-        var result = await checkout.PlaceOrderAsync(CustomerId, address, cancellationToken);
+        var result = await checkout.PlaceOrderAsync(CustomerId, address, CultureInfo.CurrentUICulture.Name, cancellationToken);
 
         if (!result.Succeeded)
         {
-            ModelState.AddModelError(string.Empty, result.Error!);
+            ModelState.AddModelError(string.Empty, FailureMessage(result));
             return View(model);
         }
 
@@ -66,4 +72,12 @@ public sealed class CheckoutController(ICheckoutService checkout, ISavedAddressS
 
         return Redirect(payment.PaymentUrl!.ToString());
     }
+
+    private string FailureMessage(PlaceOrderResult result) => (result.Failure switch
+    {
+        PlaceOrderFailure.EmptyCart => text["Seu carrinho está vazio."],
+        PlaceOrderFailure.OutOfStock => text["{0} não tem estoque suficiente.", result.ProductName!],
+        PlaceOrderFailure.NoLongerForSale => text["{0} não está mais à venda. Remova do carrinho para continuar.", result.ProductName!],
+        _ => text["Não foi possível finalizar o pedido."],
+    }).Value;
 }

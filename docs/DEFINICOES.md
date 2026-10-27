@@ -53,7 +53,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 | Endereços salvos na conta | ~~futuro~~ **v2** (ADR 0025; ADR 0035: um por cliente; ADR 0036: também pela "Minha conta") | Conveniência, não essencial. Só preenche o checkout; o pedido guarda a própria cópia. |
 | Login externo (Google etc.) | ~~futuro~~ **v2** (ADR 0025) | Dependência externa sem ganho de aprendizado na v1. |
 | Compra como convidado | fora | Decisão: conta obrigatória para comprar. |
-| Site em inglês (troca pt-BR/en por bandeira no menu) | **v2** (ADR 0025) | A v1 é só em português. |
+| Site em inglês (troca pt-BR/en por bandeira no menu) | **v2** (ADR 0025; ADR 0038: todas as páginas, português por padrão, formatos americanos em inglês com `R$`, Stripe no idioma do pedido) | A v1 é só em português. |
 | Reformulação visual (design, CSS, layout, identidade) | **v3** (ADR 0025) | Na v1, o foco é o backend; continua em MVC + Razor. |
 | Dinheiro real | fora (checklist em §11) | Exige conta ativada, obrigações fiscais, legais e de suporte. Além disso, um recrutador não consegue testar uma loja real sem gastar dinheiro. |
 | Redis, filas, microsserviços | fora | O banco resolve concorrência e idempotência. Seria superdimensionado e teria custo. |
@@ -468,7 +468,7 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 | D33 | Custo zero como regra | — |
 | D34 | Carrinho guardado no banco, por cliente (exige login para adicionar ao carrinho) | Carrinho anônimo em cookie ou sessão |
 | D35 | Única exceção ao "nunca timer próprio": um job libera pedidos `AwaitingPayment` **sem `StripeSessionId`** há mais de 10 minutos (sem sessão, nenhum pagamento é possível) | Reserva presa para sempre |
-| D36 | Código (identificadores) em **inglês**; documentação e textos da interface em **português (pt-BR)**. Solution `KeycapStore`, **.NET 10** | Identificadores em português |
+| D36 | Código (identificadores) em **inglês**; documentação e textos da interface em **português (pt-BR)** (a interface ganha inglês na v2, ADR 0038; o português continua sendo o padrão e a chave das traduções). Solution `KeycapStore`, **.NET 10** | Identificadores em português |
 
 ---
 

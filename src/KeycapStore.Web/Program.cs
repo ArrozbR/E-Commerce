@@ -1,7 +1,9 @@
 ﻿using KeycapStore.Infrastructure;
 using KeycapStore.Infrastructure.Identity;
+using KeycapStore.Web.Localization;
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 
 using Serilog;
@@ -23,8 +25,13 @@ builder.Services.AddSerilog(logger =>
     }
 });
 
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
 builder.Services.AddControllersWithViews(options =>
-    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()))
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization(options =>
+        options.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource)));
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
@@ -107,6 +114,18 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRequestLocalization(options =>
+{
+    options.SetDefaultCulture(SiteCultures.Portuguese)
+        .AddSupportedCultures(SiteCultures.All)
+        .AddSupportedUICultures(SiteCultures.All);
+
+    options.RequestCultureProviders = options.RequestCultureProviders
+        .Where(provider => provider is not AcceptLanguageHeaderRequestCultureProvider)
+        .ToList();
+});
+
 app.UseRouting();
 
 app.UseAuthentication();

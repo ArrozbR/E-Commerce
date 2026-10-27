@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Produtos" xml:space="preserve">
+    <value>Products</value>
+  </data>
+  <data name="Novo produto" xml:space="preserve">
+    <value>New product</value>
+  </data>
+  <data name="Nome" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Preço (R$)" xml:space="preserve">
+    <value>Price (R$)</value>
+  </data>
+  <data name="Estoque inicial" xml:space="preserve">
+    <value>Initial stock</value>
+  </data>
+  <data name="Criar produto" xml:space="preserve">
+    <value>Create product</value>
+  </data>
+  <data name="Nome e preço" xml:space="preserve">
+    <value>Name and price</value>
+  </data>
+  <data name="Estoque" xml:space="preserve">
+    <value>Stock</value>
+  </data>
+  <data name="Ajustar estoque" xml:space="preserve">
+    <value>Adjust stock</value>
+  </data>
+  <data name="Situação" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Salvar" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="+10 ou -2" xml:space="preserve">
+    <value>+10 or -2</value>
+  </data>
+  <data name="Ajustar" xml:space="preserve">
+    <value>Adjust</value>
+  </data>
+  <data name="À venda" xml:space="preserve">
+    <value>On sale</value>
+  </data>
+  <data name="Tirar de venda" xml:space="preserve">
+    <value>Take off sale</value>
+  </data>
+  <data name="Fora de venda" xml:space="preserve">
+    <value>Off sale</value>
+  </data>
+  <data name="Voltar à venda" xml:space="preserve">
+    <value>Put back on sale</value>
+  </data>
+</root>

@@ -79,7 +79,8 @@ public class CheckoutServiceTests(PostgresFixture postgres) : IClassFixture<Post
         var result = await PlaceOrderAsync(factory, "customer-rollback");
 
         Assert.False(result.Succeeded);
-        Assert.Contains("Kit Teste Escasso", result.Error);
+        Assert.Equal(PlaceOrderFailure.OutOfStock, result.Failure);
+        Assert.Equal("Kit Teste Escasso", result.ProductName);
         Assert.Equal(5, await StockOfAsync(factory, available));
         Assert.Equal(1, await StockOfAsync(factory, scarce));
 
@@ -97,7 +98,7 @@ public class CheckoutServiceTests(PostgresFixture postgres) : IClassFixture<Post
         var result = await PlaceOrderAsync(factory, "customer-without-cart");
 
         Assert.False(result.Succeeded);
-        Assert.Equal("Seu carrinho está vazio.", result.Error);
+        Assert.Equal(PlaceOrderFailure.EmptyCart, result.Failure);
     }
 
     [Fact]
@@ -133,7 +134,8 @@ public class CheckoutServiceTests(PostgresFixture postgres) : IClassFixture<Post
         var result = await PlaceOrderAsync(factory, "customer-inactive");
 
         Assert.False(result.Succeeded);
-        Assert.Contains("Kit Teste Inativo não está mais à venda", result.Error);
+        Assert.Equal(PlaceOrderFailure.NoLongerForSale, result.Failure);
+        Assert.Equal("Kit Teste Inativo", result.ProductName);
         Assert.Equal(5, await StockOfAsync(factory, available));
         Assert.Equal(5, await StockOfAsync(factory, inactive));
 

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Pagamento" xml:space="preserve">
+    <value>Payment</value>
+  </data>
+  <data name="Obrigado pela compra!" xml:space="preserve">
+    <value>Thank you for your order!</value>
+  </data>
+  <data name="Pedido" xml:space="preserve">
+    <value>Order</value>
+  </data>
+  <data name="Situação:" xml:space="preserve">
+    <value>Status:</value>
+  </data>
+  <data name="Confirmando seu pagamento com a Stripe. Isso costuma levar poucos segundos..." xml:space="preserve">
+    <value>Confirming your payment with Stripe. This usually takes a few seconds...</value>
+  </data>
+  <data name="Ver o pedido" xml:space="preserve">
+    <value>View order</value>
+  </data>
+  <data name="Pronto! A situação acima já é a confirmada pela Stripe." xml:space="preserve">
+    <value>Done! The status above is the one confirmed by Stripe.</value>
+  </data>
+  <data name="Ainda não recebemos a confirmação. Ela pode demorar alguns minutos; acompanhe pela página do pedido." xml:space="preserve">
+    <value>We have not received the confirmation yet. It may take a few minutes; follow it on the order page.</value>
+  </data>
+</root>

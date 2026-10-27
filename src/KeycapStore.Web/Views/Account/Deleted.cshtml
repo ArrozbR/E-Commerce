@@ -1,7 +1,7 @@
 @{
-    ViewData["Title"] = "Conta excluída";
+    ViewData["Title"] = Localizer["Conta excluída"].Value;
 }
 
-<h1>Conta excluída</h1>
-<p>A sua conta foi excluída e você saiu da loja.</p>
-<p><a asp-controller="Catalog" asp-action="Index">Voltar ao catálogo</a></p>
+<h1>@Localizer["Conta excluída"]</h1>
+<p>@Localizer["A sua conta foi excluída e você saiu da loja."]</p>
+<p><a asp-controller="Catalog" asp-action="Index">@Localizer["Voltar ao catálogo"]</a></p>

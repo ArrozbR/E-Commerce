@@ -27,6 +27,9 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.StripeSessionId)
             .HasMaxLength(255);
 
+        builder.Property(o => o.Language)
+            .HasMaxLength(Order.MaxLanguageLength);
+
         builder.Property(o => o.StripePaymentIntentId)
             .HasMaxLength(255);
 
