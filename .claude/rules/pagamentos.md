@@ -6,8 +6,8 @@ Estas regras são inegociáveis. Qualquer código que toque em pedido, estoque, 
 
 - **O webhook assinado da Stripe é a ÚNICA fonte da verdade sobre pagamento.** Só o handler do webhook muda um pedido para `Paid`, `AwaitingConfirmation`, `Expired`, `Failed` ou `PaidOutOfStock`. `Refunded` só pelo job de reembolso, depois de a Stripe aceitar o reembolso.
 - **O redirecionamento (`success_url`) não prova nada.** A página de retorno apenas consulta o próprio backend (`GET /orders/{id}/status`, restrito ao dono do pedido) e **nunca** altera estado.
-- Nenhum endpoint de admin, nenhuma tela e nenhum comando altera estado de pagamento. **Exceção (ADR 0031):** o cliente pode **cancelar** o próprio pedido `Paid`/`Picking`; o reembolso continua sendo do job, pela API da Stripe. **Exceção (ADR 0032):** o cliente pode **desistir** (arrependimento) de um pedido `Shipped` ou `Delivered` há até 7 dias; o reembolso também é do job.
-- Consultar a API da Stripe (polling) é só rede de segurança (conciliação, fora da v1), nunca o caminho principal.
+- Nenhum endpoint de admin, nenhuma tela e nenhum comando altera estado de pagamento. **Exceção (ADR 0031):** o cliente pode **cancelar** o próprio pedido `Paid`/`Picking`; o reembolso continua sendo do job, pela API da Stripe. **Exceção (ADR 0032):** o cliente pode **desistir** (arrependimento) de um pedido `Shipped` ou `Delivered` há até 7 dias; o reembolso também é do job. **Exceção (ADR 0037):** a **conciliação** pode levar um pedido parado (`AwaitingPayment`/`AwaitingConfirmation` com sessão, há mais de 40 min) a `Paid`, `PaidOutOfStock` ou `Expired`, **somente** pelo que a API da Stripe responder sobre a sessão desse pedido, e pelo **mesmo código** de transição do webhook (com a conferência de valor e moeda).
+- Consultar a API da Stripe (polling) é só rede de segurança (conciliação a cada 10 min, ADR 0037), nunca o caminho principal.
 
 ## 2. Webhook: `POST /webhooks/stripe`
 
