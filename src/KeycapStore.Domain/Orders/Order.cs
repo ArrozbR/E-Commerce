@@ -3,6 +3,8 @@
 public sealed class Order
 {
     public const int MaxTrackingCodeLength = 50;
+    public const int MaxLanguageLength = 10;
+    public const string DefaultLanguage = "pt-BR";
     public static readonly TimeSpan WithdrawalPeriod = TimeSpan.FromDays(7);
 
     private readonly List<OrderItem> _items = [];
@@ -19,16 +21,25 @@ public sealed class Order
     public string? StripePaymentIntentId { get; private set; }
     public string? TrackingCode { get; private set; }
     public DateTimeOffset? DeliveredAt { get; private set; }
+    public string Language { get; private set; }
 
     private Order()
     {
         ShippingAddress = null!;
+        Language = null!;
     }
 
-    public Order(string customerId, DateTimeOffset createdAt, IEnumerable<OrderItem> items, ShippingAddress shippingAddress)
+    public Order(
+        string customerId,
+        DateTimeOffset createdAt,
+        IEnumerable<OrderItem> items,
+        ShippingAddress shippingAddress,
+        string language = DefaultLanguage)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(customerId);
         ArgumentNullException.ThrowIfNull(shippingAddress);
+        ArgumentException.ThrowIfNullOrWhiteSpace(language);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(language.Length, MaxLanguageLength, nameof(language));
 
         _items.AddRange(items);
 
@@ -48,6 +59,7 @@ public sealed class Order
         Status = OrderStatus.AwaitingPayment;
         ShippingAddress = shippingAddress;
         ShippingFee = ShippingPolicy.FeeFor(shippingAddress.State);
+        Language = language;
     }
 
     public void AttachStripeSession(string sessionId)

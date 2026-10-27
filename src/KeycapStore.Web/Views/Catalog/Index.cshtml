@@ -1,11 +1,9 @@
-﻿@model IReadOnlyList<KeycapStore.Application.Catalog.ProductSummary>
+@model IReadOnlyList<KeycapStore.Application.Catalog.ProductSummary>
 @{
-    ViewData["Title"] = "Catálogo";
-    // Formata preços como dinheiro brasileiro: R$ 349,90
-    var brl = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+    ViewData["Title"] = Localizer["Catálogo"].Value;
 }
 
-<h1 class="mb-4">Catálogo</h1>
+<h1 class="mb-4">@Localizer["Catálogo"]</h1>
 
 <div class="row">
     @foreach (var product in Model)
@@ -14,31 +12,30 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">@product.Name</h5>
-                    <p class="card-text fs-4">@product.Price.ToString("C", brl)</p>
+                    <p class="card-text fs-4">@Display.Price(product.Price)</p>
 
                     @if (product.Stock == 0)
                     {
-                        <span class="badge bg-secondary">Esgotado</span>
+                        <span class="badge bg-secondary">@Localizer["Esgotado"]</span>
                     }
                     else if (product.Stock == 1)
                     {
-                        <span class="badge bg-warning text-dark">Última unidade</span>
+                        <span class="badge bg-warning text-dark">@Localizer["Última unidade"]</span>
                     }
                     else if (product.Stock <= 3)
                     {
-                        <span class="badge bg-warning text-dark">Últimas @product.Stock unidades</span>
+                        <span class="badge bg-warning text-dark">@Localizer["Últimas {0} unidades", product.Stock]</span>
                     }
                     else
                     {
-                        <span class="badge bg-success">Em estoque</span>
+                        <span class="badge bg-success">@Localizer["Em estoque"]</span>
                     }
 
-                    
                     @if (product.Stock > 0)
                     {
                         <form asp-controller="Cart" asp-action="Add" method="post" class="mt-3">
                             <input type="hidden" name="productId" value="@product.Id" />
-                            <button type="submit" class="btn btn-primary btn-sm">Adicionar ao carrinho</button>
+                            <button type="submit" class="btn btn-primary btn-sm">@Localizer["Adicionar ao carrinho"]</button>
                         </form>
                     }
                 </div>

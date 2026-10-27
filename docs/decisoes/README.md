@@ -44,3 +44,5 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0034](0034-cadastro-de-produtos-pelo-admin.md) | Cadastro de produtos pelo admin: estoque por ajuste atômico e produto ativo/inativo |
 | [0035](0035-endereco-salvo-na-conta.md) | Endereço salvo na conta: um por cliente, só para preencher o checkout |
 | [0036](0036-endereco-salvo-cadastrado-pela-conta.md) | Endereço salvo também cadastrado e alterado pela "Minha conta" |
+| [0037](0037-conciliacao-com-a-stripe.md) | Conciliação com a Stripe: pedidos parados conferidos a cada 10 minutos e corrigidos pelo mesmo caminho do webhook |
+| [0038](0038-site-em-ingles.md) | Site em inglês: todas as páginas, português por padrão, formatos americanos em inglês e a Stripe no idioma do pedido |

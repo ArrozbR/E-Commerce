@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Carrinho" xml:space="preserve">
+    <value>Cart</value>
+  </data>
+  <data name="Seu carrinho está vazio." xml:space="preserve">
+    <value>Your cart is empty.</value>
+  </data>
+  <data name="Ver o catálogo" xml:space="preserve">
+    <value>Browse the catalog</value>
+  </data>
+  <data name="Produto" xml:space="preserve">
+    <value>Product</value>
+  </data>
+  <data name="Preço" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="Quantidade" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="Subtotal" xml:space="preserve">
+    <value>Subtotal</value>
+  </data>
+  <data name="Indisponível" xml:space="preserve">
+    <value>Unavailable</value>
+  </data>
+  <data name="Atualizar" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="Remover" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Um item do carrinho não está mais à venda. Remova-o para finalizar a compra." xml:space="preserve">
+    <value>An item in your cart is no longer for sale. Remove it to check out.</value>
+  </data>
+  <data name="Finalizar compra" xml:space="preserve">
+    <value>Check out</value>
+  </data>
+</root>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Minha conta" xml:space="preserve">
+    <value>My account</value>
+  </data>
+  <data name="Conectado como {0}" xml:space="preserve">
+    <value>Signed in as {0}</value>
+  </data>
+  <data name="Endereço salvo" xml:space="preserve">
+    <value>Saved address</value>
+  </data>
+  <data name="CEP {0}" xml:space="preserve">
+    <value>Postal code {0}</value>
+  </data>
+  <data name="Ele só preenche o formulário do checkout. Os pedidos já feitos guardam o próprio endereço e não mudam." xml:space="preserve">
+    <value>It only fills in the checkout form. Orders already placed keep their own address and do not change.</value>
+  </data>
+  <data name="Alterar endereço" xml:space="preserve">
+    <value>Change address</value>
+  </data>
+  <data name="Remover endereço salvo" xml:space="preserve">
+    <value>Remove saved address</value>
+  </data>
+  <data name="Nenhum endereço salvo. Você pode cadastrar um agora ou marcar a caixa no checkout ao finalizar uma compra." xml:space="preserve">
+    <value>No saved address. You can add one now or tick the box at checkout when placing an order.</value>
+  </data>
+  <data name="Cadastrar endereço" xml:space="preserve">
+    <value>Add address</value>
+  </data>
+  <data name="Excluir minha conta" xml:space="preserve">
+    <value>Delete my account</value>
+  </data>
+  <data name="Ao excluir a conta, o seu e-mail, a sua senha e o endereço salvo são apagados e você não consegue mais entrar." xml:space="preserve">
+    <value>When you delete your account, your e-mail, your password and your saved address are erased and you can no longer sign in.</value>
+  </data>
+  <data name="Os pedidos já feitos continuam registrados, sem ligação com a conta, pelo prazo que a lei exige para registros de venda." xml:space="preserve">
+    <value>Orders already placed remain on record, no longer linked to the account, for the period the law requires for sales records.</value>
+  </data>
+  <data name="A exclusão só é possível quando todos os seus pedidos estiverem finalizados, inclusive o prazo de 7 dias para desistir depois da entrega." xml:space="preserve">
+    <value>You can only delete your account when all your orders are finished, including the 7-day withdrawal period after delivery.</value>
+  </data>
+  <data name="Excluir a conta? Esta ação não pode ser desfeita." xml:space="preserve">
+    <value>Delete your account? This cannot be undone.</value>
+  </data>
+</root>
