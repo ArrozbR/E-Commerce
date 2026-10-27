@@ -1,4 +1,4 @@
-@using KeycapStore.Web.Models
+﻿@using KeycapStore.Web.Models
 @model IReadOnlyList<KeycapStore.Application.Orders.OrderSummaryView>
 @{
     ViewData["Title"] = Localizer["Meus pedidos"].Value;
@@ -26,7 +26,7 @@ else
             {
                 <tr>
                     <td>@Display.DateAndTime(order.CreatedAt)</td>
-                    <td>@OrderStatusText.For(order.Status)</td>
+                    <td>@SharedLocalizer[OrderStatusText.For(order.Status)]</td>
                     <td class="text-end">@Display.Price(order.Total)</td>
                     <td class="text-end"><a asp-action="Details" asp-route-id="@order.Id">@Localizer["Ver o pedido"]</a></td>
                 </tr>

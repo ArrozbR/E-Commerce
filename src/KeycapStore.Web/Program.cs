@@ -29,7 +29,9 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 
 builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()))
-    .AddViewLocalization();
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization(options =>
+        options.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource)));
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)

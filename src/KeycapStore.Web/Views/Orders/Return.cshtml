@@ -1,4 +1,4 @@
-@using KeycapStore.Web.Models
+﻿@using KeycapStore.Web.Models
 @model KeycapStore.Application.Orders.OrderView
 @{
     ViewData["Title"] = Localizer["Pagamento"].Value;
@@ -7,7 +7,7 @@
 <h1 class="mb-3">@Localizer["Obrigado pela compra!"]</h1>
 
 <p>@Localizer["Pedido"] <strong>@Model.Id</strong></p>
-<p>@Localizer["Situação:"] <strong id="order-status">@OrderStatusText.For(Model.Status)</strong></p>
+<p>@Localizer["Situação:"] <strong id="order-status">@SharedLocalizer[OrderStatusText.For(Model.Status)]</strong></p>
 <p id="order-waiting" class="text-muted">@Localizer["Confirmando seu pagamento com a Stripe. Isso costuma levar poucos segundos..."]</p>
 
 <a asp-action="Details" asp-route-id="@Model.Id">@Localizer["Ver o pedido"]</a>

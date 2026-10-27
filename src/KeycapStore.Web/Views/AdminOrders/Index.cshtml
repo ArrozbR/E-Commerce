@@ -46,7 +46,7 @@ else
                         CEP @address.PostalCode.Insert(5, "-")
                     </td>
                     <td>
-                        <strong>@OrderStatusText.For(order.Status)</strong>
+                        <strong>@SharedLocalizer[OrderStatusText.For(order.Status)]</strong>
                         @if (order.TrackingCode is not null)
                         {
                             <br /><small>Rastreio: @order.TrackingCode</small>

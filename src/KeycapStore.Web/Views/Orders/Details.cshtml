@@ -1,8 +1,8 @@
-@using KeycapStore.Web.Models
+﻿@using KeycapStore.Web.Models
 @model KeycapStore.Application.Orders.OrderView
 @{
     ViewData["Title"] = Localizer["Pedido"].Value;
-    var status = OrderStatusText.For(Model.Status);
+    var status = SharedLocalizer[OrderStatusText.For(Model.Status)].Value;
     var address = Model.ShippingAddress;
 }
 

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="E-mail" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="Senha" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Senha atual" xml:space="preserve">
+    <value>Current password</value>
+  </data>
+  <data name="Confirmar senha" xml:space="preserve">
+    <value>Confirm password</value>
+  </data>
+  <data name="Informe o e-mail." xml:space="preserve">
+    <value>Enter your e-mail.</value>
+  </data>
+  <data name="E-mail inválido." xml:space="preserve">
+    <value>Invalid e-mail.</value>
+  </data>
+  <data name="Informe a senha." xml:space="preserve">
+    <value>Enter your password.</value>
+  </data>
+  <data name="Confirme a senha." xml:space="preserve">
+    <value>Confirm your password.</value>
+  </data>
+  <data name="As senhas não conferem." xml:space="preserve">
+    <value>The passwords do not match.</value>
+  </data>
+  <data name="Nome de quem recebe" xml:space="preserve">
+    <value>Recipient name</value>
+  </data>
+  <data name="Rua" xml:space="preserve">
+    <value>Street</value>
+  </data>
+  <data name="Número" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="Complemento (opcional)" xml:space="preserve">
+    <value>Apartment, suite, etc. (optional)</value>
+  </data>
+  <data name="Bairro" xml:space="preserve">
+    <value>District</value>
+  </data>
+  <data name="Cidade" xml:space="preserve">
+    <value>City</value>
+  </data>
+  <data name="Estado" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="CEP" xml:space="preserve">
+    <value>Postal code</value>
+  </data>
+  <data name="Informe o nome de quem vai receber." xml:space="preserve">
+    <value>Enter the recipient name.</value>
+  </data>
+  <data name="Informe a rua." xml:space="preserve">
+    <value>Enter the street.</value>
+  </data>
+  <data name="Informe o número." xml:space="preserve">
+    <value>Enter the number.</value>
+  </data>
+  <data name="Informe o bairro." xml:space="preserve">
+    <value>Enter the district.</value>
+  </data>
+  <data name="Informe a cidade." xml:space="preserve">
+    <value>Enter the city.</value>
+  </data>
+  <data name="Escolha o estado." xml:space="preserve">
+    <value>Choose the state.</value>
+  </data>
+  <data name="Escolha um estado da lista." xml:space="preserve">
+    <value>Choose a state from the list.</value>
+  </data>
+  <data name="Informe o CEP." xml:space="preserve">
+    <value>Enter the postal code.</value>
+  </data>
+  <data name="CEP inválido. Use 8 números, como 01310-100." xml:space="preserve">
+    <value>Invalid postal code. Use 8 digits, like 01310-100.</value>
+  </data>
+  <data name="Use no máximo 150 caracteres." xml:space="preserve">
+    <value>Use at most 150 characters.</value>
+  </data>
+  <data name="Use no máximo 200 caracteres." xml:space="preserve">
+    <value>Use at most 200 characters.</value>
+  </data>
+  <data name="Use no máximo 100 caracteres." xml:space="preserve">
+    <value>Use at most 100 characters.</value>
+  </data>
+  <data name="Use no máximo 20 caracteres." xml:space="preserve">
+    <value>Use at most 20 characters.</value>
+  </data>
+  <data name="Salvar este endereço na minha conta para as próximas compras" xml:space="preserve">
+    <value>Save this address to my account for future orders</value>
+  </data>
+  <data name="Informe o nome." xml:space="preserve">
+    <value>Enter the name.</value>
+  </data>
+  <data name="O nome pode ter até {1} caracteres." xml:space="preserve">
+    <value>The name can have up to {1} characters.</value>
+  </data>
+  <data name="Informe o preço." xml:space="preserve">
+    <value>Enter the price.</value>
+  </data>
+  <data name="O estoque inicial vai de {1} a {2}." xml:space="preserve">
+    <value>The initial stock goes from {1} to {2}.</value>
+  </data>
+  <data name="Aguardando pagamento" xml:space="preserve">
+    <value>Awaiting payment</value>
+  </data>
+  <data name="Aguardando confirmação do pagamento" xml:space="preserve">
+    <value>Awaiting payment confirmation</value>
+  </data>
+  <data name="Pago" xml:space="preserve">
+    <value>Paid</value>
+  </data>
+  <data name="Expirado" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="Pagamento não aprovado" xml:space="preserve">
+    <value>Payment not approved</value>
+  </data>
+  <data name="Pago, mas sem estoque" xml:space="preserve">
+    <value>Paid, but out of stock</value>
+  </data>
+  <data name="Reembolsado" xml:space="preserve">
+    <value>Refunded</value>
+  </data>
+  <data name="Em separação" xml:space="preserve">
+    <value>Being prepared</value>
+  </data>
+  <data name="Enviado" xml:space="preserve">
+    <value>Shipped</value>
+  </data>
+  <data name="Entregue" xml:space="preserve">
+    <value>Delivered</value>
+  </data>
+  <data name="Cancelado (reembolso em andamento)" xml:space="preserve">
+    <value>Cancelled (refund in progress)</value>
+  </data>
+  <data name="Desistência registrada (reembolso em andamento)" xml:space="preserve">
+    <value>Withdrawal registered (refund in progress)</value>
+  </data>
+  <data name="Reembolsado, aguardando a devolução do produto" xml:space="preserve">
+    <value>Refunded, awaiting the product return</value>
+  </data>
+  <data name="Devolvido" xml:space="preserve">
+    <value>Returned</value>
+  </data>
+  <data name="Endereço salvo." xml:space="preserve">
+    <value>Address saved.</value>
+  </data>
+  <data name="Endereço salvo removido." xml:space="preserve">
+    <value>Saved address removed.</value>
+  </data>
+  <data name="Senha incorreta." xml:space="preserve">
+    <value>Incorrect password.</value>
+  </data>
+  <data name="Muitas tentativas erradas. Tente de novo em alguns minutos." xml:space="preserve">
+    <value>Too many wrong attempts. Try again in a few minutes.</value>
+  </data>
+  <data name="Contas de administrador não podem ser excluídas por esta página." xml:space="preserve">
+    <value>Administrator accounts cannot be deleted on this page.</value>
+  </data>
+  <data name="Você tem pedidos em andamento. A conta pode ser excluída quando todos estiverem finalizados, inclusive os 7 dias para desistir depois da entrega." xml:space="preserve">
+    <value>You have orders in progress. The account can be deleted when all of them are finished, including the 7 days to withdraw after delivery.</value>
+  </data>
+  <data name="Não foi possível excluir a conta." xml:space="preserve">
+    <value>The account could not be deleted.</value>
+  </data>
+</root>
