@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 
 using KeycapStore.IntegrationTests.Fixtures;
 
@@ -101,5 +101,19 @@ public class LanguageTests(PostgresFixture postgres) : IClassFixture<PostgresFix
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Equal("/", response.Headers.Location?.OriginalString);
+    }
+
+    [Fact]
+    public async Task CatalogInEnglish_ShowsPricesInReais_InTheAmericanFormat()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var client = PageClient.Anonymous(factory);
+        await ChooseAsync(client, "en-US", "/Catalog");
+
+        var html = WebUtility.HtmlDecode(await client.GetStringAsync("/Catalog"));
+
+        Assert.Contains(">R$349.90<", html);
+        Assert.DoesNotContain(">$", html);
+        Assert.DoesNotContain("US$", html);
     }
 }

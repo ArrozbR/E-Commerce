@@ -2,8 +2,6 @@
 @model KeycapStore.Application.Orders.OrderView
 @{
     ViewData["Title"] = "Pedido";
-    var brl = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
-    var brasilia = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
     var status = OrderStatusText.For(Model.Status);
     var address = Model.ShippingAddress;
 }
@@ -11,7 +9,7 @@
 <h1 class="mb-1">Pedido criado</h1>
 <p class="text-muted">
     Número: @Model.Id<br />
-    Feito em @TimeZoneInfo.ConvertTime(Model.CreatedAt, brasilia).ToString("dd/MM/yyyy HH:mm", brl)<br />
+    Feito em @Display.DateAndTime(Model.CreatedAt)<br />
     Situação: <strong>@status</strong>
 </p>
 
@@ -29,20 +27,20 @@
         {
             <tr>
                 <td>@line.ProductName</td>
-                <td class="text-end">@line.UnitPrice.ToString("C", brl)</td>
+                <td class="text-end">@Display.Price(line.UnitPrice)</td>
                 <td class="text-end">@line.Quantity</td>
-                <td class="text-end">@line.LineTotal.ToString("C", brl)</td>
+                <td class="text-end">@Display.Price(line.LineTotal)</td>
             </tr>
         }
     </tbody>
     <tfoot>
         <tr>
             <td colspan="3" class="text-end">Frete</td>
-            <td class="text-end">@(Model.ShippingFee == 0 ? "Grátis" : Model.ShippingFee.ToString("C", brl))</td>
+            <td class="text-end">@(Model.ShippingFee == 0 ? "Grátis" : Display.Price(Model.ShippingFee))</td>
         </tr>
         <tr>
             <th colspan="3" class="text-end">Total</th>
-            <th class="text-end">@Model.Total.ToString("C", brl)</th>
+            <th class="text-end">@Display.Price(Model.Total)</th>
         </tr>
     </tfoot>
 </table>
@@ -71,7 +69,7 @@
     <p class="text-muted small mt-1">
         Direito de arrependimento (CDC, art. 49):
         @(Model.WithdrawalDeadline is { } deadline
-            ? $"você pode desistir até {TimeZoneInfo.ConvertTime(deadline, brasilia).ToString("dd/MM/yyyy HH:mm", brl)}."
+            ? $"você pode desistir até {Display.DateAndTime(deadline)}."
             : "você pode desistir até 7 dias depois de receber o pedido.")
         O valor é devolvido automaticamente em alguns minutos; depois, devolva o produto à loja.
     </p>

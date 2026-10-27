@@ -1,8 +1,6 @@
 ﻿@model IReadOnlyList<KeycapStore.Application.Catalog.ProductSummary>
 @{
     ViewData["Title"] = "Catálogo";
-    // Formata preços como dinheiro brasileiro: R$ 349,90
-    var brl = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
 }
 
 <h1 class="mb-4">Catálogo</h1>
@@ -14,7 +12,7 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">@product.Name</h5>
-                    <p class="card-text fs-4">@product.Price.ToString("C", brl)</p>
+                    <p class="card-text fs-4">@Display.Price(product.Price)</p>
 
                     @if (product.Stock == 0)
                     {

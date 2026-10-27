@@ -2,8 +2,6 @@
 @model IReadOnlyList<KeycapStore.Application.Orders.AdminOrderView>
 @{
     ViewData["Title"] = "Envio de pedidos";
-    var brl = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
-    var brasilia = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
 }
 
 <h1>Envio de pedidos</h1>
@@ -32,7 +30,7 @@ else
                 <tr>
                     <td>
                         <code>@order.Id</code><br />
-                        <small class="text-muted">@TimeZoneInfo.ConvertTime(order.CreatedAt, brasilia).ToString("dd/MM/yyyy HH:mm", brl)</small>
+                        <small class="text-muted">@Display.DateAndTime(order.CreatedAt)</small>
                     </td>
                     <td>
                         @foreach (var line in order.Lines)
@@ -40,7 +38,7 @@ else
                             <div>@line.Quantity × @line.ProductName</div>
                         }
                     </td>
-                    <td class="text-end">@order.Total.ToString("C", brl)</td>
+                    <td class="text-end">@Display.Price(order.Total)</td>
                     <td>
                         @address.RecipientName<br />
                         @address.Street, @address.Number@(address.Complement is null ? "" : $" - {address.Complement}")<br />

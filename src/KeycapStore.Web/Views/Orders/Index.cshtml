@@ -1,9 +1,7 @@
-@using KeycapStore.Web.Models
+﻿@using KeycapStore.Web.Models
 @model IReadOnlyList<KeycapStore.Application.Orders.OrderSummaryView>
 @{
     ViewData["Title"] = "Meus pedidos";
-    var brl = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
-    var brasilia = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
 }
 
 <h1>Meus pedidos</h1>
@@ -27,9 +25,9 @@ else
             @foreach (var order in Model)
             {
                 <tr>
-                    <td>@TimeZoneInfo.ConvertTime(order.CreatedAt, brasilia).ToString("dd/MM/yyyy HH:mm", brl)</td>
+                    <td>@Display.DateAndTime(order.CreatedAt)</td>
                     <td>@OrderStatusText.For(order.Status)</td>
-                    <td class="text-end">@order.Total.ToString("C", brl)</td>
+                    <td class="text-end">@Display.Price(order.Total)</td>
                     <td class="text-end"><a asp-action="Details" asp-route-id="@order.Id">Ver o pedido</a></td>
                 </tr>
             }

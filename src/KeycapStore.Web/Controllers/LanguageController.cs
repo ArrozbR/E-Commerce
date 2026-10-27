@@ -1,4 +1,4 @@
-using KeycapStore.Web.Localization;
+﻿using KeycapStore.Web.Localization;
 
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +15,6 @@ public sealed class LanguageController : Controller
             culture = SiteCultures.Portuguese;
         }
 
-        // LACUNA 2: se o returnUrl não for um endereço da própria loja (Url.IsLocalUrl), troque por "/"
         if (!Url.IsLocalUrl(returnUrl))
         {
             returnUrl = "/";
