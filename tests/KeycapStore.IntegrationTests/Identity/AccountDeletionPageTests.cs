@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 
 using KeycapStore.Domain.Orders;
 using KeycapStore.Infrastructure.Identity;
@@ -24,7 +24,7 @@ public class AccountDeletionPageTests(PostgresFixture postgres) : IClassFixture<
 
         return await client.PostAsync("/Account/Delete", new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            ["Password"] = password,
+            ["Confirmation"] = password,
             ["__RequestVerificationToken"] = token,
         }));
     }

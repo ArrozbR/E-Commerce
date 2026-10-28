@@ -12,3 +12,14 @@ public enum ExternalLoginResult
     AdminNotAllowed,
     Failed,
 }
+
+public enum LinkExternalLoginResult
+{
+    Linked,
+    AdminNotAllowed,
+    DifferentEmail,
+    LinkedToAnotherAccount,
+    Failed,
+}
+
+public sealed record AccountSummary(bool HasPassword, bool HasGoogle, bool IsAdmin);

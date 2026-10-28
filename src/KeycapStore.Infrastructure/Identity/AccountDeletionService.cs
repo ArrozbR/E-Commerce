@@ -12,7 +12,7 @@ internal sealed class AccountDeletionService(
     SignInManager<IdentityUser> signIn,
     TimeProvider clock) : IAccountDeletionService
 {
-    public async Task<AccountDeletionResult> DeleteAsync(string customerId, string password, CancellationToken cancellationToken = default)
+    public async Task<AccountDeletionResult> DeleteAsync(string customerId, string confirmation, CancellationToken cancellationToken = default)
     {
         var user = await users.FindByIdAsync(customerId)
             ?? throw new InvalidOperationException("Conta não encontrada.");
@@ -22,15 +22,25 @@ internal sealed class AccountDeletionService(
             return AccountDeletionResult.IsAdmin;
         }
 
-        var passwordCheck = await signIn.CheckPasswordSignInAsync(user, password, lockoutOnFailure: true);
-        if (passwordCheck.IsLockedOut)
+        if (await users.HasPasswordAsync(user))
         {
-            return AccountDeletionResult.LockedOut;
-        }
+            var passwordCheck = await signIn.CheckPasswordSignInAsync(user, confirmation, lockoutOnFailure: true);
+            if (passwordCheck.IsLockedOut)
+            {
+                return AccountDeletionResult.LockedOut;
+            }
 
-        if (!passwordCheck.Succeeded)
+            if (!passwordCheck.Succeeded)
+            {
+                return AccountDeletionResult.WrongPassword;
+            }
+        }
+        else
         {
-            return AccountDeletionResult.WrongPassword;
+            if (!string.Equals(confirmation.Trim(), user.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                return AccountDeletionResult.WrongEmail;
+            }
         }
 
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);

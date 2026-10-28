@@ -8,5 +8,9 @@ public interface IAccountService
 
     Task<ExternalLoginResult> SignInWithExternalLoginAsync(CancellationToken cancellationToken = default);
 
+    Task<LinkExternalLoginResult> LinkExternalLoginAsync(string customerId, CancellationToken cancellationToken = default);
+
+    Task<AccountSummary> GetSummaryAsync(string customerId, CancellationToken cancellationToken = default);
+
     Task SignOutAsync(CancellationToken cancellationToken = default);
 }

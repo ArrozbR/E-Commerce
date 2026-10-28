@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -53,5 +53,26 @@
   </data>
   <data name="Excluir a conta? Esta ação não pode ser desfeita." xml:space="preserve">
     <value>Delete your account? This cannot be undone.</value>
+  </data>
+  <data name="Entrar com o Google" xml:space="preserve">
+    <value>Sign in with Google</value>
+  </data>
+  <data name="Contas de administrador entram só com a senha." xml:space="preserve">
+    <value>Administrator accounts sign in with a password only.</value>
+  </data>
+  <data name="Sua conta está conectada ao Google." xml:space="preserve">
+    <value>Your account is connected to Google.</value>
+  </data>
+  <data name="Conecte a sua conta Google para entrar sem digitar a senha. O e-mail do Google precisa ser o mesmo desta conta." xml:space="preserve">
+    <value>Connect your Google account to sign in without typing your password. The Google e-mail must be the same as this account.</value>
+  </data>
+  <data name="Conectar o Google" xml:space="preserve">
+    <value>Connect Google</value>
+  </data>
+  <data name="Senha atual" xml:space="preserve">
+    <value>Current password</value>
+  </data>
+  <data name="Para confirmar, digite o e-mail desta conta" xml:space="preserve">
+    <value>To confirm, type the e-mail of this account</value>
   </data>
 </root>
