@@ -249,4 +249,13 @@
   <data name="Dados inválidos." xml:space="preserve">
     <value>Invalid data.</value>
   </data>
+  <data name="Já existe uma conta com este e-mail. Entre com a senha e conecte o Google em Minha conta." xml:space="preserve">
+    <value>An account with this e-mail already exists. Sign in with your password and connect Google in My account.</value>
+  </data>
+  <data name="Contas de administrador entram só com a senha." xml:space="preserve">
+    <value>Administrator accounts sign in with a password only.</value>
+  </data>
+  <data name="Não foi possível entrar com o Google. Tente de novo." xml:space="preserve">
+    <value>Could not sign in with Google. Please try again.</value>
+  </data>
 </root>

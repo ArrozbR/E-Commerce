@@ -6,5 +6,7 @@ public interface IAccountService
 
     Task<AccountResult> SignInAsync(string email, string password, CancellationToken cancellationToken = default);
 
+    Task<ExternalLoginResult> SignInWithExternalLoginAsync(CancellationToken cancellationToken = default);
+
     Task SignOutAsync(CancellationToken cancellationToken = default);
 }

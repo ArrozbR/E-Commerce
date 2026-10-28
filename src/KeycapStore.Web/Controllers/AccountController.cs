@@ -5,6 +5,7 @@ using KeycapStore.Application.Orders;
 using KeycapStore.Web.Localization;
 using KeycapStore.Web.Models;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -68,6 +69,34 @@ public sealed class AccountController(
         }
 
         return RedirectToAction("Index", "Catalog");
+    }
+
+    [HttpPost]
+    public IActionResult ExternalLogin()
+    {
+        var properties = new AuthenticationProperties { RedirectUri = Url.Action(nameof(ExternalLoginCallback)) };
+        properties.Items["LoginProvider"] = ExternalProviders.Google;
+
+        return Challenge(properties, ExternalProviders.Google);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExternalLoginCallback(CancellationToken cancellationToken)
+    {
+        var result = await accounts.SignInWithExternalLoginAsync(cancellationToken);
+        if (result == ExternalLoginResult.SignedIn)
+        {
+            return RedirectToAction("Index", "Catalog");
+        }
+
+        ModelState.AddModelError(string.Empty, text[result switch
+        {
+            ExternalLoginResult.EmailAlreadyRegistered => "Já existe uma conta com este e-mail. Entre com a senha e conecte o Google em Minha conta.",
+            ExternalLoginResult.AdminNotAllowed => "Contas de administrador entram só com a senha.",
+            _ => "Não foi possível entrar com o Google. Tente de novo.",
+        }].Value);
+
+        return View(nameof(Login), new LoginViewModel());
     }
 
     [HttpPost]

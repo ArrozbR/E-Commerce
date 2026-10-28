@@ -34,8 +34,9 @@ builder.Services.AddControllersWithViews(options =>
         options.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource)));
 builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
-    .AddIdentityCookies();
+var authentication = builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme);
+authentication.AddIdentityCookies();
+authentication.AddGoogleLogin(builder.Configuration);
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
