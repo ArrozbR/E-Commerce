@@ -1,6 +1,7 @@
-@model DeleteAccountViewModel
+﻿@model DeleteAccountViewModel
 @{
     ViewData["Title"] = Localizer["Minha conta"].Value;
+    var account = (KeycapStore.Application.Identity.AccountSummary)ViewData["Account"]!;
 }
 
 <h1>@Localizer["Minha conta"]</h1>
@@ -9,6 +10,10 @@
 @if (TempData["Message"] is string message)
 {
     <div class="alert alert-success">@message</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
 }
 
 <h2 class="h4 mt-4">@Localizer["Endereço salvo"]</h2>
@@ -32,6 +37,23 @@ else
     <a asp-action="Address" class="btn btn-outline-primary">@Localizer["Cadastrar endereço"]</a>
 }
 
+<h2 class="h4 mt-4">@Localizer["Entrar com o Google"]</h2>
+@if (account.IsAdmin)
+{
+    <p class="text-muted">@Localizer["Contas de administrador entram só com a senha."]</p>
+}
+else if (account.HasGoogle)
+{
+    <p>@Localizer["Sua conta está conectada ao Google."]</p>
+}
+else
+{
+    <p class="text-muted">@Localizer["Conecte a sua conta Google para entrar sem digitar a senha. O e-mail do Google precisa ser o mesmo desta conta."]</p>
+    <form asp-action="LinkGoogle" method="post">
+        <button type="submit" class="btn btn-outline-dark">@Localizer["Conectar o Google"]</button>
+    </form>
+}
+
 <h2 class="h4 mt-4">@Localizer["Excluir minha conta"]</h2>
 <div class="row">
     <div class="col-md-7">
@@ -47,9 +69,17 @@ else
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="mb-3">
-                <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control" autocomplete="current-password" />
-                <span asp-validation-for="Password" class="text-danger"></span>
+                @if (account.HasPassword)
+                {
+                    <label for="Confirmation" class="form-label">@Localizer["Senha atual"]</label>
+                    <input asp-for="Confirmation" type="password" class="form-control" autocomplete="current-password" />
+                }
+                else
+                {
+                    <label for="Confirmation" class="form-label">@Localizer["Para confirmar, digite o e-mail desta conta"]</label>
+                    <input asp-for="Confirmation" type="email" class="form-control" autocomplete="off" />
+                }
+                <span asp-validation-for="Confirmation" class="text-danger"></span>
             </div>
 
             <button type="submit" class="btn btn-danger">@Localizer["Excluir minha conta"]</button>

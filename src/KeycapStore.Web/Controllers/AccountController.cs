@@ -5,6 +5,7 @@ using KeycapStore.Application.Orders;
 using KeycapStore.Web.Localization;
 using KeycapStore.Web.Models;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -71,6 +72,34 @@ public sealed class AccountController(
     }
 
     [HttpPost]
+    public IActionResult ExternalLogin()
+    {
+        var properties = new AuthenticationProperties { RedirectUri = Url.Action(nameof(ExternalLoginCallback)) };
+        properties.Items["LoginProvider"] = ExternalProviders.Google;
+
+        return Challenge(properties, ExternalProviders.Google);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExternalLoginCallback(CancellationToken cancellationToken)
+    {
+        var result = await accounts.SignInWithExternalLoginAsync(cancellationToken);
+        if (result == ExternalLoginResult.SignedIn)
+        {
+            return RedirectToAction("Index", "Catalog");
+        }
+
+        ModelState.AddModelError(string.Empty, text[result switch
+        {
+            ExternalLoginResult.EmailAlreadyRegistered => "Já existe uma conta com este e-mail. Entre com a senha e conecte o Google em Minha conta.",
+            ExternalLoginResult.AdminNotAllowed => "Contas de administrador entram só com a senha.",
+            _ => "Não foi possível entrar com o Google. Tente de novo.",
+        }].Value);
+
+        return View(nameof(Login), new LoginViewModel());
+    }
+
+    [HttpPost]
     public async Task<IActionResult> Logout(CancellationToken cancellationToken)
     {
         await accounts.SignOutAsync(cancellationToken);
@@ -82,7 +111,7 @@ public sealed class AccountController(
     [HttpGet]
     public async Task<IActionResult> Delete(CancellationToken cancellationToken)
     {
-        await LoadSavedAddressAsync(cancellationToken);
+        await LoadAccountPageAsync(cancellationToken);
         return View();
     }
 
@@ -92,12 +121,12 @@ public sealed class AccountController(
     {
         if (!ModelState.IsValid)
         {
-            await LoadSavedAddressAsync(cancellationToken);
+            await LoadAccountPageAsync(cancellationToken);
             return View(model);
         }
 
         var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var result = await deletions.DeleteAsync(customerId, model.Password, cancellationToken);
+        var result = await deletions.DeleteAsync(customerId, model.Confirmation, cancellationToken);
 
         if (result == AccountDeletionResult.Deleted)
         {
@@ -108,13 +137,14 @@ public sealed class AccountController(
         ModelState.AddModelError(string.Empty, text[result switch
         {
             AccountDeletionResult.WrongPassword => "Senha incorreta.",
+            AccountDeletionResult.WrongEmail => "O e-mail digitado não é o desta conta.",
             AccountDeletionResult.LockedOut => "Muitas tentativas erradas. Tente de novo em alguns minutos.",
             AccountDeletionResult.IsAdmin => "Contas de administrador não podem ser excluídas por esta página.",
             AccountDeletionResult.HasOpenOrders => "Você tem pedidos em andamento. A conta pode ser excluída quando todos estiverem finalizados, inclusive os 7 dias para desistir depois da entrega.",
             _ => "Não foi possível excluir a conta.",
         }].Value);
 
-        await LoadSavedAddressAsync(cancellationToken);
+        await LoadAccountPageAsync(cancellationToken);
         return View(model);
     }
 
@@ -153,6 +183,42 @@ public sealed class AccountController(
 
     [Authorize]
     [HttpPost]
+    public IActionResult LinkGoogle()
+    {
+        var properties = new AuthenticationProperties { RedirectUri = Url.Action(nameof(LinkGoogleCallback)) };
+        properties.Items["LoginProvider"] = ExternalProviders.Google;
+        properties.Items["XsrfId"] = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        return Challenge(properties, ExternalProviders.Google);
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> LinkGoogleCallback(CancellationToken cancellationToken)
+    {
+        var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await accounts.LinkExternalLoginAsync(customerId, cancellationToken);
+
+        if (result == LinkExternalLoginResult.Linked)
+        {
+            TempData["Message"] = text["Conta Google conectada. Agora você também pode entrar com o Google."].Value;
+        }
+        else
+        {
+            TempData["Error"] = text[result switch
+            {
+                LinkExternalLoginResult.AdminNotAllowed => "Contas de administrador entram só com a senha.",
+                LinkExternalLoginResult.DifferentEmail => "O e-mail da conta Google precisa ser o mesmo desta conta.",
+                LinkExternalLoginResult.LinkedToAnotherAccount => "Esta conta Google já está conectada a outra conta da loja.",
+                _ => "Não foi possível conectar o Google. Tente de novo.",
+            }].Value;
+        }
+
+        return RedirectToAction(nameof(Delete));
+    }
+
+    [Authorize]
+    [HttpPost]
     public async Task<IActionResult> RemoveSavedAddress(CancellationToken cancellationToken)
     {
         var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -165,9 +231,10 @@ public sealed class AccountController(
     [HttpGet]
     public IActionResult Deleted() => View();
 
-    private async Task LoadSavedAddressAsync(CancellationToken cancellationToken)
+    private async Task LoadAccountPageAsync(CancellationToken cancellationToken)
     {
         var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         ViewData["SavedAddress"] = await savedAddresses.GetAsync(customerId, cancellationToken);
+        ViewData["Account"] = await accounts.GetSummaryAsync(customerId, cancellationToken);
     }
 }

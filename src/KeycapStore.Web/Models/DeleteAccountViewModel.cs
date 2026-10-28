@@ -4,8 +4,6 @@ namespace KeycapStore.Web.Models;
 
 public sealed class DeleteAccountViewModel
 {
-    [Required(ErrorMessage = "Informe a senha.")]
-    [DataType(DataType.Password)]
-    [Display(Name = "Senha atual")]
-    public string Password { get; set; } = string.Empty;
+    [Required(ErrorMessage = "Preencha a confirmação.")]
+    public string Confirmation { get; set; } = string.Empty;
 }

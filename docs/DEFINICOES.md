@@ -51,7 +51,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 | Variações de produto (SKU) | fora | Cada kit é um produto próprio, como no mercado real. |
 | Boleto | fora | É lento, raramente é pago e prende estoque por dias. |
 | Endereços salvos na conta | ~~futuro~~ **v2** (ADR 0025; ADR 0035: um por cliente; ADR 0036: também pela "Minha conta") | Conveniência, não essencial. Só preenche o checkout; o pedido guarda a própria cópia. |
-| Login externo (Google etc.) | ~~futuro~~ **v2** (ADR 0025) | Dependência externa sem ganho de aprendizado na v1. |
+| Login externo (Google etc.) | ~~futuro~~ **v2** (ADR 0025; ADR 0039: só Google, conta nova na hora, nunca junta sozinho com conta com senha, admin só com senha) | Dependência externa sem ganho de aprendizado na v1. |
 | Compra como convidado | fora | Decisão: conta obrigatória para comprar. |
 | Site em inglês (troca pt-BR/en por bandeira no menu) | **v2** (ADR 0025; ADR 0038: todas as páginas, português por padrão, formatos americanos em inglês com `R$`, Stripe no idioma do pedido) | A v1 é só em português. |
 | Reformulação visual (design, CSS, layout, identidade) | **v3** (ADR 0025) | Na v1, o foco é o backend; continua em MVC + Razor. |
@@ -283,6 +283,7 @@ O reembolso de Pix é aceito em até 90 dias depois do pagamento.
 |---|---|---|
 | E-mail, hash da senha | Identity | Conta e login |
 | Nome do destinatário, endereço | Snapshot `EnderecoEntrega` no `Pedido` | Entrega |
+| Ligação com o Google (v2, ADR 0039) | `AspNetUserLogins` (identificador da conta Google), sem token | Entrar com o Google; apagada com a conta |
 | Endereço salvo (v2, ADR 0035/0036) | Tabela própria, um por cliente | Preencher o checkout; salvo pelo checkout ou pela "Minha conta"; apagado pelo cliente ou com a conta |
 | Histórico de pedidos | `Pedido` | Execução do contrato, financeiro |
 

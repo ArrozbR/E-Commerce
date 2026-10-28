@@ -1,7 +1,9 @@
-﻿using KeycapStore.Application.Payments;
+﻿using KeycapStore.Application.Identity;
+using KeycapStore.Application.Payments;
 using KeycapStore.Infrastructure;
 using KeycapStore.Infrastructure.Orders;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +27,8 @@ public sealed class PostgresFixture : IAsyncLifetime
         builder.UseSetting("ConnectionStrings:Default", Container.GetConnectionString());
         builder.UseSetting("Stripe:SecretKey", "sk_test_fake_key_for_tests");
         builder.UseSetting("Stripe:WebhookSecret", StripeWebhookSigner.TestSecret);
+        builder.UseSetting("Authentication:Google:ClientId", "cliente-de-teste.apps.googleusercontent.com");
+        builder.UseSetting("Authentication:Google:ClientSecret", "segredo-de-teste");
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<IPaymentGateway>(new FakePaymentGateway());
@@ -35,6 +39,19 @@ public sealed class PostgresFixture : IAsyncLifetime
     public async Task<WebApplicationFactory<Program>> CreateMigratedFactoryAsync()
     {
         var factory = CreateFactory();
+        await factory.Services.MigrateDatabaseAsync();
+        return factory;
+    }
+
+    public async Task<WebApplicationFactory<Program>> CreateMigratedFactoryAsync(FakeGoogleAccount google)
+    {
+        var factory = CreateFactory()
+            .WithWebHostBuilder(builder => builder.ConfigureTestServices(services =>
+            {
+                services.AddSingleton(google);
+                services.PostConfigure<AuthenticationOptions>(options =>
+                    options.SchemeMap[ExternalProviders.Google].HandlerType = typeof(FakeGoogleHandler));
+            }));
         await factory.Services.MigrateDatabaseAsync();
         return factory;
     }

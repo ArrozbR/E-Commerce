@@ -249,4 +249,31 @@
   <data name="Dados inválidos." xml:space="preserve">
     <value>Invalid data.</value>
   </data>
+  <data name="Já existe uma conta com este e-mail. Entre com a senha e conecte o Google em Minha conta." xml:space="preserve">
+    <value>An account with this e-mail already exists. Sign in with your password and connect Google in My account.</value>
+  </data>
+  <data name="Contas de administrador entram só com a senha." xml:space="preserve">
+    <value>Administrator accounts sign in with a password only.</value>
+  </data>
+  <data name="Não foi possível entrar com o Google. Tente de novo." xml:space="preserve">
+    <value>Could not sign in with Google. Please try again.</value>
+  </data>
+  <data name="Preencha a confirmação." xml:space="preserve">
+    <value>Fill in the confirmation.</value>
+  </data>
+  <data name="O e-mail digitado não é o desta conta." xml:space="preserve">
+    <value>The e-mail you typed is not the one of this account.</value>
+  </data>
+  <data name="Conta Google conectada. Agora você também pode entrar com o Google." xml:space="preserve">
+    <value>Google account connected. You can now also sign in with Google.</value>
+  </data>
+  <data name="O e-mail da conta Google precisa ser o mesmo desta conta." xml:space="preserve">
+    <value>The Google account e-mail must be the same as this account.</value>
+  </data>
+  <data name="Esta conta Google já está conectada a outra conta da loja." xml:space="preserve">
+    <value>This Google account is already connected to another store account.</value>
+  </data>
+  <data name="Não foi possível conectar o Google. Tente de novo." xml:space="preserve">
+    <value>Could not connect Google. Please try again.</value>
+  </data>
 </root>

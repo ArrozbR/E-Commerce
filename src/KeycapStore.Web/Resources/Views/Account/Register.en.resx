@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -14,5 +14,8 @@
   </resheader>
   <data name="Criar conta" xml:space="preserve">
     <value>Create account</value>
+  </data>
+  <data name="Criar conta com o Google" xml:space="preserve">
+    <value>Sign up with Google</value>
   </data>
 </root>
