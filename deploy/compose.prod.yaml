@@ -8,6 +8,7 @@ services:
       ConnectionStrings__Default: "Host=db;Port=5432;Database=keycapstore;Username=keycapstore;Password=${POSTGRES_PASSWORD}"
       Stripe__SecretKey: ${STRIPE_SECRET_KEY:?defina STRIPE_SECRET_KEY no .env}
       Stripe__WebhookSecret: ${STRIPE_WEBHOOK_SECRET:?defina STRIPE_WEBHOOK_SECRET no .env}
+      Stripe__PublishableKey: ${STRIPE_PUBLISHABLE_KEY:?defina STRIPE_PUBLISHABLE_KEY no .env}
       Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:?defina GOOGLE_CLIENT_ID no .env}
       Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:?defina GOOGLE_CLIENT_SECRET no .env}
     depends_on:
