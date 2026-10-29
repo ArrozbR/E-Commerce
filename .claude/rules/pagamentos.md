@@ -95,12 +95,12 @@ Ordem obrigatória:
 
 ## 6. Criação da sessão do Checkout
 
-- `mode = payment`, `ui_mode = hosted_page`.
+- `mode = payment`, `ui_mode = elements` (Payment Element com a sessão do Checkout, ADR 0040; antes `hosted_page`). O `client_secret` da sessão vai **só para o dono** do pedido e nunca aparece em log; o Stripe.js é carregado direto de `js.stripe.com` com a chave publicável.
 - `line_items` em **`brl`**, montados **a partir do snapshot do pedido no servidor**. Preço vindo do cliente é ignorado.
 - `client_reference_id` = `orderId` e `metadata["order_id"]` = `orderId`.
 - `expires_at` = **criação do pedido (`Order.CreatedAt`) + 31 minutos** (ADR 0026). Nunca "agora": a nova tentativa com a mesma chave de idempotência precisa dos mesmos parâmetros, e a Stripe exige no mínimo 30 minutos.
 - `payment_method_options.pix.expires_after_seconds` = **1800**.
-- `success_url` → `/orders/{id}/return` e `cancel_url` → carrinho.
+- `return_url` → `/orders/{id}/return` (com `ui_mode = elements` não existem `success_url` nem `cancel_url`).
 - Chave de idempotência `session-{orderId}`.
 - Os meios de pagamento (cartão e Pix) são habilitados no Dashboard. Nada de lista fixa no código, exceto se o spike provar que é necessário.
 - Gravar o `StripeSessionId` no pedido logo após a criação.

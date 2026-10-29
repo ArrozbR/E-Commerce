@@ -1,6 +1,6 @@
 # 0003. Stripe Checkout hospedado na v1
 
-- **Status:** Aceito
+- **Status:** Substituído pelo ADR 0040 (Payment Element com a sessão do Checkout, v2)
 - **Data:** 2026-09-29
 - **Relacionado:** `docs/DEFINICOES.md` D07; `.claude/rules/pagamentos.md` §6
 

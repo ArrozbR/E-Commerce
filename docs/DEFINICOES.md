@@ -42,7 +42,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 | Item | Onde fica | Motivo |
 |---|---|---|
 | Cancelamento, direito de arrependimento (CDC, 7 dias) e exclusão de conta (LGPD) | **v2 (primeira parte)** | São bloqueios para produção, e não para a v1 em modo teste. A v2 reaproveita o reembolso da v1. |
-| Payment Element (formulário embutido) | ~~v3~~ **v2** (ADR 0025) | A interface do cartão não é o diferencial da v1. O Checkout hospedado já resolve PCI, 3DS e expiração. |
+| Payment Element (formulário embutido) | ~~v3~~ **v2** (ADR 0025; ADR 0040: com a sessão do Checkout, `ui_mode: elements`, na página do endereço) | A interface do cartão não é o diferencial da v1. O Checkout hospedado já resolve PCI, 3DS e expiração. |
 | Web API + SPA (React ou Angular) | ~~v4~~ **não planejado** (ADR 0025) | Não deixa o site mais bonito por si só (isso vem do design). A reformulação visual é a v3, em Razor. |
 | Interface de admin e cadastro de produtos por tela | ~~futuro~~ **v2** (ADR 0025) | Seed resolve a v1. |
 | Job de conciliação com a Stripe | ~~futuro~~ **v2** (ADR 0025; ADR 0037: pedidos parados, a cada 10 min, corrigidos pelo caminho do webhook) | O webhook é a fonte da verdade, e a conciliação é só rede de segurança. |
@@ -440,7 +440,7 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 | D04 | Catálogo público; conta obrigatória para comprar | Catálogo fechado; compra como convidado |
 | D05 | Produtos via seed; endpoints de admin só para o envio, com uma página mínima de envio (ADR 0028) (na v1; tela de admin com cadastro de produtos na v2, ADR 0025 e ADR 0034: estoque por ajuste atômico, produto ativo/inativo) | Interface de admin completa na v1 |
 | D06 | ~~Frete fixo~~ Frete por estado (ADR 0024); endereço como snapshot no pedido (o endereço salvo da v2 só preenche o checkout, ADR 0035) | Integração com Correios ou Melhor Envio |
-| D07 | Stripe Checkout hospedado (Payment Element na ~~v3~~ v2, ADR 0025) | Payment Element na v1 |
+| D07 | ~~Stripe Checkout hospedado~~ Payment Element com a sessão do Checkout (`ui_mode: elements`, ADR 0040, v2) | Payment Element na v1 |
 | D08 | Cartão + Pix; o handler decide pelo `payment_status` | Boleto |
 | D09 | Webhook assinado como fonte da verdade; a página de retorno só consulta o backend | Confiar no redirecionamento; polling na Stripe como fonte principal |
 | D10 | Idempotência pelo ID do evento (UNIQUE) + estado do pedido | Heurística por "pedido parecido" |
