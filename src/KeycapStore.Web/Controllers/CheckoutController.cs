@@ -17,6 +17,7 @@ namespace KeycapStore.Web.Controllers;
 public sealed class CheckoutController(
     ICheckoutService checkout,
     ISavedAddressService savedAddresses,
+    IOrderQueries orders,
     IStringLocalizer<SharedResource> text) : Controller
 {
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -60,17 +61,29 @@ public sealed class CheckoutController(
         }
 
         var orderId = result.OrderId!.Value;
-        var successUrl = new Uri(Url.Action("Return", "Orders", new { id = orderId }, Request.Scheme)!);
-        var cancelUrl = new Uri(Url.Action("Index", "Cart", null, Request.Scheme)!);
+        var returnUrl = new Uri(Url.Action("Return", "Orders", new { id = orderId }, Request.Scheme)!);
 
-        var payment = await checkout.StartPaymentAsync(orderId, CustomerId, successUrl, cancelUrl, cancellationToken);
+        var payment = await checkout.StartPaymentAsync(orderId, CustomerId, User.Identity!.Name!, returnUrl, cancellationToken);
 
         if (!payment.Succeeded)
         {
             return RedirectToAction("Details", "Orders", new { id = orderId });
         }
 
-        return Redirect(payment.PaymentUrl!.ToString());
+        return RedirectToAction(nameof(Pay), new { id = orderId });
+    }
+
+    [HttpGet("Checkout/Pay/{id:guid}")]
+    public async Task<IActionResult> Pay(Guid id, CancellationToken cancellationToken)
+    {
+        var form = await checkout.GetPaymentFormAsync(id, CustomerId, cancellationToken);
+        var order = await orders.GetForCustomerAsync(id, CustomerId, cancellationToken);
+        if (form is null || order is null)
+        {
+            return RedirectToAction("Details", "Orders", new { id });
+        }
+
+        return View(new PaymentPageViewModel(order, form));
     }
 
     private string FailureMessage(PlaceOrderResult result) => (result.Failure switch

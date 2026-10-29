@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Pagamento" xml:space="preserve">
+    <value>Payment</value>
+  </data>
+  <data name="Endereço de entrega e pagamento" xml:space="preserve">
+    <value>Shipping address and payment</value>
+  </data>
+  <data name="Entrega" xml:space="preserve">
+    <value>Delivery</value>
+  </data>
+  <data name="CEP {0}" xml:space="preserve">
+    <value>Postal code {0}</value>
+  </data>
+  <data name="Frete" xml:space="preserve">
+    <value>Shipping</value>
+  </data>
+  <data name="Grátis" xml:space="preserve">
+    <value>Free</value>
+  </data>
+  <data name="Total: {0}" xml:space="preserve">
+    <value>Total: {0}</value>
+  </data>
+  <data name="O pedido fica reservado por 30 minutos. Depois disso, o estoque volta à loja e o pagamento não é mais aceito." xml:space="preserve">
+    <value>Your order is reserved for 30 minutes. After that, the stock goes back to the store and the payment is no longer accepted.</value>
+  </data>
+  <data name="Pagar {0}" xml:space="preserve">
+    <value>Pay {0}</value>
+  </data>
+  <data name="O formulário de pagamento precisa de JavaScript." xml:space="preserve">
+    <value>The payment form needs JavaScript.</value>
+  </data>
+  <data name="Não foi possível carregar o formulário de pagamento. Recarregue a página para tentar de novo." xml:space="preserve">
+    <value>Could not load the payment form. Reload the page to try again.</value>
+  </data>
+</root>

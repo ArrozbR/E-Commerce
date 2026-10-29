@@ -83,7 +83,7 @@ public class CheckoutPageTests(PostgresFixture postgres) : IClassFixture<Postgre
     }
 
     [Fact]
-    public async Task Checkout_WithValidAddress_SendsTheCustomerToStripe_AndEmptiesTheCart()
+    public async Task Checkout_WithValidAddress_GoesToThePaymentStep_AndEmptiesTheCart()
     {
         var stripe = new FakePaymentGateway();
         await using var factory = await postgres.CreateMigratedFactoryAsync(stripe);
@@ -93,7 +93,7 @@ public class CheckoutPageTests(PostgresFixture postgres) : IClassFixture<Postgre
         var response = await PostAddressAsync(client, "80020-310");
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.Equal($"https://checkout.stripe.test/{stripe.RequestedOrders.Single():N}", response.Headers.Location?.OriginalString);
+        Assert.Equal($"/Checkout/Pay/{stripe.RequestedOrders.Single()}", response.Headers.Location?.OriginalString);
         Assert.Contains("Seu carrinho está vazio.", WebUtility.HtmlDecode(await client.GetStringAsync("/Cart")));
     }
 

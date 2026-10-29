@@ -13,4 +13,8 @@ public sealed class StripeOptions
     [Required(ErrorMessage = "Falta a configuração 'Stripe:WebhookSecret' (segredo do webhook da Stripe).")]
     [RegularExpression(@"^whsec_\S+$", ErrorMessage = "'Stripe:WebhookSecret' não parece um segredo de webhook da Stripe (deve começar com whsec_).")]
     public string WebhookSecret { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Falta a configuração 'Stripe:PublishableKey' (chave publicável da Stripe).")]
+    [RegularExpression(@"^pk_(test|live)_\S+$", ErrorMessage = "'Stripe:PublishableKey' não parece uma chave publicável da Stripe (deve começar com pk_test_ ou pk_live_).")]
+    public string PublishableKey { get; set; } = string.Empty;
 }

@@ -33,6 +33,19 @@ public class StripeOptionsTests(PostgresFixture postgres) : IClassFixture<Postgr
         Assert.Contains("Stripe:WebhookSecret", error.Message);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("sk_test_chave_secreta_no_lugar_da_publicavel")]
+    public async Task App_WithoutAValidPublishableKey_RefusesToStart(string publishableKey)
+    {
+        await using var factory = postgres.CreateFactory()
+            .WithWebHostBuilder(builder => builder.UseSetting("Stripe:PublishableKey", publishableKey));
+
+        var error = Assert.Throws<OptionsValidationException>(() => factory.CreateClient());
+
+        Assert.Contains("Stripe:PublishableKey", error.Message);
+    }
+
     [Fact]
     public async Task App_WithASecretKey_Starts()
     {

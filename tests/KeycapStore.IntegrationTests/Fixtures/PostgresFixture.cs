@@ -27,6 +27,7 @@ public sealed class PostgresFixture : IAsyncLifetime
         builder.UseSetting("ConnectionStrings:Default", Container.GetConnectionString());
         builder.UseSetting("Stripe:SecretKey", "sk_test_fake_key_for_tests");
         builder.UseSetting("Stripe:WebhookSecret", StripeWebhookSigner.TestSecret);
+        builder.UseSetting("Stripe:PublishableKey", "pk_test_chave_publicavel_de_teste");
         builder.UseSetting("Authentication:Google:ClientId", "cliente-de-teste.apps.googleusercontent.com");
         builder.UseSetting("Authentication:Google:ClientSecret", "segredo-de-teste");
         builder.ConfigureTestServices(services =>

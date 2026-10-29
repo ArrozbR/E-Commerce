@@ -12,16 +12,16 @@ internal sealed class StripePaymentGateway(IOptions<StripeOptions> options) : IP
 {
     private readonly StripeClient _client = new(options.Value.SecretKey);
 
-    public async Task<CheckoutSession> CreateCheckoutSessionAsync(Order order, Uri successUrl, Uri cancelUrl, CancellationToken cancellationToken = default)
+    public async Task<CheckoutSession> CreateCheckoutSessionAsync(Order order, string customerEmail, Uri returnUrl, CancellationToken cancellationToken = default)
     {
         try
         {
             var session = await new SessionService(_client).CreateAsync(
-                StripeCheckoutSessionFactory.BuildOptions(order, successUrl, cancelUrl),
+                StripeCheckoutSessionFactory.BuildOptions(order, customerEmail, returnUrl),
                 StripeCheckoutSessionFactory.BuildRequestOptions(order),
                 cancellationToken);
 
-            return new CheckoutSession(session.Id, new Uri(session.Url));
+            return new CheckoutSession(session.Id, session.ClientSecret);
         }
         catch (StripeException ex)
         {
