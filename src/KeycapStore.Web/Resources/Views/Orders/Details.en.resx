@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -80,5 +80,11 @@
   </data>
   <data name="O valor é devolvido automaticamente em alguns minutos; depois, devolva o produto à loja." xml:space="preserve">
     <value>The amount is refunded automatically within minutes; then return the product to the store.</value>
+  </data>
+  <data name="Continuar o pagamento" xml:space="preserve">
+    <value>Continue payment</value>
+  </data>
+  <data name="O pedido fica reservado por 30 minutos depois de criado. Depois disso, ele expira e o estoque volta à loja." xml:space="preserve">
+    <value>The order is reserved for 30 minutes after it is placed. After that, it expires and the stock goes back to the store.</value>
   </data>
 </root>

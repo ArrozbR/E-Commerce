@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 
 using KeycapStore.Application.Payments;
 using KeycapStore.Domain.Orders;
@@ -159,5 +159,40 @@ public class PaymentPageTests(PostgresFixture postgres) : IClassFixture<Postgres
 
         Assert.Contains("Pay R$364.90", html);
         Assert.Contains("locale: \"en\"", html);
+    }
+
+    [Fact]
+    public async Task OrderAwaitingPayment_OffersToContinueThePayment()
+    {
+        var stripe = new FakePaymentGateway();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(stripe);
+        var client = await PageClient.LoggedInAsync(factory, "volta-para-pagar@example.com");
+        var orderId = await ContinueToPaymentAsync(client);
+
+        var html = WebUtility.HtmlDecode(await client.GetStringAsync($"/Orders/Details/{orderId}"));
+
+        Assert.Contains($"href=\"/Checkout/Pay/{orderId}\"", html);
+        Assert.Contains("Continuar o pagamento", html);
+    }
+
+    [Fact]
+    public async Task PaidOrder_DoesNotOfferToPayAgain()
+    {
+        var stripe = new FakePaymentGateway();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(stripe);
+        var client = await PageClient.LoggedInAsync(factory, "nao-paga-duas-vezes@example.com");
+        var orderId = await ContinueToPaymentAsync(client);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var order = await db.Orders.SingleAsync(o => o.Id == orderId);
+            order.ConfirmPayment("pi_test_pago_uma_vez");
+            await db.SaveChangesAsync();
+        }
+
+        var html = WebUtility.HtmlDecode(await client.GetStringAsync($"/Orders/Details/{orderId}"));
+
+        Assert.DoesNotContain("Continuar o pagamento", html);
+        Assert.DoesNotContain($"/Checkout/Pay/{orderId}", html);
     }
 }
