@@ -12,7 +12,7 @@ namespace KeycapStore.Infrastructure.Payments;
 internal sealed class CheckoutSessionTransitions(AppDbContext db, ILogger<CheckoutSessionTransitions> logger)
 {
     public static CheckoutSessionState StateOf(Session session) =>
-        new(session.Status, session.PaymentStatus, session.AmountTotal, session.Currency, session.PaymentIntentId);
+        new(session.Status, session.PaymentStatus, session.AmountTotal, session.Currency, session.PaymentIntentId, session.ClientSecret);
 
     public async Task ApplyPaymentAsync(string origin, Order order, CheckoutSessionState session, CancellationToken cancellationToken)
     {

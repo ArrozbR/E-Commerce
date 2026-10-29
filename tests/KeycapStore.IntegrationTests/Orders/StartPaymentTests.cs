@@ -16,8 +16,7 @@ public class StartPaymentTests(PostgresFixture postgres) : IClassFixture<Postgre
     private static readonly ShippingAddress Curitiba =
         new("Bruno Lima", "Rua XV de Novembro", "200", null, "Centro", "Curitiba", "PR", "80020310");
 
-    private static readonly Uri Success = new("https://loja.test/Orders/Details");
-    private static readonly Uri Cancel = new("https://loja.test/Cart");
+    private static readonly Uri ReturnUrl = new("https://loja.test/orders/1/return");
 
     private static async Task<(Guid OrderId, Guid ProductId)> PlaceOrderAsync(WebApplicationFactory<Program> factory, string customerId)
     {
@@ -37,11 +36,11 @@ public class StartPaymentTests(PostgresFixture postgres) : IClassFixture<Postgre
     {
         await using var scope = factory.Services.CreateAsyncScope();
         return await scope.ServiceProvider.GetRequiredService<ICheckoutService>()
-            .StartPaymentAsync(orderId, customerId, Success, Cancel);
+            .StartPaymentAsync(orderId, customerId, "cliente@example.com", ReturnUrl);
     }
 
     [Fact]
-    public async Task StartPayment_AttachesTheSession_AndReturnsThePaymentUrl()
+    public async Task StartPayment_AttachesTheSession()
     {
         var stripe = new FakePaymentGateway();
         await using var factory = await postgres.CreateMigratedFactoryAsync(stripe);
@@ -50,7 +49,7 @@ public class StartPaymentTests(PostgresFixture postgres) : IClassFixture<Postgre
         var result = await StartPaymentAsync(factory, orderId, "customer-pay");
 
         Assert.True(result.Succeeded);
-        Assert.Equal($"https://checkout.stripe.test/{orderId:N}", result.PaymentUrl!.ToString());
+        Assert.Equal((orderId, "cliente@example.com", ReturnUrl), Assert.Single(stripe.SessionRequests));
 
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

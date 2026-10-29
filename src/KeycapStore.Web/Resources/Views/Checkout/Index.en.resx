@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -21,8 +21,8 @@
   <data name="Preenchido com o endereço salvo na sua conta. Confira antes de finalizar." xml:space="preserve">
     <value>Filled in with the address saved in your account. Check it before placing the order.</value>
   </data>
-  <data name="Finalizar pedido" xml:space="preserve">
-    <value>Place order</value>
+  <data name="Continuar para o pagamento" xml:space="preserve">
+    <value>Continue to payment</value>
   </data>
   <data name="Voltar ao carrinho" xml:space="preserve">
     <value>Back to cart</value>

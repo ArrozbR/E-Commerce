@@ -1,0 +1,74 @@
+@model PaymentPageViewModel
+@{
+    ViewData["Title"] = Localizer["Pagamento"].Value;
+    var address = Model.Order.ShippingAddress;
+    var stripeLocale = Model.Form.Language == SiteCultures.English ? "en" : "pt-BR";
+}
+
+<h1>@Localizer["Endereço de entrega e pagamento"]</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <h2 class="h5 mt-3">@Localizer["Entrega"]</h2>
+        <p>
+            @address.RecipientName<br />
+            @address.Street, @address.Number@(address.Complement is null ? "" : $" - {address.Complement}")<br />
+            @address.District, @address.City - @address.State<br />
+            @Localizer["CEP {0}", address.PostalCode.Insert(5, "-")]
+        </p>
+        <p>
+            @Localizer["Frete"]: @(Model.Order.ShippingFee == 0 ? Localizer["Grátis"].Value : Display.Price(Model.Order.ShippingFee))<br />
+            <strong>@Localizer["Total: {0}", Display.Price(Model.Order.Total)]</strong>
+        </p>
+
+        <h2 class="h5 mt-4">@Localizer["Pagamento"]</h2>
+        <p class="text-muted small">@Localizer["O pedido fica reservado por 30 minutos. Depois disso, o estoque volta à loja e o pagamento não é mais aceito."]</p>
+
+        <div id="payment-element" class="mb-3"></div>
+        <button id="pay-button" type="button" class="btn btn-primary" disabled>@Localizer["Pagar {0}", Display.Price(Model.Order.Total)]</button>
+        <div id="payment-message" class="text-danger mt-2" role="alert"></div>
+        <noscript><p class="text-danger">@Localizer["O formulário de pagamento precisa de JavaScript."]</p></noscript>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://js.stripe.com/endive/stripe.js"></script>
+    <script>
+        (async function () {
+            const message = document.getElementById("payment-message");
+            const button = document.getElementById("pay-button");
+
+            if (typeof Stripe === "undefined") {
+                message.textContent = @Json.Serialize(Localizer["Não foi possível carregar o formulário de pagamento. Recarregue a página para tentar de novo."].Value);
+                return;
+            }
+
+            const stripe = Stripe(@Json.Serialize(Model.Form.PublishableKey), { locale: @Json.Serialize(stripeLocale) });
+            const checkout = stripe.initCheckoutElementsSdk({ clientSecret: @Json.Serialize(Model.Form.ClientSecret) });
+
+            checkout.on("change", (session) => {
+                button.disabled = !session.canConfirm;
+            });
+
+            checkout.createPaymentElement().mount("#payment-element");
+
+            button.addEventListener("click", async () => {
+                button.disabled = true;
+                message.textContent = "";
+
+                const loaded = await checkout.loadActions();
+                if (loaded.type !== "success") {
+                    message.textContent = loaded.error.message;
+                    button.disabled = false;
+                    return;
+                }
+
+                const result = await loaded.actions.confirm();
+                if (result.type === "error") {
+                    message.textContent = result.error.message;
+                    button.disabled = false;
+                }
+            });
+        })();
+    </script>
+}

@@ -5,4 +5,5 @@ public sealed record CheckoutSessionState(
     string? PaymentStatus,
     long? AmountTotal,
     string? Currency,
-    string? PaymentIntentId);
+    string? PaymentIntentId,
+    string? ClientSecret = null);

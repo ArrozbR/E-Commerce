@@ -45,7 +45,7 @@ public class OrderPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
     }
 
     // Compra 1 Kit Aurora para Curitiba (PR, frete R$ 15,00) e devolve o endereço da página do pedido.
-    // O "Finalizar" leva para a Stripe de mentira (https://checkout.stripe.test/{id do pedido}):
+    // O "Continuar para o pagamento" leva para /Checkout/Pay/{id do pedido}:
     // o id do pedido é o último pedaço desse endereço.
     private static async Task<string> PlaceOrderAsync(HttpClient client)
     {
@@ -70,7 +70,7 @@ public class OrderPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
         }));
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
 
-        var orderId = Guid.Parse(response.Headers.Location!.Segments[^1]);
+        var orderId = Guid.Parse(response.Headers.Location!.OriginalString.Split('/')[^1]);
         return $"/Orders/Details/{orderId}";
     }
 

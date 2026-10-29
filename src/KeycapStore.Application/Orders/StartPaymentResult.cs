@@ -1,10 +1,10 @@
-﻿namespace KeycapStore.Application.Orders;
+namespace KeycapStore.Application.Orders;
 
-public sealed record StartPaymentResult(Uri? PaymentUrl, string? Error)
+public sealed record StartPaymentResult(bool Succeeded, string? Error)
 {
-    public bool Succeeded => PaymentUrl is not null;
+    public static StartPaymentResult Success() => new(true, null);
 
-    public static StartPaymentResult Success(Uri paymentUrl) => new(paymentUrl, null);
-
-    public static StartPaymentResult Failure(string error) => new(null, error);
+    public static StartPaymentResult Failure(string error) => new(false, error);
 }
+
+public sealed record PaymentForm(Guid OrderId, string ClientSecret, string PublishableKey, string Language);

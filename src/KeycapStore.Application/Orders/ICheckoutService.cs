@@ -10,5 +10,7 @@ public interface ICheckoutService
         string language = Order.DefaultLanguage,
         CancellationToken cancellationToken = default);
 
-    Task<StartPaymentResult> StartPaymentAsync(Guid orderId, string customerId, Uri successUrl, Uri cancelUrl, CancellationToken cancellationToken = default);
+    Task<StartPaymentResult> StartPaymentAsync(Guid orderId, string customerId, string customerEmail, Uri returnUrl, CancellationToken cancellationToken = default);
+
+    Task<PaymentForm?> GetPaymentFormAsync(Guid orderId, string customerId, CancellationToken cancellationToken = default);
 }

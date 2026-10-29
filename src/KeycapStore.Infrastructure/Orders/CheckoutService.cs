@@ -1,13 +1,19 @@
 ﻿using KeycapStore.Application.Orders;
 using KeycapStore.Application.Payments;
 using KeycapStore.Domain.Orders;
+using KeycapStore.Infrastructure.Payments;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace KeycapStore.Infrastructure.Orders;
 
-internal sealed class CheckoutService(AppDbContext db, TimeProvider clock, IPaymentGateway payments) : ICheckoutService
+internal sealed class CheckoutService(
+    AppDbContext db,
+    TimeProvider clock,
+    IPaymentGateway payments,
+    IOptions<StripeOptions> stripe) : ICheckoutService
 {
     public async Task<PlaceOrderResult> PlaceOrderAsync(
         string customerId,
@@ -55,7 +61,7 @@ internal sealed class CheckoutService(AppDbContext db, TimeProvider clock, IPaym
         return PlaceOrderResult.Success(order.Id);
     }
 
-    public async Task<StartPaymentResult> StartPaymentAsync(Guid orderId, string customerId, Uri successUrl, Uri cancelUrl, CancellationToken cancellationToken = default)
+    public async Task<StartPaymentResult> StartPaymentAsync(Guid orderId, string customerId, string customerEmail, Uri returnUrl, CancellationToken cancellationToken = default)
     {
         var order = await db.Orders.SingleOrDefaultAsync(o => o.Id == orderId && o.CustomerId == customerId, cancellationToken);
         if (order is null)
@@ -66,7 +72,7 @@ internal sealed class CheckoutService(AppDbContext db, TimeProvider clock, IPaym
         CheckoutSession session;
         try
         {
-            session = await payments.CreateCheckoutSessionAsync(order, successUrl, cancelUrl, cancellationToken);
+            session = await payments.CreateCheckoutSessionAsync(order, customerEmail, returnUrl, cancellationToken);
         }
         catch (PaymentGatewayException)
         {
@@ -84,6 +90,34 @@ internal sealed class CheckoutService(AppDbContext db, TimeProvider clock, IPaym
         order.AttachStripeSession(session.Id);
         await db.SaveChangesAsync(cancellationToken);
 
-        return StartPaymentResult.Success(session.Url);
+        return StartPaymentResult.Success();
+    }
+
+    public async Task<PaymentForm?> GetPaymentFormAsync(Guid orderId, string customerId, CancellationToken cancellationToken = default)
+    {
+        var order = await db.Orders.AsNoTracking()
+            .SingleOrDefaultAsync(o => o.Id == orderId && o.CustomerId == customerId, cancellationToken);
+
+        if (order is null || order.Status is not OrderStatus.AwaitingPayment || order.StripeSessionId is null)
+        {
+            return null;
+        }
+
+        CheckoutSessionState session;
+        try
+        {
+            session = await payments.GetCheckoutSessionAsync(order.StripeSessionId!, cancellationToken);
+        }
+        catch (PaymentGatewayException)
+        {
+            return null;
+        }
+
+        if (session.ClientSecret is null || session.Status is not "open")
+        {
+            return null;
+        }
+
+        return new PaymentForm(order.Id, session.ClientSecret, stripe.Value.PublishableKey, order.Language);
     }
 }

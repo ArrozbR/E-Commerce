@@ -1,4 +1,4 @@
-@model CheckoutViewModel
+﻿@model CheckoutViewModel
 @{
     ViewData["Title"] = Localizer["Endereço de entrega"].Value;
 }
@@ -22,7 +22,7 @@
                 <label asp-for="SaveAddress" class="form-check-label"></label>
             </div>
 
-            <button type="submit" class="btn btn-primary">@Localizer["Finalizar pedido"]</button>
+            <button type="submit" class="btn btn-primary">@Localizer["Continuar para o pagamento"]</button>
             <a asp-controller="Cart" asp-action="Index" class="btn btn-link">@Localizer["Voltar ao carrinho"]</a>
         </form>
     </div>

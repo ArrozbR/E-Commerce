@@ -47,3 +47,4 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0037](0037-conciliacao-com-a-stripe.md) | Conciliação com a Stripe: pedidos parados conferidos a cada 10 minutos e corrigidos pelo mesmo caminho do webhook |
 | [0038](0038-site-em-ingles.md) | Site em inglês: todas as páginas, português por padrão, formatos americanos em inglês e a Stripe no idioma do pedido |
 | [0039](0039-login-com-google.md) | Login com Google: conta nova na hora, nunca junta sozinho com uma conta com senha, admin só com senha |
+| [0040](0040-payment-element-com-checkout-sessions.md) | Payment Element com a sessão do Checkout, na mesma página do endereço |

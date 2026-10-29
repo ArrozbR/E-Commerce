@@ -5,8 +5,7 @@ namespace KeycapStore.IntegrationTests.Payments;
 
 public class StripeCheckoutSessionFactoryTests
 {
-    private static readonly Uri Success = new("https://loja.test/Orders/Details/1");
-    private static readonly Uri Cancel = new("https://loja.test/Cart");
+    private static readonly Uri Return = new("https://loja.test/orders/1/return");
 
     private static readonly DateTimeOffset CreatedAt = new(2026, 10, 9, 15, 0, 0, TimeSpan.Zero);
 
@@ -21,7 +20,7 @@ public class StripeCheckoutSessionFactoryTests
     {
         var order = OrderTo("PR");
 
-        var options = StripeCheckoutSessionFactory.BuildOptions(order, Success, Cancel);
+        var options = StripeCheckoutSessionFactory.BuildOptions(order, "cliente@example.com", Return);
 
         Assert.All(options.LineItems, l => Assert.Equal("brl", l.PriceData.Currency));
         Assert.Equal(34990, options.LineItems[0].PriceData.UnitAmount);
@@ -34,8 +33,8 @@ public class StripeCheckoutSessionFactoryTests
     [Fact]
     public void ShippingFee_BecomesALineItem_OnlyWhenItIsNotFree()
     {
-        var paid = StripeCheckoutSessionFactory.BuildOptions(OrderTo("PR"), Success, Cancel);
-        var free = StripeCheckoutSessionFactory.BuildOptions(OrderTo("SP"), Success, Cancel);
+        var paid = StripeCheckoutSessionFactory.BuildOptions(OrderTo("PR"), "cliente@example.com", Return);
+        var free = StripeCheckoutSessionFactory.BuildOptions(OrderTo("SP"), "cliente@example.com", Return);
 
         Assert.Equal(1500, Assert.Single(paid.LineItems, l => l.PriceData.ProductData.Name == "Frete").PriceData.UnitAmount);
         Assert.DoesNotContain(free.LineItems, l => l.PriceData.ProductData.Name == "Frete");
@@ -46,15 +45,18 @@ public class StripeCheckoutSessionFactoryTests
     {
         var order = OrderTo("PR");
 
-        var options = StripeCheckoutSessionFactory.BuildOptions(order, Success, Cancel);
+        var options = StripeCheckoutSessionFactory.BuildOptions(order, "cliente@example.com", Return);
         var request = StripeCheckoutSessionFactory.BuildRequestOptions(order);
 
         Assert.Equal(order.Id.ToString(), options.ClientReferenceId);
         Assert.Equal(order.Id.ToString(), options.Metadata["order_id"]);
         Assert.Equal($"session-{order.Id}", request.IdempotencyKey);
         Assert.Equal("payment", options.Mode);
-        Assert.Equal(Success.ToString(), options.SuccessUrl);
-        Assert.Equal(Cancel.ToString(), options.CancelUrl);
+        Assert.Equal("elements", options.UiMode);
+        Assert.Equal(Return.ToString(), options.ReturnUrl);
+        Assert.Equal("cliente@example.com", options.CustomerEmail);
+        Assert.Null(options.SuccessUrl);
+        Assert.Null(options.CancelUrl);
     }
 
     [Fact]
@@ -62,8 +64,8 @@ public class StripeCheckoutSessionFactoryTests
     {
         var order = OrderTo("PR");
 
-        var first = StripeCheckoutSessionFactory.BuildOptions(order, Success, Cancel);
-        var retry = StripeCheckoutSessionFactory.BuildOptions(order, Success, Cancel);
+        var first = StripeCheckoutSessionFactory.BuildOptions(order, "cliente@example.com", Return);
+        var retry = StripeCheckoutSessionFactory.BuildOptions(order, "cliente@example.com", Return);
 
         Assert.Equal(CreatedAt.AddMinutes(31).UtcDateTime, first.ExpiresAt);
         Assert.Equal(first.ExpiresAt, retry.ExpiresAt);

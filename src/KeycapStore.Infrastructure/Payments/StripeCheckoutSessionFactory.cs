@@ -13,7 +13,7 @@ public static class StripeCheckoutSessionFactory
 
     public const string EnglishLanguage = "en-US";
 
-    public static SessionCreateOptions BuildOptions(Order order, Uri successUrl, Uri cancelUrl)
+    public static SessionCreateOptions BuildOptions(Order order, string customerEmail, Uri returnUrl)
     {
         var english = order.Language == EnglishLanguage;
 
@@ -29,7 +29,8 @@ public static class StripeCheckoutSessionFactory
         return new SessionCreateOptions
         {
             Mode = "payment",
-            UiMode = "hosted_page",
+            UiMode = "elements",
+            CustomerEmail = customerEmail,
             Locale = english ? "en" : "pt-BR",
             LineItems = lineItems,
             ClientReferenceId = order.Id.ToString(),
@@ -39,8 +40,7 @@ public static class StripeCheckoutSessionFactory
             {
                 Pix = new SessionPaymentMethodOptionsPixOptions { ExpiresAfterSeconds = PixExpiresAfterSeconds },
             },
-            SuccessUrl = successUrl.ToString(),
-            CancelUrl = cancelUrl.ToString(),
+            ReturnUrl = returnUrl.ToString(),
         };
     }
 
