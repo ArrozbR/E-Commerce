@@ -178,6 +178,7 @@ public class CheckoutPageTests(PostgresFixture postgres) : IClassFixture<Postgre
         Assert.Contains("até 7 dias", html);
         Assert.Contains("name=\"ShippingServiceId\" id=\"shipping-1\" value=\"1\"", html);
         Assert.Contains("Continuar para o pagamento", html);
+        Assert.Contains("data-val-required=\"Escolha uma opção de frete.\"", html);
         Assert.Equal("80020310", Assert.Single(shipping.Requests).PostalCode);
     }
 

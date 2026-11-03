@@ -32,7 +32,7 @@
                     @foreach (var option in Model.ShippingOptions)
                     {
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="ShippingServiceId" id="shipping-@option.ServiceId" value="@option.ServiceId" checked="@(Model.ShippingServiceId == option.ServiceId)" required />
+                            <input class="form-check-input" type="radio" name="ShippingServiceId" id="shipping-@option.ServiceId" value="@option.ServiceId" checked="@(Model.ShippingServiceId == option.ServiceId)" required data-val="true" data-val-required="@SharedLocalizer["Escolha uma opção de frete."]" />
                             <label class="form-check-label" for="shipping-@option.ServiceId">
                                 @option.Carrier @option.Service: <strong>@Display.Price(option.Price)</strong>,
                                 @(option.DeliveryDays == 1 ? SharedLocalizer["até 1 dia"] : SharedLocalizer["até {0} dias", option.DeliveryDays])
