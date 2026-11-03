@@ -14,7 +14,7 @@ Conferido na documentação oficial (03/11):
 - **Autenticação:** a documentação da API descreve só o OAuth de aplicativos (token de 30 dias, renovado por outro de 45). O **painel** da conta (Integrações → Permissões de acesso) gera **tokens pessoais**, "chaves de acesso entre a sua loja virtual e o Melhor Envio", com validade (visto pelo autor no painel do sandbox, `app-sandbox.melhorenvio.com.br`: um token chamado "Melhor Envio", **criado sozinho junto com a conta**, válido de 03/11/2026 a **03/11/2027**, ou seja, 1 ano). Esse token pessoal não aparece na documentação da API, só no painel. A validade do token que a loja gerar é conferida na hora de gerar.
 - O cadastro no sandbox **não pediu cartão** (autor, 03/11).
 
-**Não confirmado por escrito:** se o token pessoal tem os mesmos limites e permissões que o do OAuth (fica para o teste no sandbox); se alguma transportadora devolve erro por serviço dentro da resposta (a documentação não mostra o formato).
+**Visto numa cotação real no sandbox (03/11, token "KeycapStore cotacao" só com `shipping-calculate`; de 74003-010 para 01310-100, um kit de 0,8 kg, 30 × 6 × 20, R$ 349,90 de seguro):** a resposta é uma lista; cada serviço traz `custom_price` como **texto com ponto** (`"30.63"`), `custom_delivery_time` em dias, `name` (`"PAC"`, `"SEDEX"`, `".Package"`, `".Com"`) e `company.name` (`"Correios"`, `"Jadlog"`); um serviço que **não atende** vem na mesma lista **sem preço e com `error`** (`"Mini Envios"`: "Valor segurado ultrapassa o limite máximo de R$ 104,62."). O token pessoal com só essa permissão cotou normalmente.
 
 ## Decisão
 
