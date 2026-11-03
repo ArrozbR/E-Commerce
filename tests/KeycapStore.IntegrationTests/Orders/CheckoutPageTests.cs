@@ -266,4 +266,24 @@ public class CheckoutPageTests(PostgresFixture postgres) : IClassFixture<Postgre
         Assert.Contains("(Correios SEDEX, até 3 dias)", html);
         Assert.Contains("R$ 45,00", html);
     }
+
+    [Fact]
+    public async Task SwitchingLanguage_OnTheShippingStep_GoesBackToTheAddressPage()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync(new FakeShippingQuotes());
+        var client = await LoggedInClientAsync(factory, "frete-idioma@example.com");
+        await AddKitAuroraAsync(client);
+        await PostCuritibaAsync(client, "/Checkout/Shipping", null);
+
+        var language = await client.PostAsync("/Language/Set", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["culture"] = "en-US",
+            ["returnUrl"] = "/Checkout/Shipping",
+            ["__RequestVerificationToken"] = TokenFrom(await client.GetStringAsync("/Checkout")),
+        }));
+        var back = await client.GetAsync(language.Headers.Location);
+
+        Assert.Equal(HttpStatusCode.Redirect, back.StatusCode);
+        Assert.Equal("/Checkout", back.Headers.Location!.OriginalString);
+    }
 }

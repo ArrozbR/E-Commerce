@@ -38,6 +38,9 @@ public sealed class CheckoutController(
         return View(model);
     }
 
+    [HttpGet("Checkout/Shipping")]
+    public IActionResult Shipping() => RedirectToAction(nameof(Index));
+
     [HttpPost("Checkout/Shipping")]
     public async Task<IActionResult> Shipping(CheckoutViewModel model, CancellationToken cancellationToken)
     {
