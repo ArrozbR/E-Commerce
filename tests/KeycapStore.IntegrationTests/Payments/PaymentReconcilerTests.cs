@@ -20,7 +20,7 @@ public class PaymentReconcilerTests(PostgresFixture postgres) : IClassFixture<Po
     private static async Task<(Guid OrderId, Guid ProductId, string SessionId)> SaveOrderAsync(
         WebApplicationFactory<Program> factory, string name, TimeSpan age, Action<Order>? advance = null, bool withSession = true)
     {
-        var product = new Product($"Kit Conciliação {name}", 100m, 3);
+        var product = new Product($"Kit Conciliação {name}", 100m, 3, TestPackage.Standard);
         var order = new Order($"customer-{name}", DateTimeOffset.UtcNow - age, [new OrderItem(product.Id, product.Name, 100m, 2)], Curitiba);
         var sessionId = $"cs_test_{name}";
         if (withSession)

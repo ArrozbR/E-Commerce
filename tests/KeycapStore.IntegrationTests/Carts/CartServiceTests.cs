@@ -115,7 +115,7 @@ public class CartServiceTests(PostgresFixture postgres) : IClassFixture<Postgres
         await using var factory = await postgres.CreateMigratedFactoryAsync();
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var product = new KeycapStore.Domain.Catalog.Product("Kit Fora de Venda", 100m, 5);
+        var product = new KeycapStore.Domain.Catalog.Product("Kit Fora de Venda", 100m, 5, TestPackage.Standard);
         product.Deactivate();
         db.Products.Add(product);
         await db.SaveChangesAsync();
@@ -132,7 +132,7 @@ public class CartServiceTests(PostgresFixture postgres) : IClassFixture<Postgres
         await using var scope = factory.Services.CreateAsyncScope();
         var carts = scope.ServiceProvider.GetRequiredService<ICartService>();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var product = new KeycapStore.Domain.Catalog.Product("Kit Sai de Venda", 100m, 5);
+        var product = new KeycapStore.Domain.Catalog.Product("Kit Sai de Venda", 100m, 5, TestPackage.Standard);
         db.Products.Add(product);
         await db.SaveChangesAsync();
         await carts.AddItemAsync("customer-unavailable", product.Id, 1);

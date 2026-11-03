@@ -18,7 +18,7 @@ public class OrphanOrderReleaserTests(PostgresFixture postgres) : IClassFixture<
     private static async Task<(Guid OrderId, Guid ProductId)> CreateOrderAsync(
         WebApplicationFactory<Program> factory, string customerId, TimeSpan age, string? stripeSessionId = null)
     {
-        var product = new Product($"Kit Órfão {customerId}", 100m, 3);
+        var product = new Product($"Kit Órfão {customerId}", 100m, 3, TestPackage.Standard);
         var order = new Order(customerId, DateTimeOffset.UtcNow - age, [new OrderItem(product.Id, product.Name, product.Price, 2)], Curitiba);
         if (stripeSessionId is not null)
         {

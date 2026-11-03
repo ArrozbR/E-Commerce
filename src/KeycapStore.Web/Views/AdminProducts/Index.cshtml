@@ -17,7 +17,7 @@
 
 <h2 class="h5 mt-4">@Localizer["Novo produto"]</h2>
 <form asp-action="Create" method="post" class="row g-2 align-items-end mb-4">
-    <div class="col-md-5">
+    <div class="col-md-4">
         <label for="new-name" class="form-label">@Localizer["Nome"]</label>
         <input id="new-name" name="Name" class="form-control" maxlength="@KeycapStore.Domain.Catalog.Product.MaxNameLength" required />
     </div>
@@ -29,7 +29,19 @@
         <label for="new-stock" class="form-label">@Localizer["Estoque inicial"]</label>
         <input id="new-stock" name="Stock" type="number" min="0" max="@AdminLimits.MaxStockChange" value="0" class="form-control" required />
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
+        <label for="new-weight" class="form-label">@Localizer["Peso (kg)"]</label>
+        <input id="new-weight" name="Weight" class="form-control" placeholder="@ProductFormViewModel.FormatWeight(0.8m)" inputmode="decimal" required />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">@Localizer["Medidas da caixa (cm)"]</label>
+        <div class="d-flex gap-1">
+            <input name="WidthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control" placeholder="@Localizer["Largura"]" aria-label="@Localizer["Largura"]" required />
+            <input name="HeightCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control" placeholder="@Localizer["Altura"]" aria-label="@Localizer["Altura"]" required />
+            <input name="LengthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control" placeholder="@Localizer["Comprimento"]" aria-label="@Localizer["Comprimento"]" required />
+        </div>
+    </div>
+    <div class="col-12">
         <button type="submit" class="btn btn-primary">@Localizer["Criar produto"]</button>
     </div>
 </form>
@@ -37,7 +49,7 @@
 <table class="table align-middle">
     <thead>
         <tr>
-            <th>@Localizer["Nome e preço"]</th>
+            <th>@Localizer["Nome, preço, peso (kg) e medidas (L × A × C, cm)"]</th>
             <th class="text-end">@Localizer["Estoque"]</th>
             <th>@Localizer["Ajustar estoque"]</th>
             <th>@Localizer["Situação"]</th>
@@ -48,9 +60,13 @@
         {
             <tr class="@(product.IsActive ? "" : "table-secondary")">
                 <td>
-                    <form asp-action="Edit" asp-route-id="@product.Id" method="post" class="d-flex gap-1">
+                    <form asp-action="Edit" asp-route-id="@product.Id" method="post" class="d-flex flex-wrap gap-1">
                         <input name="Name" value="@product.Name" class="form-control form-control-sm" maxlength="@KeycapStore.Domain.Catalog.Product.MaxNameLength" required />
-                        <input name="Price" value="@ProductFormViewModel.FormatPrice(product.Price)" class="form-control form-control-sm" style="max-width: 7rem" inputmode="decimal" required />
+                        <input name="Price" value="@ProductFormViewModel.FormatPrice(product.Price)" class="form-control form-control-sm" style="max-width: 7rem" inputmode="decimal" aria-label="@Localizer["Preço (R$)"]" required />
+                        <input name="Weight" value="@ProductFormViewModel.FormatWeight(product.WeightKg)" class="form-control form-control-sm" style="max-width: 5rem" inputmode="decimal" aria-label="@Localizer["Peso (kg)"]" required />
+                        <input name="WidthCm" value="@product.WidthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control form-control-sm" style="max-width: 4.5rem" aria-label="@Localizer["Largura"]" required />
+                        <input name="HeightCm" value="@product.HeightCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control form-control-sm" style="max-width: 4.5rem" aria-label="@Localizer["Altura"]" required />
+                        <input name="LengthCm" value="@product.LengthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control form-control-sm" style="max-width: 4.5rem" aria-label="@Localizer["Comprimento"]" required />
                         <button type="submit" class="btn btn-sm btn-outline-primary">@Localizer["Salvar"]</button>
                     </form>
                 </td>

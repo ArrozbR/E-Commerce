@@ -2,6 +2,7 @@
 
 using KeycapStore.Application.Catalog;
 using KeycapStore.Application.Identity;
+using KeycapStore.Domain.Catalog;
 using KeycapStore.Web.Filters;
 using KeycapStore.Web.Localization;
 using KeycapStore.Web.Models;
@@ -38,7 +39,12 @@ public sealed class AdminProductsController(IProductAdminService products, IStri
             return BackWithError(text["Preço inválido: use {0} para os centavos (ex.: {1}), sem {2}, maior que zero.", text["vírgula"], ProductFormViewModel.FormatPrice(199.90m), text["ponto"]].Value);
         }
 
-        await products.CreateAsync(model.Name.Trim(), price, model.Stock, cancellationToken);
+        if (!model.TryGetPackage(out var package))
+        {
+            return BackWithError(WeightError());
+        }
+
+        await products.CreateAsync(model.Name.Trim(), price, model.Stock, package!, cancellationToken);
 
         return BackWithMessage(text["Produto \"{0}\" criado.", model.Name.Trim()].Value);
     }
@@ -56,7 +62,12 @@ public sealed class AdminProductsController(IProductAdminService products, IStri
             return BackWithError(text["Preço inválido: use {0} para os centavos (ex.: {1}), sem {2}, maior que zero.", text["vírgula"], ProductFormViewModel.FormatPrice(199.90m), text["ponto"]].Value);
         }
 
-        await products.UpdateAsync(id, model.Name.Trim(), price, cancellationToken);
+        if (!model.TryGetPackage(out var package))
+        {
+            return BackWithError(WeightError());
+        }
+
+        await products.UpdateAsync(id, model.Name.Trim(), price, package!, cancellationToken);
 
         return BackWithMessage(text["Produto \"{0}\" atualizado.", model.Name.Trim()].Value);
     }
@@ -91,6 +102,9 @@ public sealed class AdminProductsController(IProductAdminService products, IStri
 
         return BackWithMessage(text["Produto tirado de venda."].Value);
     }
+
+    private string WeightError() =>
+        text["Peso inválido: em kg, use {0} para as casas decimais (ex.: {1}), maior que zero e até {2} kg.", text["vírgula"], ProductFormViewModel.FormatWeight(0.8m), ProductPackage.MaxWeightKg].Value;
 
     private string FirstError() =>
         ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).FirstOrDefault(m => m.Length > 0)

@@ -67,7 +67,7 @@ public class EnglishAdminTests(PostgresFixture postgres) : IClassFixture<Postgre
         await using var factory = await postgres.CreateMigratedFactoryAsync();
         var admin = await EnglishAdminAsync(factory, "admin-preco-ingles@example.com");
 
-        var response = await PostAsync(admin, "/admin/products", new() { ["Name"] = "Kit Preco Ingles", ["Price"] = "199.90", ["Stock"] = "3" });
+        var response = await PostAsync(admin, "/admin/products", new() { ["Name"] = "Kit Preco Ingles", ["Price"] = "199.90", ["Stock"] = "3", ["Weight"] = "0.8", ["WidthCm"] = "30", ["HeightCm"] = "6", ["LengthCm"] = "20" });
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Equal(199.90m, (await ProductAsync(factory, "Kit Preco Ingles"))!.Price);
@@ -80,7 +80,7 @@ public class EnglishAdminTests(PostgresFixture postgres) : IClassFixture<Postgre
         await using var factory = await postgres.CreateMigratedFactoryAsync();
         var admin = await EnglishAdminAsync(factory, "admin-virgula-ingles@example.com");
 
-        await PostAsync(admin, "/admin/products", new() { ["Name"] = "Kit Virgula Ingles", ["Price"] = "199,90", ["Stock"] = "3" });
+        await PostAsync(admin, "/admin/products", new() { ["Name"] = "Kit Virgula Ingles", ["Price"] = "199,90", ["Stock"] = "3", ["Weight"] = "0.8", ["WidthCm"] = "30", ["HeightCm"] = "6", ["LengthCm"] = "20" });
 
         Assert.Null(await ProductAsync(factory, "Kit Virgula Ingles"));
         Assert.Contains("Invalid price: use a period for the cents (e.g. 199.90), no comma, greater than zero.", await PageAsync(admin, "/admin/products"));
@@ -91,7 +91,7 @@ public class EnglishAdminTests(PostgresFixture postgres) : IClassFixture<Postgre
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
         var admin = await EnglishAdminAsync(factory, "admin-edicao-ingles@example.com");
-        await PostAsync(admin, "/admin/products", new() { ["Name"] = "Kit Edicao Ingles", ["Price"] = "120.50", ["Stock"] = "1" });
+        await PostAsync(admin, "/admin/products", new() { ["Name"] = "Kit Edicao Ingles", ["Price"] = "120.50", ["Stock"] = "1", ["Weight"] = "0.8", ["WidthCm"] = "30", ["HeightCm"] = "6", ["LengthCm"] = "20" });
 
         var html = await PageAsync(admin, "/admin/products");
 
@@ -107,5 +107,16 @@ public class EnglishAdminTests(PostgresFixture postgres) : IClassFixture<Postgre
         var html = await PageAsync(admin, "/admin/orders");
 
         Assert.Contains("<h1>Order shipping</h1>", html);
+    }
+
+    [Fact]
+    public async Task WeightIsTypedWithAPeriod_InEnglish()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var admin = await EnglishAdminAsync(factory, "admin-peso-ingles@example.com");
+
+        await PostAsync(admin, "/admin/products", new() { ["Name"] = "Kit Peso Ingles", ["Price"] = "100.00", ["Stock"] = "1", ["Weight"] = "0,8", ["WidthCm"] = "30", ["HeightCm"] = "6", ["LengthCm"] = "20" });
+
+        Assert.Contains("Invalid weight: in kg, use a period for the decimals (e.g. 0.8), greater than zero and up to 30 kg.", await PageAsync(admin, "/admin/products"));
     }
 }

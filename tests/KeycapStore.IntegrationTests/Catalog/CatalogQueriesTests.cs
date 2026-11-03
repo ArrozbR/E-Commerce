@@ -21,9 +21,9 @@ public class CatalogQueriesTests(PostgresFixture postgres) : IClassFixture<Postg
         {
             await db.Database.MigrateAsync();
             db.Products.AddRange(
-                new Product("Test Kit Zéfiro (base)", 299.90m, 10),
-                new Product("Test Kit Aurora (base)", 349.90m, 0),
-                new Product("Test Kit Maré (novelties)", 129.90m, 3));
+                new Product("Test Kit Zéfiro (base)", 299.90m, 10, TestPackage.Standard),
+                new Product("Test Kit Aurora (base)", 349.90m, 0, TestPackage.Standard),
+                new Product("Test Kit Maré (novelties)", 129.90m, 3, TestPackage.Standard));
             await db.SaveChangesAsync();
         }
 
@@ -70,7 +70,7 @@ public class CatalogQueriesTests(PostgresFixture postgres) : IClassFixture<Postg
     [Fact]
     public async Task ListProductsAsync_HidesProductsTakenOffSale()
     {
-        var inactive = new Product("Test Kit Fora de Venda", 100m, 5);
+        var inactive = new Product("Test Kit Fora de Venda", 100m, 5, TestPackage.Standard);
         inactive.Deactivate();
 
         await using (var db = CreateContext())

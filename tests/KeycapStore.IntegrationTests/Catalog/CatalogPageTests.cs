@@ -17,8 +17,8 @@ public class CatalogPageTests(PostgresFixture postgres) : IClassFixture<Postgres
         await using (var scope = factory.Services.CreateAsyncScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            db.Products.Add(new Product("Kit Ultimo", 100m, 1));
-            db.Products.Add(new Product("Kit Poucos", 100m, 3));
+            db.Products.Add(new Product("Kit Ultimo", 100m, 1, TestPackage.Standard));
+            db.Products.Add(new Product("Kit Poucos", 100m, 3, TestPackage.Standard));
             await db.SaveChangesAsync();
         }
 

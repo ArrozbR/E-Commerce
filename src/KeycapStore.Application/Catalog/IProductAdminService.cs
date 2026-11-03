@@ -1,14 +1,16 @@
-﻿namespace KeycapStore.Application.Catalog;
+﻿using KeycapStore.Domain.Catalog;
 
-public sealed record AdminProductView(Guid Id, string Name, decimal Price, int Stock, bool IsActive);
+namespace KeycapStore.Application.Catalog;
+
+public sealed record AdminProductView(Guid Id, string Name, decimal Price, int Stock, bool IsActive, decimal WeightKg, int WidthCm, int HeightCm, int LengthCm);
 
 public interface IProductAdminService
 {
     Task<IReadOnlyList<AdminProductView>> ListAsync(CancellationToken cancellationToken = default);
 
-    Task<Guid> CreateAsync(string name, decimal price, int stock, CancellationToken cancellationToken = default);
+    Task<Guid> CreateAsync(string name, decimal price, int stock, ProductPackage package, CancellationToken cancellationToken = default);
 
-    Task UpdateAsync(Guid productId, string name, decimal price, CancellationToken cancellationToken = default);
+    Task UpdateAsync(Guid productId, string name, decimal price, ProductPackage package, CancellationToken cancellationToken = default);
 
     Task<StockAdjustmentResult> AdjustStockAsync(Guid productId, int delta, CancellationToken cancellationToken = default);
 

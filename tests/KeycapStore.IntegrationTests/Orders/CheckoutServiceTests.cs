@@ -19,7 +19,7 @@ public class CheckoutServiceTests(PostgresFixture postgres) : IClassFixture<Post
     // Cada teste cria os próprios produtos, para não depender do estoque do seed.
     private static async Task<Guid> NewProductAsync(WebApplicationFactory<Program> factory, string name, int stock)
     {
-        var product = new Product(name, 100m, stock);
+        var product = new Product(name, 100m, stock, TestPackage.Standard);
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Products.Add(product);

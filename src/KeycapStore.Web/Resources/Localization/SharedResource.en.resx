@@ -276,4 +276,13 @@
   <data name="Não foi possível conectar o Google. Tente de novo." xml:space="preserve">
     <value>Could not connect Google. Please try again.</value>
   </data>
+  <data name="Informe o peso." xml:space="preserve">
+    <value>Enter the weight.</value>
+  </data>
+  <data name="As medidas vão de {1} a {2} cm." xml:space="preserve">
+    <value>Dimensions go from {1} to {2} cm.</value>
+  </data>
+  <data name="Peso inválido: em kg, use {0} para as casas decimais (ex.: {1}), maior que zero e até {2} kg." xml:space="preserve">
+    <value>Invalid weight: in kg, use a {0} for the decimals (e.g. {1}), greater than zero and up to {2} kg.</value>
+  </data>
 </root>

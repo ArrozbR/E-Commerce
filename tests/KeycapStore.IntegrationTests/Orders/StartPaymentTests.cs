@@ -20,7 +20,7 @@ public class StartPaymentTests(PostgresFixture postgres) : IClassFixture<Postgre
 
     private static async Task<(Guid OrderId, Guid ProductId)> PlaceOrderAsync(WebApplicationFactory<Program> factory, string customerId)
     {
-        var product = new Product($"Kit Teste {customerId}", 100m, 5);
+        var product = new Product($"Kit Teste {customerId}", 100m, 5, TestPackage.Standard);
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Products.Add(product);

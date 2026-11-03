@@ -38,7 +38,7 @@ public class AdminProductsPageTests(PostgresFixture postgres) : IClassFixture<Po
 
     private static async Task<Guid> SaveProductAsync(WebApplicationFactory<Program> factory, string name, int stock)
     {
-        var product = new Product(name, 100m, stock);
+        var product = new Product(name, 100m, stock, TestPackage.Standard);
 
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -86,13 +86,14 @@ public class AdminProductsPageTests(PostgresFixture postgres) : IClassFixture<Po
         await using var factory = await postgres.CreateMigratedFactoryAsync();
         var admin = await AdminClientAsync(factory, "admin-cria@example.com");
 
-        var response = await PostAsync(admin, "/admin/products", new() { ["Name"] = "Kit Criado Pela Página", ["Price"] = "199,90", ["Stock"] = "7" });
+        var response = await PostAsync(admin, "/admin/products", new() { ["Name"] = "Kit Criado Pela Página", ["Price"] = "199,90", ["Stock"] = "7", ["Weight"] = "0,8", ["WidthCm"] = "30", ["HeightCm"] = "6", ["LengthCm"] = "20" });
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         var product = await ProductAsync(factory, "Kit Criado Pela Página");
         Assert.NotNull(product);
         Assert.Equal(199.90m, product.Price);
         Assert.Equal(7, product.Stock);
+        Assert.Equal(new ProductPackage(0.8m, 30, 6, 20), product.Package);
         Assert.Contains("Kit Criado Pela Página", await PageAsync(admin, "/Catalog"));
     }
 
@@ -108,7 +109,7 @@ public class AdminProductsPageTests(PostgresFixture postgres) : IClassFixture<Po
         var admin = await AdminClientAsync(factory, $"admin-preco-{Guid.NewGuid():N}@example.com");
         var name = $"Kit Preço Inválido {Guid.NewGuid():N}";
 
-        var response = await PostAsync(admin, "/admin/products", new() { ["Name"] = name, ["Price"] = price, ["Stock"] = "1" });
+        var response = await PostAsync(admin, "/admin/products", new() { ["Name"] = name, ["Price"] = price, ["Stock"] = "1", ["Weight"] = "0,8", ["WidthCm"] = "30", ["HeightCm"] = "6", ["LengthCm"] = "20" });
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         Assert.Null(await ProductAsync(factory, name));
@@ -122,12 +123,13 @@ public class AdminProductsPageTests(PostgresFixture postgres) : IClassFixture<Po
         var productId = await SaveProductAsync(factory, "Kit Antes da Edição", stock: 5);
         var admin = await AdminClientAsync(factory, "admin-edita@example.com");
 
-        await PostAsync(admin, $"/admin/products/{productId}/edit", new() { ["Name"] = "Kit Depois da Edição", ["Price"] = "120,50" });
+        await PostAsync(admin, $"/admin/products/{productId}/edit", new() { ["Name"] = "Kit Depois da Edição", ["Price"] = "120,50", ["Weight"] = "1,25", ["WidthCm"] = "40", ["HeightCm"] = "8", ["LengthCm"] = "25" });
 
         var product = await ProductAsync(factory, "Kit Depois da Edição");
         Assert.NotNull(product);
         Assert.Equal(120.50m, product.Price);
         Assert.Equal(5, product.Stock);
+        Assert.Equal(new ProductPackage(1.25m, 40, 8, 25), product.Package);
     }
 
     [Fact]
@@ -169,5 +171,51 @@ public class AdminProductsPageTests(PostgresFixture postgres) : IClassFixture<Po
         var response = await PostAsync(admin, $"/admin/products/{Guid.NewGuid()}/deactivate");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("30,5")]
+    [InlineData("0,0005")]
+    [InlineData("0.8")]
+    [InlineData("abc")]
+    public async Task Admin_CreateWithAnInvalidWeight_IsRefusedWithAMessage(string weight)
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var admin = await AdminClientAsync(factory, $"admin-peso-{Guid.NewGuid():N}@example.com");
+        var name = $"Kit Peso Inválido {Guid.NewGuid():N}";
+
+        await PostAsync(admin, "/admin/products", new() { ["Name"] = name, ["Price"] = "100,00", ["Stock"] = "1", ["Weight"] = weight, ["WidthCm"] = "30", ["HeightCm"] = "6", ["LengthCm"] = "20" });
+
+        Assert.Null(await ProductAsync(factory, name));
+        Assert.Contains("Peso inválido", await PageAsync(admin, "/admin/products"));
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("101")]
+    [InlineData("-3")]
+    public async Task Admin_CreateWithAnInvalidSide_IsRefusedWithAMessage(string side)
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var admin = await AdminClientAsync(factory, $"admin-medida-{Guid.NewGuid():N}@example.com");
+        var name = $"Kit Medida Inválida {Guid.NewGuid():N}";
+
+        await PostAsync(admin, "/admin/products", new() { ["Name"] = name, ["Price"] = "100,00", ["Stock"] = "1", ["Weight"] = "0,8", ["WidthCm"] = "30", ["HeightCm"] = side, ["LengthCm"] = "20" });
+
+        Assert.Null(await ProductAsync(factory, name));
+        Assert.Contains("As medidas vão de 1 a 100 cm.", await PageAsync(admin, "/admin/products"));
+    }
+
+    [Fact]
+    public async Task Admin_SeesTheWeightAndTheMeasures()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var admin = await AdminClientAsync(factory, "admin-ve-medidas@example.com");
+
+        var html = await PageAsync(admin, "/admin/products");
+
+        Assert.Contains("name=\"Weight\" value=\"0,3\"", html);
+        Assert.Contains("name=\"LengthCm\" value=\"12\"", html);
     }
 }

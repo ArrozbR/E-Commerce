@@ -26,7 +26,7 @@ public class StripeWebhookLatePaymentTests(PostgresFixture postgres) : IClassFix
         WebApplicationFactory<Program> factory, string customerId, int productCount = 1)
     {
         var products = Enumerable.Range(0, productCount)
-            .Select(i => new Product($"Kit Atrasado {customerId} {i}", 100m, 5))
+            .Select(i => new Product($"Kit Atrasado {customerId} {i}", 100m, 5, TestPackage.Standard))
             .ToArray();
 
         await using var scope = factory.Services.CreateAsyncScope();

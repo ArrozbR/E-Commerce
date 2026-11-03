@@ -46,7 +46,7 @@ public class EnglishResultsTests(PostgresFixture postgres) : IClassFixture<Postg
 
     private static async Task CartWithAsync(WebApplicationFactory<Program> factory, string email, string productName, int stock, int quantity, bool active = true)
     {
-        var product = new Product(productName, 100m, stock);
+        var product = new Product(productName, 100m, stock, TestPackage.Standard);
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Products.Add(product);

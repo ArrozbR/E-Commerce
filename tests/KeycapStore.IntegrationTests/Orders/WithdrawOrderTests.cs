@@ -27,7 +27,7 @@ public class WithdrawOrderTests(PostgresFixture postgres) : IClassFixture<Postgr
     private static async Task<(Guid OrderId, Guid ProductId)> ShippedOrderAsync(
         WebApplicationFactory<Program> factory, string customerId, DateTimeOffset? deliveredAt = null)
     {
-        var product = new Product($"Kit Arrependimento {Guid.NewGuid():N}", 100m, 3);
+        var product = new Product($"Kit Arrependimento {Guid.NewGuid():N}", 100m, 3, TestPackage.Standard);
         var order = new Order(customerId, DateTimeOffset.UtcNow, [new OrderItem(product.Id, product.Name, product.Price, 2)], Curitiba);
         order.ConfirmPayment("pi_test_withdraw");
         order.StartPicking();

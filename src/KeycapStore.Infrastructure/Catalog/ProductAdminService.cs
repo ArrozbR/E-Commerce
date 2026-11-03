@@ -13,13 +13,13 @@ internal sealed class ProductAdminService(AppDbContext db) : IProductAdminServic
         return await db.Products
             .AsNoTracking()
             .OrderBy(p => p.Name)
-            .Select(p => new AdminProductView(p.Id, p.Name, p.Price, p.Stock, p.IsActive))
+            .Select(p => new AdminProductView(p.Id, p.Name, p.Price, p.Stock, p.IsActive, p.WeightKg, p.WidthCm, p.HeightCm, p.LengthCm))
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<Guid> CreateAsync(string name, decimal price, int stock, CancellationToken cancellationToken = default)
+    public async Task<Guid> CreateAsync(string name, decimal price, int stock, ProductPackage package, CancellationToken cancellationToken = default)
     {
-        var product = new Product(name, price, stock);
+        var product = new Product(name, price, stock, package);
 
         db.Products.Add(product);
         await db.SaveChangesAsync(cancellationToken);
@@ -27,8 +27,12 @@ internal sealed class ProductAdminService(AppDbContext db) : IProductAdminServic
         return product.Id;
     }
 
-    public Task UpdateAsync(Guid productId, string name, decimal price, CancellationToken cancellationToken = default) =>
-        ApplyAsync(productId, product => product.Update(name, price), cancellationToken);
+    public Task UpdateAsync(Guid productId, string name, decimal price, ProductPackage package, CancellationToken cancellationToken = default) =>
+        ApplyAsync(productId, product =>
+        {
+            product.Update(name, price);
+            product.ChangePackage(package);
+        }, cancellationToken);
 
     public Task ActivateAsync(Guid productId, CancellationToken cancellationToken = default) =>
         ApplyAsync(productId, product => product.Activate(), cancellationToken);
