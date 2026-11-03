@@ -1,4 +1,5 @@
 ﻿using KeycapStore.Application.Identity;
+using KeycapStore.Application.Orders;
 using KeycapStore.Application.Payments;
 using KeycapStore.Infrastructure;
 using KeycapStore.Infrastructure.Orders;
@@ -30,9 +31,12 @@ public sealed class PostgresFixture : IAsyncLifetime
         builder.UseSetting("Stripe:PublishableKey", "pk_test_chave_publicavel_de_teste");
         builder.UseSetting("Authentication:Google:ClientId", "cliente-de-teste.apps.googleusercontent.com");
         builder.UseSetting("Authentication:Google:ClientSecret", "segredo-de-teste");
+        builder.UseSetting("MelhorEnvio:Token", "token-de-teste");
+        builder.UseSetting("MelhorEnvio:ContactEmail", "contato-de-teste@example.com");
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<IPaymentGateway>(new FakePaymentGateway());
+            services.AddSingleton<IShippingQuotes>(new FakeShippingQuotes());
             services.Remove(services.Single(d => d.ImplementationType == typeof(OrderMaintenanceJob)));
         });
     });

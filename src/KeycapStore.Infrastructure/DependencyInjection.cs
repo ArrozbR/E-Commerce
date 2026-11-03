@@ -51,6 +51,11 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
         services.AddSingleton<IPaymentGateway, StripePaymentGateway>();
+        services.AddOptions<MelhorEnvioOptions>()
+            .Bind(configuration.GetSection(MelhorEnvioOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddHttpClient<IShippingQuotes, MelhorEnvioShippingQuotes>(client => client.Timeout = TimeSpan.FromSeconds(10));
         services.AddScoped<CheckoutSessionTransitions>();
         services.AddScoped<IPaymentWebhookHandler, StripeWebhookHandler>();
         services.AddScoped<IRefundProcessor, RefundProcessor>();
