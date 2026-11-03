@@ -21,7 +21,7 @@ public class AdminReturnTests(PostgresFixture postgres) : IClassFixture<Postgres
     private static async Task<(Guid OrderId, Guid ProductId)> WithdrawnOrderAsync(WebApplicationFactory<Program> factory, bool refunded)
     {
         var product = new Product($"Kit Devolução {Guid.NewGuid():N}", 100m, 3, TestPackage.Standard);
-        var order = new Order("customer-return", DateTimeOffset.UtcNow, [new OrderItem(product.Id, product.Name, product.Price, 2)], Curitiba);
+        var order = new Order("customer-return", DateTimeOffset.UtcNow, [new OrderItem(product.Id, product.Name, product.Price, 2)], Curitiba, TestShipping.Pac);
         order.ConfirmPayment("pi_test_return");
         order.StartPicking();
         order.MarkShipped("BR123456789");

@@ -8,7 +8,7 @@ public class OrderStripeSessionTests
         new("Ana Souza", "Avenida Paulista", "1000", null, "Bela Vista", "São Paulo", "SP", "01310100");
 
     private static Order NewOrder() =>
-        new("customer-1", DateTimeOffset.UnixEpoch, [new OrderItem(Guid.NewGuid(), "Kit A", 100m, 1)], SaoPaulo);
+        new("customer-1", DateTimeOffset.UnixEpoch, [new OrderItem(Guid.NewGuid(), "Kit A", 100m, 1)], SaoPaulo, TestShipping.Pac);
 
     [Fact]
     public void NewOrder_HasNoStripeSession()

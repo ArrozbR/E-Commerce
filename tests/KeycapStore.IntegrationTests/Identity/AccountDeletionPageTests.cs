@@ -79,7 +79,7 @@ public class AccountDeletionPageTests(PostgresFixture postgres) : IClassFixture<
         await using var factory = await postgres.CreateMigratedFactoryAsync();
         var client = await PageClient.LoggedInAsync(factory, "tem-pedido-pago@example.com");
         var user = await UserAsync(factory, "tem-pedido-pago@example.com");
-        var order = new Order(user!.Id, DateTimeOffset.UtcNow, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba);
+        var order = new Order(user!.Id, DateTimeOffset.UtcNow, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba, TestShipping.Pac);
         order.ConfirmPayment();
         await using (var scope = factory.Services.CreateAsyncScope())
         {

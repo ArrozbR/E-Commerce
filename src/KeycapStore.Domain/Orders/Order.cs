@@ -16,6 +16,8 @@ public sealed class Order
     public IReadOnlyList<OrderItem> Items => _items;
     public ShippingAddress ShippingAddress { get; private set; }
     public decimal ShippingFee { get; private set; }
+    public string? ShippingService { get; private set; }
+    public int? ShippingDeliveryDays { get; private set; }
     public decimal Total => Items.Sum(i => i.LineTotal) + ShippingFee;
     public string? StripeSessionId { get; private set; }
     public string? StripePaymentIntentId { get; private set; }
@@ -34,10 +36,12 @@ public sealed class Order
         DateTimeOffset createdAt,
         IEnumerable<OrderItem> items,
         ShippingAddress shippingAddress,
+        ShippingChoice shipping,
         string language = DefaultLanguage)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(customerId);
         ArgumentNullException.ThrowIfNull(shippingAddress);
+        ArgumentNullException.ThrowIfNull(shipping);
         ArgumentException.ThrowIfNullOrWhiteSpace(language);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(language.Length, MaxLanguageLength, nameof(language));
 
@@ -58,7 +62,9 @@ public sealed class Order
         CreatedAt = createdAt;
         Status = OrderStatus.AwaitingPayment;
         ShippingAddress = shippingAddress;
-        ShippingFee = ShippingPolicy.FeeFor(shippingAddress.State);
+        ShippingFee = shipping.Fee;
+        ShippingService = shipping.ServiceName;
+        ShippingDeliveryDays = shipping.DeliveryDays;
         Language = language;
     }
 

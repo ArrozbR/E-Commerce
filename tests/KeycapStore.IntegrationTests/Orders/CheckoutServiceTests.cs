@@ -36,7 +36,19 @@ public class CheckoutServiceTests(PostgresFixture postgres) : IClassFixture<Post
     private static async Task<PlaceOrderResult> PlaceOrderAsync(WebApplicationFactory<Program> factory, string customerId)
     {
         await using var scope = factory.Services.CreateAsyncScope();
-        return await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(customerId, Curitiba);
+        return await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(customerId, Curitiba, TestShipping.PacServiceId);
+    }
+
+    private static async Task<PlaceOrderResult> PlaceOrderAsync(WebApplicationFactory<Program> factory, string customerId, int shippingServiceId)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(customerId, Curitiba, shippingServiceId);
+    }
+
+    private static async Task<ShippingOptionsResult> QuoteAsync(WebApplicationFactory<Program> factory, string customerId)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<ICheckoutService>().QuoteShippingAsync(customerId, Curitiba.PostalCode);
     }
 
     private static async Task<int> StockOfAsync(WebApplicationFactory<Program> factory, Guid productId)
@@ -141,5 +153,106 @@ public class CheckoutServiceTests(PostgresFixture postgres) : IClassFixture<Post
 
         await using var check = factory.Services.CreateAsyncScope();
         Assert.False(await check.ServiceProvider.GetRequiredService<AppDbContext>().Orders.AnyAsync(o => o.CustomerId == "customer-inactive"));
+    }
+
+    [Fact]
+    public async Task QuoteShipping_SendsTheCartWithPackagesAndCatalogPrices()
+    {
+        var shipping = new FakeShippingQuotes();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+        var kit = await NewProductAsync(factory, "Kit Cotação", stock: 5);
+        await AddToCartAsync(factory, "customer-quote", kit, 2);
+
+        var result = await QuoteAsync(factory, "customer-quote");
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(shipping.Options, result.Options);
+        var request = Assert.Single(shipping.Requests);
+        Assert.Equal("80020310", request.PostalCode);
+        Assert.Equal(new ShippingQuoteItem(kit, TestPackage.Standard, 100m, 2), Assert.Single(request.Items));
+    }
+
+    [Fact]
+    public async Task QuoteShipping_WithAnEmptyCart_DoesNotCallTheMelhorEnvio()
+    {
+        var shipping = new FakeShippingQuotes();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+
+        var result = await QuoteAsync(factory, "customer-quote-empty");
+
+        Assert.Equal(PlaceOrderFailure.EmptyCart, result.Failure);
+        Assert.Empty(shipping.Requests);
+    }
+
+    [Fact]
+    public async Task QuoteShipping_WhenTheMelhorEnvioIsDown_SaysSo()
+    {
+        var shipping = new FakeShippingQuotes { Unavailable = true };
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+        var kit = await NewProductAsync(factory, "Kit Cotação Fora", stock: 5);
+        await AddToCartAsync(factory, "customer-quote-down", kit, 1);
+
+        Assert.Equal(PlaceOrderFailure.ShippingUnavailable, (await QuoteAsync(factory, "customer-quote-down")).Failure);
+    }
+
+    [Fact]
+    public async Task QuoteShipping_WhenNoCarrierDelivers_SaysSo()
+    {
+        var shipping = new FakeShippingQuotes();
+        shipping.Options.Clear();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+        var kit = await NewProductAsync(factory, "Kit Sem Transportadora", stock: 5);
+        await AddToCartAsync(factory, "customer-quote-none", kit, 1);
+
+        Assert.Equal(PlaceOrderFailure.NoShippingOption, (await QuoteAsync(factory, "customer-quote-none")).Failure);
+    }
+
+    [Fact]
+    public async Task PlaceOrder_UsesThePriceOfANewQuote_NotTheOneShownBefore()
+    {
+        var shipping = new FakeShippingQuotes();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+        var kit = await NewProductAsync(factory, "Kit Frete Mudou", stock: 5);
+        await AddToCartAsync(factory, "customer-new-quote", kit, 1);
+        await QuoteAsync(factory, "customer-new-quote");
+        shipping.Options[1] = new ShippingOption(2, "Correios", "SEDEX", 52.40m, 4);
+
+        var result = await PlaceOrderAsync(factory, "customer-new-quote", shippingServiceId: 2);
+
+        Assert.True(result.Succeeded);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var order = await scope.ServiceProvider.GetRequiredService<AppDbContext>().Orders.AsNoTracking().SingleAsync(o => o.Id == result.OrderId);
+        Assert.Equal(52.40m, order.ShippingFee);
+        Assert.Equal("Correios SEDEX", order.ShippingService);
+        Assert.Equal(4, order.ShippingDeliveryDays);
+        Assert.Equal(152.40m, order.Total);
+    }
+
+    [Fact]
+    public async Task PlaceOrder_WithAServiceThatIsNoLongerOffered_IsRefused_AndNothingIsReserved()
+    {
+        var shipping = new FakeShippingQuotes();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+        var kit = await NewProductAsync(factory, "Kit Serviço Sumiu", stock: 5);
+        await AddToCartAsync(factory, "customer-gone", kit, 1);
+
+        var result = await PlaceOrderAsync(factory, "customer-gone", shippingServiceId: 99);
+
+        Assert.Equal(PlaceOrderFailure.ShippingOptionGone, result.Failure);
+        Assert.Equal(5, await StockOfAsync(factory, kit));
+    }
+
+    [Fact]
+    public async Task PlaceOrder_WhenTheMelhorEnvioIsDown_IsRefused_AndNothingIsReserved()
+    {
+        var shipping = new FakeShippingQuotes { Unavailable = true };
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+        var kit = await NewProductAsync(factory, "Kit Melhor Envio Fora", stock: 5);
+        await AddToCartAsync(factory, "customer-shipping-down", kit, 1);
+
+        var result = await PlaceOrderAsync(factory, "customer-shipping-down", shippingServiceId: TestShipping.PacServiceId);
+
+        Assert.Equal(PlaceOrderFailure.ShippingUnavailable, result.Failure);
+        Assert.Equal(5, await StockOfAsync(factory, kit));
     }
 }

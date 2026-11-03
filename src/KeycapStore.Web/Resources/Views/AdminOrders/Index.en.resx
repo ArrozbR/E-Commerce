@@ -63,4 +63,7 @@
   <data name="Devolução recebida" xml:space="preserve">
     <value>Return received</value>
   </data>
+  <data name="Envio: {0}" xml:space="preserve">
+    <value>Ship with: {0}</value>
+  </data>
 </root>

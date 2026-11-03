@@ -28,7 +28,7 @@ public class WithdrawOrderTests(PostgresFixture postgres) : IClassFixture<Postgr
         WebApplicationFactory<Program> factory, string customerId, DateTimeOffset? deliveredAt = null)
     {
         var product = new Product($"Kit Arrependimento {Guid.NewGuid():N}", 100m, 3, TestPackage.Standard);
-        var order = new Order(customerId, DateTimeOffset.UtcNow, [new OrderItem(product.Id, product.Name, product.Price, 2)], Curitiba);
+        var order = new Order(customerId, DateTimeOffset.UtcNow, [new OrderItem(product.Id, product.Name, product.Price, 2)], Curitiba, TestShipping.Pac);
         order.ConfirmPayment("pi_test_withdraw");
         order.StartPicking();
         order.MarkShipped("BR123456789");

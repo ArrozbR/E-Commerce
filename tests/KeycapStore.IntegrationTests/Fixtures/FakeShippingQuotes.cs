@@ -9,7 +9,7 @@ public sealed class FakeShippingQuotes : IShippingQuotes
 
     public List<ShippingOption> Options { get; } =
     [
-        new(1, "Correios", "PAC", 25.00m, 7),
+        new(TestShipping.PacServiceId, "Correios", "PAC", 15.00m, 7),
         new(2, "Correios", "SEDEX", 45.00m, 3),
     ];
 

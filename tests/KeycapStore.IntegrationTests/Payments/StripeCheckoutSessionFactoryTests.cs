@@ -1,5 +1,6 @@
 ﻿using KeycapStore.Domain.Orders;
 using KeycapStore.Infrastructure.Payments;
+using KeycapStore.IntegrationTests.Fixtures;
 
 namespace KeycapStore.IntegrationTests.Payments;
 
@@ -9,11 +10,11 @@ public class StripeCheckoutSessionFactoryTests
 
     private static readonly DateTimeOffset CreatedAt = new(2026, 10, 9, 15, 0, 0, TimeSpan.Zero);
 
-    private static Order OrderTo(string state) => new("customer-1", CreatedAt,
+    private static Order OrderTo(string state, ShippingChoice? shipping = null) => new("customer-1", CreatedAt,
     [
         new OrderItem(Guid.NewGuid(), "Kit Aurora (base)", 349.90m, 2),
         new OrderItem(Guid.NewGuid(), "Kit Zéfiro (teclas de função)", 89.90m, 1),
-    ], new ShippingAddress("Bruno Lima", "Rua XV de Novembro", "200", null, "Centro", "Curitiba", state, "80020310"));
+    ], new ShippingAddress("Bruno Lima", "Rua XV de Novembro", "200", null, "Centro", "Curitiba", state, "80020310"), shipping ?? TestShipping.Pac);
 
     [Fact]
     public void LineItems_AreInBrlCents_AndAddUpToTheOrderTotal()
@@ -34,7 +35,7 @@ public class StripeCheckoutSessionFactoryTests
     public void ShippingFee_BecomesALineItem_OnlyWhenItIsNotFree()
     {
         var paid = StripeCheckoutSessionFactory.BuildOptions(OrderTo("PR"), "cliente@example.com", Return);
-        var free = StripeCheckoutSessionFactory.BuildOptions(OrderTo("SP"), "cliente@example.com", Return);
+        var free = StripeCheckoutSessionFactory.BuildOptions(OrderTo("SP", new ShippingChoice("Retirada na loja", 0m, 0)), "cliente@example.com", Return);
 
         Assert.Equal(1500, Assert.Single(paid.LineItems, l => l.PriceData.ProductData.Name == "Frete").PriceData.UnitAmount);
         Assert.DoesNotContain(free.LineItems, l => l.PriceData.ProductData.Name == "Frete");

@@ -68,4 +68,12 @@ public sealed class PostgresFixture : IAsyncLifetime
         await factory.Services.MigrateDatabaseAsync();
         return factory;
     }
+
+    public async Task<WebApplicationFactory<Program>> CreateMigratedFactoryAsync(FakeShippingQuotes shipping)
+    {
+        var factory = CreateFactory()
+            .WithWebHostBuilder(builder => builder.ConfigureTestServices(services => services.AddSingleton<IShippingQuotes>(shipping)));
+        await factory.Services.MigrateDatabaseAsync();
+        return factory;
+    }
 }

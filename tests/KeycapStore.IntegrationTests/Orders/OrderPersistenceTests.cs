@@ -23,7 +23,7 @@ public class OrderPersistenceTests(PostgresFixture postgres) : IClassFixture<Pos
         [
             new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 2),
             new OrderItem(KitZefiro, "Kit Zéfiro (base)", 299.90m, 1),
-        ], Curitiba);
+        ], Curitiba, TestShipping.Pac);
 
         await using (var scope = factory.Services.CreateAsyncScope())
         {
@@ -44,6 +44,8 @@ public class OrderPersistenceTests(PostgresFixture postgres) : IClassFixture<Pos
             Assert.Equal("80020310", saved.ShippingAddress.PostalCode);
             Assert.Equal("Sala 3", saved.ShippingAddress.Complement);
             Assert.Equal(15.00m, saved.ShippingFee);
+            Assert.Equal("Correios PAC", saved.ShippingService);
+            Assert.Equal(7, saved.ShippingDeliveryDays);
             Assert.Equal(1014.70m, saved.Total);
         }
     }
@@ -53,7 +55,7 @@ public class OrderPersistenceTests(PostgresFixture postgres) : IClassFixture<Pos
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
         var order = new Order("customer-price", DateTimeOffset.UnixEpoch,
-            [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba);
+            [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba, TestShipping.Pac);
 
         await using (var scope = factory.Services.CreateAsyncScope())
         {
@@ -80,7 +82,7 @@ public class OrderPersistenceTests(PostgresFixture postgres) : IClassFixture<Pos
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
         var order = new Order("customer-session", DateTimeOffset.UnixEpoch,
-            [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba);
+            [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba, TestShipping.Pac);
         order.AttachStripeSession("cs_test_persistencia");
 
         await using (var scope = factory.Services.CreateAsyncScope())
@@ -104,7 +106,7 @@ public class OrderPersistenceTests(PostgresFixture postgres) : IClassFixture<Pos
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
         var order = new Order("customer-leaving", DateTimeOffset.UnixEpoch,
-            [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba);
+            [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba, TestShipping.Pac);
         order.Expire();
         order.DetachCustomer(DateTimeOffset.UnixEpoch);
 

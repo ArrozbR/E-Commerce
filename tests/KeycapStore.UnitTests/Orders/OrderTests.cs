@@ -13,7 +13,7 @@ public class OrderTests
         new("Bruno Lima", "Rua XV de Novembro", "200", null, "Centro", "Curitiba", "PR", "80020310");
 
     private static Order NewOrder() =>
-        new("customer-1", DateTimeOffset.UnixEpoch, [new OrderItem(KitA, "Kit A", 100m, 1)], SaoPaulo);
+        new("customer-1", DateTimeOffset.UnixEpoch, [new OrderItem(KitA, "Kit A", 100m, 1)], SaoPaulo, TestShipping.Pac);
 
     [Fact]
     public void NewOrder_KeepsItemsAndSumsTheTotal()
@@ -22,42 +22,41 @@ public class OrderTests
         [
             new OrderItem(KitA, "Kit A", 349.90m, 2),
             new OrderItem(KitB, "Kit B", 89.90m, 1),
-        ], SaoPaulo);
+        ], SaoPaulo, TestShipping.Pac);
 
         Assert.Equal(2, order.Items.Count);
-        Assert.Equal(789.70m, order.Total);
+        Assert.Equal(804.70m, order.Total);
     }
 
     [Fact]
-    public void NewOrder_ToFreeShippingState_HasNoShippingFee()
+    public void NewOrder_KeepsTheChosenShipping_AndAddsTheFeeToTheTotal()
     {
-        var order = NewOrder();
+        var order = new Order("customer-1", DateTimeOffset.UnixEpoch, [new OrderItem(KitA, "Kit A", 100m, 1)], Curitiba, new ShippingChoice("Jadlog .Package", 30.17m, 5));
 
-        Assert.Equal(0m, order.ShippingFee);
-        Assert.Equal(100m, order.Total);
-        Assert.Same(SaoPaulo, order.ShippingAddress);
+        Assert.Equal(30.17m, order.ShippingFee);
+        Assert.Equal("Jadlog .Package", order.ShippingService);
+        Assert.Equal(5, order.ShippingDeliveryDays);
+        Assert.Equal(130.17m, order.Total);
+        Assert.Same(Curitiba, order.ShippingAddress);
     }
 
     [Fact]
-    public void NewOrder_ToOtherState_AddsTheShippingFeeToTheTotal()
+    public void NewOrder_WithoutShipping_Throws()
     {
-        var order = new Order("customer-1", DateTimeOffset.UnixEpoch, [new OrderItem(KitA, "Kit A", 100m, 1)], Curitiba);
-
-        Assert.Equal(15.00m, order.ShippingFee);
-        Assert.Equal(115.00m, order.Total);
+        Assert.Throws<ArgumentNullException>(() => new Order("customer-1", DateTimeOffset.UnixEpoch, [new OrderItem(KitA, "Kit A", 100m, 1)], SaoPaulo, null!));
     }
 
     [Fact]
     public void NewOrder_WithoutShippingAddress_Throws()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            new Order("customer-1", DateTimeOffset.UnixEpoch, [new OrderItem(KitA, "Kit A", 100m, 1)], null!));
+            new Order("customer-1", DateTimeOffset.UnixEpoch, [new OrderItem(KitA, "Kit A", 100m, 1)], null!, TestShipping.Pac));
     }
 
     [Fact]
     public void NewOrder_WithoutItems_Throws()
     {
-        Assert.Throws<ArgumentException>(() => new Order("customer-1", DateTimeOffset.UnixEpoch, [], SaoPaulo));
+        Assert.Throws<ArgumentException>(() => new Order("customer-1", DateTimeOffset.UnixEpoch, [], SaoPaulo, TestShipping.Pac));
     }
 
     [Fact]
@@ -67,14 +66,14 @@ public class OrderTests
         [
             new OrderItem(KitA, "Kit A", 100m, 1),
             new OrderItem(KitA, "Kit A", 100m, 2),
-        ], SaoPaulo));
+        ], SaoPaulo, TestShipping.Pac));
     }
 
     [Fact]
     public void NewOrder_ChangingTheOriginalListLater_DoesNotChangeTheOrder()
     {
         var items = new List<OrderItem> { new(KitA, "Kit A", 100m, 1) };
-        var order = new Order("customer-1", DateTimeOffset.UnixEpoch, items, SaoPaulo);
+        var order = new Order("customer-1", DateTimeOffset.UnixEpoch, items, SaoPaulo, TestShipping.Pac);
 
         items.Add(new OrderItem(KitB, "Kit B", 50m, 1));
 

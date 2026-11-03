@@ -35,7 +35,13 @@
     </tbody>
     <tfoot>
         <tr>
-            <td colspan="3" class="text-end">@Localizer["Frete"]</td>
+            <td colspan="3" class="text-end">
+                @Localizer["Frete"]
+                @if (Model.ShippingService is not null)
+                {
+                    <span class="text-muted">(@Model.ShippingService, @(Model.ShippingDeliveryDays == 1 ? SharedLocalizer["até 1 dia"] : SharedLocalizer["até {0} dias", Model.ShippingDeliveryDays!]))</span>
+                }
+            </td>
             <td class="text-end">@(Model.ShippingFee == 0 ? Localizer["Grátis"].Value : Display.Price(Model.ShippingFee))</td>
         </tr>
         <tr>

@@ -23,7 +23,7 @@ internal sealed class OrderQueries(AppDbContext db, TimeProvider clock) : IOrder
             .ToList();
 
         return new OrderView(order.Id, order.Status, order.CreatedAt, lines, order.ShippingFee, order.Total, order.ShippingAddress,
-            order.CanWithdraw(clock.GetUtcNow()), order.DeliveredAt + Order.WithdrawalPeriod);
+            order.CanWithdraw(clock.GetUtcNow()), order.DeliveredAt + Order.WithdrawalPeriod, order.ShippingService, order.ShippingDeliveryDays);
     }
 
     public async Task<IReadOnlyList<OrderSummaryView>> ListForCustomerAsync(string customerId, CancellationToken cancellationToken = default)

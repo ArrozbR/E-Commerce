@@ -15,9 +15,6 @@
   <data name="Endereço de entrega" xml:space="preserve">
     <value>Shipping address</value>
   </data>
-  <data name="Frete grátis para DF, GO, MT, MS, SP e RJ. Para os demais estados, {0}." xml:space="preserve">
-    <value>Free shipping to DF, GO, MT, MS, SP and RJ. Other states: {0}.</value>
-  </data>
   <data name="Preenchido com o endereço salvo na sua conta. Confira antes de finalizar." xml:space="preserve">
     <value>Filled in with the address saved in your account. Check it before placing the order.</value>
   </data>
@@ -26,5 +23,17 @@
   </data>
   <data name="Voltar ao carrinho" xml:space="preserve">
     <value>Back to cart</value>
+  </data>
+  <data name="O frete é calculado pelo CEP e pelo peso e tamanho dos kits." xml:space="preserve">
+    <value>Shipping is calculated from the postal code and the weight and size of the kits.</value>
+  </data>
+  <data name="Ver opções de frete" xml:space="preserve">
+    <value>See shipping options</value>
+  </data>
+  <data name="Frete" xml:space="preserve">
+    <value>Shipping</value>
+  </data>
+  <data name="O valor do frete é conferido de novo quando você continua; o total final aparece antes de pagar." xml:space="preserve">
+    <value>The shipping price is checked again when you continue; the final total is shown before you pay.</value>
   </data>
 </root>

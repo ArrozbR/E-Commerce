@@ -1,5 +1,6 @@
 ﻿using KeycapStore.Domain.Orders;
 using KeycapStore.Infrastructure.Payments;
+using KeycapStore.IntegrationTests.Fixtures;
 
 namespace KeycapStore.IntegrationTests.Payments;
 
@@ -10,6 +11,7 @@ public class StripeCheckoutSessionLocaleTests
     private static Order OrderIn(string language) => new("customer-1", DateTimeOffset.UtcNow,
         [new OrderItem(Guid.NewGuid(), "Kit Aurora (base)", 349.90m, 1)],
         new ShippingAddress("Bruno Lima", "Rua XV de Novembro", "200", null, "Centro", "Curitiba", "PR", "80020310"),
+        TestShipping.Pac,
         language);
 
     [Fact]

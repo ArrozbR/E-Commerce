@@ -9,7 +9,8 @@ public sealed record AdminOrderView(
     IReadOnlyList<OrderLineView> Lines,
     decimal Total,
     ShippingAddress ShippingAddress,
-    string? TrackingCode);
+    string? TrackingCode,
+    string? ShippingService = null);
 
 public interface IAdminOrderQueries
 {

@@ -174,9 +174,16 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int?>("ShippingDeliveryDays")
+                        .HasColumnType("integer");
+
                     b.Property<decimal>("ShippingFee")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("ShippingService")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Status")
                         .IsRequired()

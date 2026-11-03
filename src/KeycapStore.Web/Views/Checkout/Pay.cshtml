@@ -17,7 +17,12 @@
             @Localizer["CEP {0}", address.PostalCode.Insert(5, "-")]
         </p>
         <p>
-            @Localizer["Frete"]: @(Model.Order.ShippingFee == 0 ? Localizer["Grátis"].Value : Display.Price(Model.Order.ShippingFee))<br />
+            @Localizer["Frete"]: @(Model.Order.ShippingFee == 0 ? Localizer["Grátis"].Value : Display.Price(Model.Order.ShippingFee))
+            @if (Model.Order.ShippingService is not null)
+            {
+                <span class="text-muted">(@Model.Order.ShippingService, @(Model.Order.ShippingDeliveryDays == 1 ? SharedLocalizer["até 1 dia"] : SharedLocalizer["até {0} dias", Model.Order.ShippingDeliveryDays!]))</span>
+            }
+            <br />
             <strong>@Localizer["Total: {0}", Display.Price(Model.Order.Total)]</strong>
         </p>
 

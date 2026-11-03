@@ -40,7 +40,7 @@ public class StripeWebhookLatePaymentTests(PostgresFixture postgres) : IClassFix
             await carts.AddItemAsync(customerId, product.Id, 2);
         }
 
-        var placed = await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(customerId, Curitiba);
+        var placed = await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(customerId, Curitiba, TestShipping.PacServiceId);
         var totalInCents = (productCount * 20000L) + 1500;
 
         return (placed.OrderId!.Value, products.Select(p => p.Id).ToArray(), totalInCents);

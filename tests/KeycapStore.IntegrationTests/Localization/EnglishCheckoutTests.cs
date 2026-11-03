@@ -44,6 +44,7 @@ public class EnglishCheckoutTests(PostgresFixture postgres) : IClassFixture<Post
             ["District"] = "Centro",
             ["City"] = "Curitiba",
             ["State"] = "PR",
+            ["ShippingServiceId"] = "1",
             ["__RequestVerificationToken"] = token,
         }));
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);

@@ -27,7 +27,7 @@ public class StartPaymentTests(PostgresFixture postgres) : IClassFixture<Postgre
         await db.SaveChangesAsync();
 
         await scope.ServiceProvider.GetRequiredService<ICartService>().AddItemAsync(customerId, product.Id, 2);
-        var placed = await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(customerId, Curitiba);
+        var placed = await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(customerId, Curitiba, TestShipping.PacServiceId);
 
         return (placed.OrderId!.Value, product.Id);
     }

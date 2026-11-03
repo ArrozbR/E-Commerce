@@ -28,7 +28,7 @@ public class CancelOrderTests(PostgresFixture postgres) : IClassFixture<Postgres
         WebApplicationFactory<Program> factory, string customerId, Action<Order>? advance = null)
     {
         var product = new Product($"Kit Cancelamento {Guid.NewGuid():N}", 100m, 3, TestPackage.Standard);
-        var order = new Order(customerId, DateTimeOffset.UtcNow, [new OrderItem(product.Id, product.Name, product.Price, 2)], Curitiba);
+        var order = new Order(customerId, DateTimeOffset.UtcNow, [new OrderItem(product.Id, product.Name, product.Price, 2)], Curitiba, TestShipping.Pac);
         order.ConfirmPayment("pi_test_cancel");
         advance?.Invoke(order);
 

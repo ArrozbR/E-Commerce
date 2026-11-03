@@ -38,6 +38,7 @@ public class EnglishResultsTests(PostgresFixture postgres) : IClassFixture<Postg
             ["District"] = "Centro",
             ["City"] = "Curitiba",
             ["State"] = "PR",
+            ["ShippingServiceId"] = "1",
             ["__RequestVerificationToken"] = token,
         }));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
