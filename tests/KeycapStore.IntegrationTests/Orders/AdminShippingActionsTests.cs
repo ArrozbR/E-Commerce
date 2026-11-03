@@ -21,7 +21,7 @@ public class AdminShippingActionsTests(PostgresFixture postgres) : IClassFixture
 
     private static async Task<Guid> CreatePaidOrderAsync(WebApplicationFactory<Program> factory)
     {
-        var order = new Order("customer-shipping", DateTimeOffset.UtcNow, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba);
+        var order = new Order("customer-shipping", DateTimeOffset.UtcNow, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba, TestShipping.Pac);
         order.ConfirmPayment();
 
         await using var scope = factory.Services.CreateAsyncScope();

@@ -17,7 +17,7 @@ public class RefundProcessorTests(PostgresFixture postgres) : IClassFixture<Post
         new("Bruno Lima", "Rua XV de Novembro", "200", null, "Centro", "Curitiba", "PR", "80020310");
 
     private static Order NewOrder() =>
-        new("customer-refund", DateTimeOffset.UtcNow, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba);
+        new("customer-refund", DateTimeOffset.UtcNow, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba, TestShipping.Pac);
 
     private static async Task<Guid> SaveAsync(WebApplicationFactory<Program> factory, Order order)
     {

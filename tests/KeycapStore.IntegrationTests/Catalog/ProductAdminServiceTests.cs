@@ -30,14 +30,14 @@ public class ProductAdminServiceTests(PostgresFixture postgres) : IClassFixture<
     }
 
     private static Task<Guid> NewProductAsync(WebApplicationFactory<Program> factory, int stock) =>
-        RunAsync(factory, s => s.CreateAsync($"Kit Admin {Guid.NewGuid():N}", 100m, stock));
+        RunAsync(factory, s => s.CreateAsync($"Kit Admin {Guid.NewGuid():N}", 100m, stock, TestPackage.Standard));
 
     [Fact]
     public async Task Create_SavesAProductOnSale()
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
 
-        var productId = await RunAsync(factory, s => s.CreateAsync("Kit Novo do Admin", 199.90m, 7));
+        var productId = await RunAsync(factory, s => s.CreateAsync("Kit Novo do Admin", 199.90m, 7, TestPackage.Standard));
 
         var product = await ProductAsync(factory, productId);
         Assert.Equal("Kit Novo do Admin", product.Name);
@@ -51,7 +51,7 @@ public class ProductAdminServiceTests(PostgresFixture postgres) : IClassFixture<
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
 
-        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => RunAsync(factory, s => s.CreateAsync("Kit Sem Preço", 0m, 1)));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => RunAsync(factory, s => s.CreateAsync("Kit Sem Preço", 0m, 1, TestPackage.Standard)));
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class ProductAdminServiceTests(PostgresFixture postgres) : IClassFixture<
         await using var factory = await postgres.CreateMigratedFactoryAsync();
         var productId = await NewProductAsync(factory, stock: 5);
 
-        await RunAsync(factory, s => s.UpdateAsync(productId, "Kit Renomeado", 120m));
+        await RunAsync(factory, s => s.UpdateAsync(productId, "Kit Renomeado", 120m, TestPackage.Standard));
 
         var product = await ProductAsync(factory, productId);
         Assert.Equal("Kit Renomeado", product.Name);
@@ -73,7 +73,7 @@ public class ProductAdminServiceTests(PostgresFixture postgres) : IClassFixture<
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
 
-        await Assert.ThrowsAsync<ProductNotFoundException>(() => RunAsync(factory, s => s.UpdateAsync(Guid.NewGuid(), "Kit", 100m)));
+        await Assert.ThrowsAsync<ProductNotFoundException>(() => RunAsync(factory, s => s.UpdateAsync(Guid.NewGuid(), "Kit", 100m, TestPackage.Standard)));
     }
 
     [Fact]

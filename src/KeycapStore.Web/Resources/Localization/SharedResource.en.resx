@@ -276,4 +276,31 @@
   <data name="Não foi possível conectar o Google. Tente de novo." xml:space="preserve">
     <value>Could not connect Google. Please try again.</value>
   </data>
+  <data name="Informe o peso." xml:space="preserve">
+    <value>Enter the weight.</value>
+  </data>
+  <data name="As medidas vão de {1} a {2} cm." xml:space="preserve">
+    <value>Dimensions go from {1} to {2} cm.</value>
+  </data>
+  <data name="Peso inválido: em kg, use {0} para as casas decimais (ex.: {1}), maior que zero e até {2} kg." xml:space="preserve">
+    <value>Invalid weight: in kg, use a {0} for the decimals (e.g. {1}), greater than zero and up to {2} kg.</value>
+  </data>
+  <data name="até 1 dia" xml:space="preserve">
+    <value>up to 1 day</value>
+  </data>
+  <data name="até {0} dias" xml:space="preserve">
+    <value>up to {0} days</value>
+  </data>
+  <data name="Escolha uma opção de frete." xml:space="preserve">
+    <value>Choose a shipping option.</value>
+  </data>
+  <data name="Não foi possível calcular o frete agora. Tente de novo em alguns minutos." xml:space="preserve">
+    <value>We couldn't calculate shipping right now. Please try again in a few minutes.</value>
+  </data>
+  <data name="Nenhuma transportadora entrega este pedido neste CEP." xml:space="preserve">
+    <value>No carrier delivers this order to this postal code.</value>
+  </data>
+  <data name="A opção de frete escolhida não está mais disponível. Escolha outra." xml:space="preserve">
+    <value>The chosen shipping option is no longer available. Please choose another one.</value>
+  </data>
 </root>

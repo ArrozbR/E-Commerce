@@ -31,7 +31,7 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0021](0021-atualizacoes-automaticas-diarias.md) | Atualizações automáticas diárias (comuns + Docker) às 03:30 |
 | [0022](0022-chaves-data-protection-no-postgresql.md) | Chaves do Data Protection no PostgreSQL |
 | [0023](0023-admin-pelo-comando-tambem-no-pc.md) | Admin pelo comando também no PC (sem seed); conta existente é promovida |
-| [0024](0024-frete-gratis-por-estado.md) | Frete por estado: grátis no Centro-Oeste, SP e RJ; R$ 15,00 nos demais |
+| [0024](0024-frete-gratis-por-estado.md) | Frete por estado: grátis no Centro-Oeste, SP e RJ; R$ 15,00 nos demais (substituído pelo 0041) |
 | [0025](0025-roadmap-v2-funcionalidades-v3-visual.md) | Roadmap: v2 com tudo o que não é visual (parte legal primeiro), v3 visual em Razor, sem v4 |
 | [0026](0026-validade-da-sessao-a-partir-do-pedido.md) | Validade da sessão do Checkout: criação do pedido + 31 minutos |
 | [0027](0027-eventos-do-webhook-na-versao-do-sdk.md) | Eventos do webhook na versão da API do SDK (snapshot, `endive`) |
@@ -48,3 +48,4 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0038](0038-site-em-ingles.md) | Site em inglês: todas as páginas, português por padrão, formatos americanos em inglês e a Stripe no idioma do pedido |
 | [0039](0039-login-com-google.md) | Login com Google: conta nova na hora, nunca junta sozinho com uma conta com senha, admin só com senha |
 | [0040](0040-payment-element-com-checkout-sessions.md) | Payment Element com a sessão do Checkout, na mesma página do endereço |
+| [0041](0041-frete-real-pelo-melhor-envio.md) | Frete real pelo Melhor Envio: o cliente escolhe o serviço, peso e medidas em cada produto |

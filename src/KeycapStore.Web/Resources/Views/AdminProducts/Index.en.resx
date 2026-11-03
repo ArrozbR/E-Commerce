@@ -30,9 +30,6 @@
   <data name="Criar produto" xml:space="preserve">
     <value>Create product</value>
   </data>
-  <data name="Nome e preço" xml:space="preserve">
-    <value>Name and price</value>
-  </data>
   <data name="Estoque" xml:space="preserve">
     <value>Stock</value>
   </data>
@@ -62,5 +59,23 @@
   </data>
   <data name="Voltar à venda" xml:space="preserve">
     <value>Put back on sale</value>
+  </data>
+  <data name="Peso (kg)" xml:space="preserve">
+    <value>Weight (kg)</value>
+  </data>
+  <data name="Medidas da caixa (cm)" xml:space="preserve">
+    <value>Box dimensions (cm)</value>
+  </data>
+  <data name="Largura" xml:space="preserve">
+    <value>Width</value>
+  </data>
+  <data name="Altura" xml:space="preserve">
+    <value>Height</value>
+  </data>
+  <data name="Comprimento" xml:space="preserve">
+    <value>Length</value>
+  </data>
+  <data name="Nome, preço, peso (kg) e medidas (L × A × C, cm)" xml:space="preserve">
+    <value>Name, price, weight (kg) and dimensions (W × H × L, cm)</value>
   </data>
 </root>

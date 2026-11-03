@@ -40,6 +40,7 @@ public class SavedAddressCheckoutPageTests(PostgresFixture postgres) : IClassFix
             ["District"] = "Centro",
             ["City"] = "Curitiba",
             ["State"] = "PR",
+            ["ShippingServiceId"] = "1",
             ["__RequestVerificationToken"] = token,
         };
         if (saveAddress)

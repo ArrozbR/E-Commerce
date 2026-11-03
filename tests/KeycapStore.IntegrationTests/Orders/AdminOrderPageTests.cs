@@ -18,7 +18,7 @@ public class AdminOrderPageTests(PostgresFixture postgres) : IClassFixture<Postg
     private static async Task<Guid> CreateOrderAsync(WebApplicationFactory<Program> factory, string recipient, bool paid)
     {
         var address = new ShippingAddress(recipient, "Rua XV de Novembro", "200", null, "Centro", "Curitiba", "PR", "80020310");
-        var order = new Order("customer-admin-page", DateTimeOffset.UtcNow, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], address);
+        var order = new Order("customer-admin-page", DateTimeOffset.UtcNow, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], address, TestShipping.Pac);
         if (paid)
         {
             order.ConfirmPayment();

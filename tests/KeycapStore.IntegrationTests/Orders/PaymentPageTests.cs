@@ -34,6 +34,7 @@ public class PaymentPageTests(PostgresFixture postgres) : IClassFixture<Postgres
             ["District"] = "Centro",
             ["City"] = "Curitiba",
             ["State"] = "PR",
+            ["ShippingServiceId"] = "1",
             ["__RequestVerificationToken"] = token,
         }));
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);

@@ -66,6 +66,7 @@ public class OrderPageTests(PostgresFixture postgres) : IClassFixture<PostgresFi
             ["District"] = "Centro",
             ["City"] = "Curitiba",
             ["State"] = "PR",
+            ["ShippingServiceId"] = "1",
             ["__RequestVerificationToken"] = token,
         }));
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);

@@ -25,14 +25,14 @@ public class StripeWebhookExpiredTests(PostgresFixture postgres) : IClassFixture
     // Cria um produto com 5 unidades, compra 2 e devolve o pedido (o estoque fica em 3).
     private static async Task<(Guid OrderId, Guid ProductId)> PlaceOrderAsync(WebApplicationFactory<Program> factory, string customerId)
     {
-        var product = new Product($"Kit Expira {customerId}", 100m, 5);
+        var product = new Product($"Kit Expira {customerId}", 100m, 5, TestPackage.Standard);
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Products.Add(product);
         await db.SaveChangesAsync();
 
         await scope.ServiceProvider.GetRequiredService<ICartService>().AddItemAsync(customerId, product.Id, 2);
-        var placed = await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(customerId, Curitiba);
+        var placed = await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(customerId, Curitiba, TestShipping.PacServiceId);
 
         return (placed.OrderId!.Value, product.Id);
     }

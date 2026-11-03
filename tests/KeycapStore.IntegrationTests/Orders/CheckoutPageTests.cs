@@ -66,6 +66,7 @@ public class CheckoutPageTests(PostgresFixture postgres) : IClassFixture<Postgre
             ["District"] = "Centro",
             ["City"] = "Curitiba",
             ["State"] = "PR",
+            ["ShippingServiceId"] = "1",
             ["__RequestVerificationToken"] = token,
         }));
     }
@@ -137,5 +138,132 @@ public class CheckoutPageTests(PostgresFixture postgres) : IClassFixture<Postgre
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("Seu carrinho está vazio.", WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync()));
+    }
+
+    private static async Task<HttpResponseMessage> PostCuritibaAsync(HttpClient client, string url, string? shippingServiceId)
+    {
+        var form = new Dictionary<string, string>
+        {
+            ["RecipientName"] = "Bruno Lima",
+            ["PostalCode"] = "80020-310",
+            ["Street"] = "Rua XV de Novembro",
+            ["Number"] = "200",
+            ["District"] = "Centro",
+            ["City"] = "Curitiba",
+            ["State"] = "PR",
+            ["__RequestVerificationToken"] = TokenFrom(await client.GetStringAsync("/Checkout")),
+        };
+        if (shippingServiceId is not null)
+        {
+            form["ShippingServiceId"] = shippingServiceId;
+        }
+
+        return await client.PostAsync(url, new FormUrlEncodedContent(form));
+    }
+
+    [Fact]
+    public async Task ShippingStep_ListsTheOptions_WithPriceAndDeliveryTime()
+    {
+        var shipping = new FakeShippingQuotes();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+        var client = await LoggedInClientAsync(factory, "frete-opcoes@example.com");
+        await AddKitAuroraAsync(client);
+
+        var response = await PostCuritibaAsync(client, "/Checkout/Shipping", null);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
+        Assert.Contains("Correios PAC: <strong>R$ 15,00</strong>", html);
+        Assert.Contains("Correios SEDEX: <strong>R$ 45,00</strong>", html);
+        Assert.Contains("até 7 dias", html);
+        Assert.Contains("name=\"ShippingServiceId\" id=\"shipping-1\" value=\"1\"", html);
+        Assert.Contains("Continuar para o pagamento", html);
+        Assert.Contains("data-val-required=\"Escolha uma opção de frete.\"", html);
+        Assert.Equal("80020310", Assert.Single(shipping.Requests).PostalCode);
+    }
+
+    [Fact]
+    public async Task Continue_WithoutChoosingShipping_ShowsTheOptionsAgain_AndCreatesNoOrder()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync(new FakeShippingQuotes());
+        var client = await LoggedInClientAsync(factory, "frete-sem-escolha@example.com");
+        await AddKitAuroraAsync(client);
+
+        var response = await PostCuritibaAsync(client, "/Checkout", null);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
+        Assert.Contains("Escolha uma opção de frete.", html);
+        Assert.Contains("Correios PAC", html);
+        Assert.Contains("Kit Aurora (base)", WebUtility.HtmlDecode(await client.GetStringAsync("/Cart")));
+    }
+
+    [Fact]
+    public async Task Continue_WithAServiceThatIsGone_ShowsTheCurrentOptions()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync(new FakeShippingQuotes());
+        var client = await LoggedInClientAsync(factory, "frete-sumiu@example.com");
+        await AddKitAuroraAsync(client);
+
+        var response = await PostCuritibaAsync(client, "/Checkout", "99");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
+        Assert.Contains("A opção de frete escolhida não está mais disponível. Escolha outra.", html);
+        Assert.Contains("Correios SEDEX", html);
+    }
+
+    [Fact]
+    public async Task ShippingStep_WhenTheMelhorEnvioIsDown_AsksToTryAgain()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync(new FakeShippingQuotes { Unavailable = true });
+        var client = await LoggedInClientAsync(factory, "frete-fora@example.com");
+        await AddKitAuroraAsync(client);
+
+        var response = await PostCuritibaAsync(client, "/Checkout/Shipping", null);
+
+        var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
+        Assert.Contains("Não foi possível calcular o frete agora. Tente de novo em alguns minutos.", html);
+        Assert.DoesNotContain("Continuar para o pagamento", html);
+    }
+
+    [Fact]
+    public async Task ShippingStep_WithAnInvalidAddress_DoesNotQuote()
+    {
+        var shipping = new FakeShippingQuotes();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+        var client = await LoggedInClientAsync(factory, "frete-cep-invalido@example.com");
+        await AddKitAuroraAsync(client);
+
+        var token = TokenFrom(await client.GetStringAsync("/Checkout"));
+        await client.PostAsync("/Checkout/Shipping", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["RecipientName"] = "Bruno Lima",
+            ["PostalCode"] = "123",
+            ["Street"] = "Rua XV de Novembro",
+            ["Number"] = "200",
+            ["District"] = "Centro",
+            ["City"] = "Curitiba",
+            ["State"] = "PR",
+            ["__RequestVerificationToken"] = token,
+        }));
+
+        Assert.Empty(shipping.Requests);
+    }
+
+    [Fact]
+    public async Task OrderPage_ShowsTheChosenServiceAndDeliveryTime()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync(new FakeShippingQuotes());
+        var client = await LoggedInClientAsync(factory, "frete-no-pedido@example.com");
+        await AddKitAuroraAsync(client);
+
+        var response = await PostCuritibaAsync(client, "/Checkout", "2");
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        var orderId = response.Headers.Location!.OriginalString.Split('/')[^1];
+        var html = WebUtility.HtmlDecode(await client.GetStringAsync($"/Orders/Details/{orderId}"));
+        Assert.Contains("(Correios SEDEX, até 3 dias)", html);
+        Assert.Contains("R$ 45,00", html);
     }
 }

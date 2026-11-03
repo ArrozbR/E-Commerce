@@ -26,7 +26,8 @@ internal sealed class AdminOrderQueries(AppDbContext db) : IAdminOrderQueries
                 o.Items.Select(i => new OrderLineView(i.ProductName, i.UnitPrice, i.Quantity)).OrderBy(l => l.ProductName).ToList(),
                 o.Total,
                 o.ShippingAddress,
-                o.TrackingCode))
+                o.TrackingCode,
+                o.ShippingService))
             .ToList();
     }
 }

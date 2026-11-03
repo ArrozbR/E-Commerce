@@ -13,14 +13,58 @@ internal sealed class CheckoutService(
     AppDbContext db,
     TimeProvider clock,
     IPaymentGateway payments,
+    IShippingQuotes shippingQuotes,
     IOptions<StripeOptions> stripe) : ICheckoutService
 {
+    public async Task<ShippingOptionsResult> QuoteShippingAsync(string customerId, string postalCode, CancellationToken cancellationToken = default)
+    {
+        var shippingItems = await ShippingItemsAsync(customerId, cancellationToken);
+        if (shippingItems.Count == 0)
+        {
+            return ShippingOptionsResult.Fail(PlaceOrderFailure.EmptyCart);
+        }
+
+        var quote = await shippingQuotes.QuoteAsync(postalCode, shippingItems, cancellationToken);
+        if (!quote.Available)
+        {
+            return ShippingOptionsResult.Fail(PlaceOrderFailure.ShippingUnavailable);
+        }
+
+        if (quote.Options.Count == 0)
+        {
+            return ShippingOptionsResult.Fail(PlaceOrderFailure.NoShippingOption);
+        }
+
+        return ShippingOptionsResult.Success(quote.Options);
+    }
+
     public async Task<PlaceOrderResult> PlaceOrderAsync(
         string customerId,
         ShippingAddress shippingAddress,
+        int shippingServiceId,
         string language = Order.DefaultLanguage,
         CancellationToken cancellationToken = default)
     {
+        var shippingItems = await ShippingItemsAsync(customerId, cancellationToken);
+        if (shippingItems.Count == 0)
+        {
+            return PlaceOrderResult.Fail(PlaceOrderFailure.EmptyCart);
+        }
+
+        var quote = await shippingQuotes.QuoteAsync(shippingAddress.PostalCode, shippingItems, cancellationToken);
+        if (!quote.Available)
+        {
+            return PlaceOrderResult.Fail(PlaceOrderFailure.ShippingUnavailable);
+        }
+
+        var chosen = quote.Options.FirstOrDefault(o => o.ServiceId == shippingServiceId);
+        if (chosen is null)
+        {
+            return PlaceOrderResult.Fail(PlaceOrderFailure.ShippingOptionGone);
+        }
+
+        var shipping = new ShippingChoice($"{chosen.Carrier} {chosen.Service}", chosen.Price, chosen.DeliveryDays);
+
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
 
         var cart = await db.Carts.SingleOrDefaultAsync(c => c.CustomerId == customerId, cancellationToken);
@@ -50,7 +94,7 @@ internal sealed class CheckoutService(
         }
 
         var items = cart.Items.Select(i => new OrderItem(i.ProductId, products[i.ProductId].Name, products[i.ProductId].Price, i.Quantity));
-        var order = new Order(customerId, clock.GetUtcNow(), items, shippingAddress, language);
+        var order = new Order(customerId, clock.GetUtcNow(), items, shippingAddress, shipping, language);
 
         db.Orders.Add(order);
         db.Carts.Remove(cart);
@@ -119,5 +163,21 @@ internal sealed class CheckoutService(
         }
 
         return new PaymentForm(order.Id, session.ClientSecret, stripe.Value.PublishableKey, order.Language);
+    }
+
+    private async Task<List<ShippingQuoteItem>> ShippingItemsAsync(string customerId, CancellationToken cancellationToken)
+    {
+        var cart = await db.Carts.AsNoTracking().SingleOrDefaultAsync(c => c.CustomerId == customerId, cancellationToken);
+        if (cart is null)
+        {
+            return [];
+        }
+
+        var productIds = cart.Items.Select(i => i.ProductId).ToList();
+        var products = await db.Products.AsNoTracking()
+            .Where(p => productIds.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id, cancellationToken);
+
+        return [.. cart.Items.Select(i => new ShippingQuoteItem(i.ProductId, products[i.ProductId].Package, products[i.ProductId].Price, i.Quantity))];
     }
 }

@@ -1,6 +1,6 @@
 # 0024. Frete por estado: grátis no Centro-Oeste, SP e RJ; R$ 15,00 nos demais
 
-- **Status:** Aceito
+- **Status:** Substituído pelo ADR 0041
 - **Data:** 2026-10-08
 - **Relacionado:** ADR 0002 (substitui o item "frete fixo"), `docs/DEFINICOES.md` D06
 

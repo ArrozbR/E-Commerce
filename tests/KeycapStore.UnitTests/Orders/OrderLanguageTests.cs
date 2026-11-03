@@ -8,8 +8,8 @@ public class OrderLanguageTests
         new("Bruno Lima", "Rua XV de Novembro", "200", null, "Centro", "Curitiba", "PR", "80020310");
 
     private static Order NewOrder(string? language = null) => language is null
-        ? new Order("customer-1", DateTimeOffset.UtcNow, [new OrderItem(Guid.NewGuid(), "Kit", 100m, 1)], Curitiba)
-        : new Order("customer-1", DateTimeOffset.UtcNow, [new OrderItem(Guid.NewGuid(), "Kit", 100m, 1)], Curitiba, language);
+        ? new Order("customer-1", DateTimeOffset.UtcNow, [new OrderItem(Guid.NewGuid(), "Kit", 100m, 1)], Curitiba, TestShipping.Pac)
+        : new Order("customer-1", DateTimeOffset.UtcNow, [new OrderItem(Guid.NewGuid(), "Kit", 100m, 1)], Curitiba, TestShipping.Pac, language);
 
     [Fact]
     public void NewOrder_WithoutLanguage_IsInPortuguese()

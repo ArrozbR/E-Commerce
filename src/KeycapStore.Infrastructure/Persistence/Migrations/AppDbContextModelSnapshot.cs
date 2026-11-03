@@ -17,7 +17,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.13")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -46,8 +46,14 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("HeightCm")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("LengthCm")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -61,6 +67,13 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.Property<int>("Stock")
                         .HasColumnType("integer");
 
+                    b.Property<decimal>("WeightKg")
+                        .HasPrecision(6, 3)
+                        .HasColumnType("numeric(6,3)");
+
+                    b.Property<int>("WidthCm")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.ToTable("products", (string)null);
@@ -69,50 +82,74 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e01"),
+                            HeightCm = 6,
                             IsActive = true,
+                            LengthCm = 20,
                             Name = "Kit Aurora (base)",
                             Price = 349.90m,
-                            Stock = 40
+                            Stock = 40,
+                            WeightKg = 0.8m,
+                            WidthCm = 30
                         },
                         new
                         {
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e02"),
+                            HeightCm = 4,
                             IsActive = true,
+                            LengthCm = 12,
                             Name = "Kit Aurora (novelties)",
                             Price = 129.90m,
-                            Stock = 3
+                            Stock = 3,
+                            WeightKg = 0.3m,
+                            WidthCm = 20
                         },
                         new
                         {
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e03"),
+                            HeightCm = 6,
                             IsActive = true,
+                            LengthCm = 20,
                             Name = "Kit Maré (base)",
                             Price = 319.90m,
-                            Stock = 25
+                            Stock = 25,
+                            WeightKg = 0.8m,
+                            WidthCm = 30
                         },
                         new
                         {
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e04"),
+                            HeightCm = 4,
                             IsActive = true,
+                            LengthCm = 12,
                             Name = "Kit Maré (modificadores)",
                             Price = 149.90m,
-                            Stock = 0
+                            Stock = 0,
+                            WeightKg = 0.3m,
+                            WidthCm = 20
                         },
                         new
                         {
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e05"),
+                            HeightCm = 6,
                             IsActive = true,
+                            LengthCm = 20,
                             Name = "Kit Zéfiro (base)",
                             Price = 299.90m,
-                            Stock = 12
+                            Stock = 12,
+                            WeightKg = 0.8m,
+                            WidthCm = 30
                         },
                         new
                         {
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e06"),
+                            HeightCm = 4,
                             IsActive = true,
+                            LengthCm = 12,
                             Name = "Kit Zéfiro (teclas de função)",
                             Price = 89.90m,
-                            Stock = 2
+                            Stock = 2,
+                            WeightKg = 0.3m,
+                            WidthCm = 20
                         });
                 });
 
@@ -137,9 +174,16 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<int?>("ShippingDeliveryDays")
+                        .HasColumnType("integer");
+
                     b.Property<decimal>("ShippingFee")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
+
+                    b.Property<string>("ShippingService")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Status")
                         .IsRequired()

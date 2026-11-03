@@ -46,7 +46,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 | Web API + SPA (React ou Angular) | ~~v4~~ **não planejado** (ADR 0025) | Não deixa o site mais bonito por si só (isso vem do design). A reformulação visual é a v3, em Razor. |
 | Interface de admin e cadastro de produtos por tela | ~~futuro~~ **v2** (ADR 0025) | Seed resolve a v1. |
 | Job de conciliação com a Stripe | ~~futuro~~ **v2** (ADR 0025; ADR 0037: pedidos parados, a cada 10 min, corrigidos pelo caminho do webhook) | O webhook é a fonte da verdade, e a conciliação é só rede de segurança. |
-| Cálculo de frete (Correios, Melhor Envio) | ~~futuro~~ **v2** (ADR 0025) | Fora da v1: é um poço de complexidade. Na v2, substitui a regra por estado (ADR 0024); verificar o plano gratuito antes. |
+| Cálculo de frete (Correios, Melhor Envio) | ~~futuro~~ **v2** (ADR 0025) | Fora da v1: é um poço de complexidade. Na v2, substitui a regra por estado (ADR 0024): **Melhor Envio**, só a cotação, com o cliente escolhendo o serviço (ADR 0041; Correios exigem contrato). |
 | Pré-venda (*group buy*) | ~~futuro (v3+)~~ **v2** (ADR 0025) | Muda o modelo de estoque (vagas, prazos longos, reembolsos parciais). |
 | Variações de produto (SKU) | fora | Cada kit é um produto próprio, como no mercado real. |
 | Boleto | fora | É lento, raramente é pago e prende estoque por dias. |
@@ -439,7 +439,7 @@ A v1 é **pronta para produção**, mas **não vai para produção**. Para ir, t
 | D03 | Keycaps em lotes limitados, marcas fictícias, sem variações, sem pré-venda | Café, prints, livros, produto digital |
 | D04 | Catálogo público; conta obrigatória para comprar | Catálogo fechado; compra como convidado |
 | D05 | Produtos via seed; endpoints de admin só para o envio, com uma página mínima de envio (ADR 0028) (na v1; tela de admin com cadastro de produtos na v2, ADR 0025 e ADR 0034: estoque por ajuste atômico, produto ativo/inativo) | Interface de admin completa na v1 |
-| D06 | ~~Frete fixo~~ Frete por estado (ADR 0024); endereço como snapshot no pedido (o endereço salvo da v2 só preenche o checkout, ADR 0035) | Integração com Correios ou Melhor Envio |
+| D06 | ~~Frete fixo~~ ~~Frete por estado (ADR 0024)~~ Frete cotado no Melhor Envio, serviço escolhido pelo cliente e recotado no servidor (ADR 0041); endereço como snapshot no pedido (o endereço salvo da v2 só preenche o checkout, ADR 0035) | Integração com Correios ou Melhor Envio |
 | D07 | ~~Stripe Checkout hospedado~~ Payment Element com a sessão do Checkout (`ui_mode: elements`, ADR 0040, v2) | Payment Element na v1 |
 | D08 | Cartão + Pix; o handler decide pelo `payment_status` | Boleto |
 | D09 | Webhook assinado como fonte da verdade; a página de retorno só consulta o backend | Confiar no redirecionamento; polling na Stripe como fonte principal |

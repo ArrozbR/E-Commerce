@@ -24,6 +24,9 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.ShippingFee)
             .HasPrecision(10, 2);
 
+        builder.Property(o => o.ShippingService)
+            .HasMaxLength(ShippingChoice.MaxServiceNameLength);
+
         builder.Property(o => o.StripeSessionId)
             .HasMaxLength(255);
 

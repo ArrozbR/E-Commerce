@@ -16,13 +16,42 @@ public class ProductFormViewModel
     [Required(ErrorMessage = "Informe o preço.")]
     public string Price { get; set; } = string.Empty;
 
+    [Required(ErrorMessage = "Informe o peso.")]
+    public string Weight { get; set; } = string.Empty;
+
+    [Range(1, ProductPackage.MaxSideCm, ErrorMessage = "As medidas vão de {1} a {2} cm.")]
+    public int WidthCm { get; set; }
+
+    [Range(1, ProductPackage.MaxSideCm, ErrorMessage = "As medidas vão de {1} a {2} cm.")]
+    public int HeightCm { get; set; }
+
+    [Range(1, ProductPackage.MaxSideCm, ErrorMessage = "As medidas vão de {1} a {2} cm.")]
+    public int LengthCm { get; set; }
+
     public bool TryGetPrice(out decimal price) =>
         decimal.TryParse(Price, NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out price)
         && price > 0
         && price <= MaxPrice
         && decimal.Round(price, 2) == price;
 
+    public bool TryGetPackage(out ProductPackage? package)
+    {
+        package = null;
+        if (!decimal.TryParse(Weight, NumberStyles.AllowDecimalPoint, CultureInfo.CurrentCulture, out var weight)
+            || weight <= 0
+            || weight > ProductPackage.MaxWeightKg
+            || decimal.Round(weight, 3) != weight)
+        {
+            return false;
+        }
+
+        package = new ProductPackage(weight, WidthCm, HeightCm, LengthCm);
+        return true;
+    }
+
     public static string FormatPrice(decimal price) => price.ToString("0.00", CultureInfo.CurrentCulture);
+
+    public static string FormatWeight(decimal weightKg) => weightKg.ToString("0.###", CultureInfo.CurrentCulture);
 }
 
 public sealed class NewProductViewModel : ProductFormViewModel

@@ -97,7 +97,7 @@ public class EnglishPagesTests(PostgresFixture postgres) : IClassFixture<Postgre
         {
             var user = await scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>().FindByEmailAsync("pedido-ingles@example.com");
             await scope.ServiceProvider.GetRequiredService<ICartService>().AddItemAsync(user!.Id, KitAurora, 1);
-            var placed = await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(user.Id, Curitiba);
+            var placed = await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(user.Id, Curitiba, TestShipping.PacServiceId);
             orderId = placed.OrderId!.Value;
         }
         await InEnglishAsync(client);
@@ -105,7 +105,8 @@ public class EnglishPagesTests(PostgresFixture postgres) : IClassFixture<Postgre
         var html = await PageAsync(client, $"/Orders/Details/{orderId}");
 
         Assert.Contains("Order placed", html);
-        Assert.Contains(">Shipping<", html);
+        Assert.Contains("Shipping", html);
+        Assert.Contains("(Correios PAC, up to 7 days)", html);
         Assert.Contains(">R$15.00<", html);
         Assert.Contains(">R$364.90<", html);
         Assert.Contains("Postal code 80020-310", html);

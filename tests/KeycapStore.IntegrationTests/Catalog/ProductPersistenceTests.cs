@@ -21,7 +21,7 @@ public class ProductPersistenceTests(PostgresFixture postgres) : IClassFixture<P
             await db.Database.MigrateAsync();
         }
 
-        var product = new Product("Kit Aurora (base)", 349.90m, 40);
+        var product = new Product("Kit Aurora (base)", 349.90m, 40, TestPackage.Standard);
 
         await using (var db = CreateContext())
         {
@@ -36,7 +36,23 @@ public class ProductPersistenceTests(PostgresFixture postgres) : IClassFixture<P
             Assert.Equal(product.Name, saved.Name);
             Assert.Equal(product.Price, saved.Price);
             Assert.Equal(product.Stock, saved.Stock);
+            Assert.Equal(product.Package, saved.Package);
         }
+    }
+
+    [Theory]
+    [InlineData("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e01", "0.8", 30, 6, 20)]
+    [InlineData("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e02", "0.3", 20, 4, 12)]
+    [InlineData("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e05", "0.8", 30, 6, 20)]
+    [InlineData("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e06", "0.3", 20, 4, 12)]
+    public async Task SeededKits_HaveTheirPackage(string id, string weight, int widthCm, int heightCm, int lengthCm)
+    {
+        await using var db = CreateContext();
+        await db.Database.MigrateAsync();
+
+        var kit = await db.Products.AsNoTracking().SingleAsync(p => p.Id == Guid.Parse(id));
+
+        Assert.Equal(new ProductPackage(decimal.Parse(weight, System.Globalization.CultureInfo.InvariantCulture), widthCm, heightCm, lengthCm), kit.Package);
     }
 
     [Fact]
@@ -58,7 +74,7 @@ public class ProductPersistenceTests(PostgresFixture postgres) : IClassFixture<P
             await db.Database.MigrateAsync();
         }
 
-        var product = new Product("Kit Fora de Venda", 100m, 5);
+        var product = new Product("Kit Fora de Venda", 100m, 5, TestPackage.Standard);
         product.Deactivate();
 
         await using (var db = CreateContext())
@@ -82,7 +98,7 @@ public class ProductPersistenceTests(PostgresFixture postgres) : IClassFixture<P
             await db.Database.MigrateAsync();
         }
 
-        var product = new Product("Kit Edição Concorrente", 100m, 5);
+        var product = new Product("Kit Edição Concorrente", 100m, 5, TestPackage.Standard);
         await using (var db = CreateContext())
         {
             db.Products.Add(product);

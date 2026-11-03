@@ -53,7 +53,7 @@ public class EnglishMessagesTests(PostgresFixture postgres) : IClassFixture<Post
         await using var scope = factory.Services.CreateAsyncScope();
         var user = await scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>().FindByEmailAsync(email);
         await scope.ServiceProvider.GetRequiredService<ICartService>().AddItemAsync(user!.Id, KitAurora, 1);
-        var placed = await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(user.Id, Curitiba);
+        var placed = await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(user.Id, Curitiba, TestShipping.PacServiceId);
         return placed.OrderId!.Value;
     }
 

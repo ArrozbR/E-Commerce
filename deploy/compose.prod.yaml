@@ -11,6 +11,8 @@ services:
       Stripe__PublishableKey: ${STRIPE_PUBLISHABLE_KEY:?defina STRIPE_PUBLISHABLE_KEY no .env}
       Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:?defina GOOGLE_CLIENT_ID no .env}
       Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:?defina GOOGLE_CLIENT_SECRET no .env}
+      MelhorEnvio__Token: ${MELHOR_ENVIO_TOKEN:?defina MELHOR_ENVIO_TOKEN no .env}
+      MelhorEnvio__ContactEmail: ${MELHOR_ENVIO_CONTACT_EMAIL:?defina MELHOR_ENVIO_CONTACT_EMAIL no .env}
     depends_on:
       db:
         condition: service_healthy

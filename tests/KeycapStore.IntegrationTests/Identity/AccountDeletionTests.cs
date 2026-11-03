@@ -30,7 +30,7 @@ public class AccountDeletionTests(PostgresFixture postgres) : IClassFixture<Post
 
     private static async Task<Guid> SaveOrderAsync(WebApplicationFactory<Program> factory, string customerId, Action<Order> advance)
     {
-        var order = new Order(customerId, DateTimeOffset.UtcNow, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba);
+        var order = new Order(customerId, DateTimeOffset.UtcNow, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba, TestShipping.Pac);
         advance(order);
 
         await using var scope = factory.Services.CreateAsyncScope();

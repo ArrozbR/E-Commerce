@@ -23,14 +23,14 @@ public class StripeWebhookConfirmPaymentTests(PostgresFixture postgres) : IClass
 
     private static async Task<(Guid OrderId, Guid ProductId)> PlaceOrderAsync(WebApplicationFactory<Program> factory, string customerId)
     {
-        var product = new Product($"Kit Webhook {customerId}", 100m, 5);
+        var product = new Product($"Kit Webhook {customerId}", 100m, 5, TestPackage.Standard);
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Products.Add(product);
         await db.SaveChangesAsync();
 
         await scope.ServiceProvider.GetRequiredService<ICartService>().AddItemAsync(customerId, product.Id, 2);
-        var placed = await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(customerId, Curitiba);
+        var placed = await scope.ServiceProvider.GetRequiredService<ICheckoutService>().PlaceOrderAsync(customerId, Curitiba, TestShipping.PacServiceId);
 
         return (placed.OrderId!.Value, product.Id);
     }

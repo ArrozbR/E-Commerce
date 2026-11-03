@@ -9,8 +9,19 @@ public sealed class Product
     public decimal Price { get; private set; }
     public int Stock { get; private set; }
     public bool IsActive { get; private set; }
+    public decimal WeightKg { get; private set; }
+    public int WidthCm { get; private set; }
+    public int HeightCm { get; private set; }
+    public int LengthCm { get; private set; }
 
-    public Product(string name, decimal price, int stock)
+    public ProductPackage Package => new(WeightKg, WidthCm, HeightCm, LengthCm);
+
+    private Product()
+    {
+        Name = null!;
+    }
+
+    public Product(string name, decimal price, int stock, ProductPackage package)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(name.Length, MaxNameLength);
@@ -22,6 +33,7 @@ public sealed class Product
         Price = price;
         Stock = stock;
         IsActive = true;
+        ChangePackage(package);
     }
 
     public void Update(string name, decimal price)
@@ -32,6 +44,16 @@ public sealed class Product
 
         Name = name;
         Price = price;
+    }
+
+    public void ChangePackage(ProductPackage package)
+    {
+        ArgumentNullException.ThrowIfNull(package);
+
+        WeightKg = package.WeightKg;
+        WidthCm = package.WidthCm;
+        HeightCm = package.HeightCm;
+        LengthCm = package.LengthCm;
     }
 
     public void Deactivate()

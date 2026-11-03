@@ -44,6 +44,10 @@ else
                         @address.Street, @address.Number@(address.Complement is null ? "" : $" - {address.Complement}")<br />
                         @address.District, @address.City - @address.State<br />
                         @Localizer["CEP {0}", address.PostalCode.Insert(5, "-")]
+                        @if (order.ShippingService is not null)
+                        {
+                            <br /><strong>@Localizer["Envio: {0}", order.ShippingService]</strong>
+                        }
                     </td>
                     <td>
                         <strong>@SharedLocalizer[OrderStatusText.For(order.Status)]</strong>
