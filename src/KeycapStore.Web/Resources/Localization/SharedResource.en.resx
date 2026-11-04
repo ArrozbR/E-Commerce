@@ -324,4 +324,13 @@
   <data name="Lote confirmado" xml:space="preserve">
     <value>Batch confirmed</value>
   </data>
+  <data name="Datas recusadas: o fim precisa ser depois de agora e o envio depois do fim, em até {0} dias da criação da pré-venda." xml:space="preserve">
+    <value>Dates refused: the end must be after now and shipping after the end, within {0} days of the pre-order creation.</value>
+  </data>
+  <data name="Datas recusadas: o lote desta pré-venda já foi fechado." xml:space="preserve">
+    <value>Dates refused: this pre-order batch is already closed.</value>
+  </data>
+  <data name="Datas da pré-venda atualizadas." xml:space="preserve">
+    <value>Pre-order dates updated.</value>
+  </data>
 </root>

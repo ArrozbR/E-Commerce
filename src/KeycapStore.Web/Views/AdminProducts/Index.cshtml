@@ -90,6 +90,14 @@
                     @if (product.PreOrder is { } campaign)
                     {
                         <small class="text-muted">@Localizer["Pré-venda até {0} · envio previsto em {1} · mínimo {2}", Display.DateAndTime(campaign.EndsAt), Display.Date(campaign.ShipsAt), campaign.MinimumUnits]</small>
+                        @if (product.CanReschedule)
+                        {
+                            <form asp-action="Reschedule" asp-route-id="@product.Id" method="post" class="d-flex flex-wrap gap-1 mt-1">
+                                <input name="PreOrderEndsAt" type="datetime-local" value="@PreOrderScheduleViewModel.FormatEnd(campaign.EndsAt)" class="form-control form-control-sm" style="max-width: 13rem" aria-label="@Localizer["Fim da campanha"]" required />
+                                <input name="PreOrderShipsOn" type="date" value="@PreOrderScheduleViewModel.FormatShip(campaign.ShipsAt)" class="form-control form-control-sm" style="max-width: 10rem" aria-label="@Localizer["Envio previsto"]" required />
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">@Localizer["Salvar datas"]</button>
+                            </form>
+                        }
                     }
                 </td>
                 <td class="text-end"><strong>@product.Stock</strong></td>

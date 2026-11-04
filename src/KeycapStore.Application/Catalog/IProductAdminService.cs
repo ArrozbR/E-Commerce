@@ -2,7 +2,10 @@
 
 namespace KeycapStore.Application.Catalog;
 
-public sealed record AdminProductView(Guid Id, string Name, decimal Price, int Stock, bool IsActive, decimal WeightKg, int WidthCm, int HeightCm, int LengthCm, PreOrder? PreOrder = null);
+public sealed record AdminProductView(Guid Id, string Name, decimal Price, int Stock, bool IsActive, decimal WeightKg, int WidthCm, int HeightCm, int LengthCm, PreOrder? PreOrder = null, PreOrderOutcome? PreOrderOutcome = null)
+{
+    public bool CanReschedule => PreOrder is not null && PreOrderOutcome is null;
+}
 
 public interface IProductAdminService
 {
@@ -11,6 +14,8 @@ public interface IProductAdminService
     Task<Guid> CreateAsync(string name, decimal price, int stock, ProductPackage package, CancellationToken cancellationToken = default);
 
     Task<Guid> CreatePreOrderAsync(string name, decimal price, int slots, ProductPackage package, PreOrder preOrder, CancellationToken cancellationToken = default);
+
+    Task ReschedulePreOrderAsync(Guid productId, DateTimeOffset endsAt, DateTimeOffset shipsAt, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(Guid productId, string name, decimal price, ProductPackage package, CancellationToken cancellationToken = default);
 

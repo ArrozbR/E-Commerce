@@ -93,4 +93,7 @@
   <data name="Lote cancelado: o mínimo não foi atingido e o valor é devolvido automaticamente." xml:space="preserve">
     <value>Batch cancelled: the minimum was not reached and the payment is refunded automatically.</value>
   </data>
+  <data name="(na compra: {0})" xml:space="preserve">
+    <value>(at purchase: {0})</value>
+  </data>
 </root>

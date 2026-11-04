@@ -18,6 +18,7 @@ public sealed class Product
     public DateTimeOffset? PreOrderShipsAt { get; private set; }
     public int? PreOrderMinimumUnits { get; private set; }
     public PreOrderOutcome? PreOrderOutcome { get; private set; }
+    public DateTimeOffset? PreOrderOpenedAt { get; private set; }
 
     public ProductPackage Package => new(WeightKg, WidthCm, HeightCm, LengthCm);
 
@@ -58,7 +59,29 @@ public sealed class Product
             PreOrderEndsAt = preOrder.EndsAt,
             PreOrderShipsAt = preOrder.ShipsAt,
             PreOrderMinimumUnits = preOrder.MinimumUnits,
+            PreOrderOpenedAt = now.ToUniversalTime(),
         };
+    }
+
+    public void ReschedulePreOrder(DateTimeOffset endsAt, DateTimeOffset shipsAt, DateTimeOffset now)
+    {
+        if (PreOrder is not { } current || PreOrderOpenedAt is null)
+        {
+            throw new InvalidOperationException("O produto não é de pré-venda.");
+        }
+
+        if (PreOrderOutcome is not null)
+        {
+            throw new InvalidOperationException("A pré-venda já foi fechada.");
+        }
+
+        var schedule = new PreOrder(endsAt, shipsAt, current.MinimumUnits);
+
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(schedule.EndsAt, now, nameof(endsAt));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(schedule.ShipsAt, PreOrderOpenedAt!.Value + PreOrder.MaxLeadTime, nameof(shipsAt));
+
+        PreOrderEndsAt = schedule.EndsAt;
+        PreOrderShipsAt = schedule.ShipsAt;
     }
 
     public void Update(string name, decimal price)

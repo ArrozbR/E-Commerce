@@ -93,4 +93,7 @@
   <data name="Pré-venda até {0} · envio previsto em {1} · mínimo {2}" xml:space="preserve">
     <value>Pre-order until {0} · ships on {1} · minimum {2}</value>
   </data>
+  <data name="Salvar datas" xml:space="preserve">
+    <value>Save dates</value>
+  </data>
 </root>

@@ -270,4 +270,76 @@ public class ProductTests
 
         Assert.Throws<InvalidOperationException>(product.ConfirmPreOrder);
     }
+
+    [Fact]
+    public void ForPreOrder_RemembersWhenTheCampaignWasCreated()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+
+        Assert.Equal(Now, product.PreOrderOpenedAt);
+    }
+
+    [Fact]
+    public void ReschedulePreOrder_ChangesTheDates_AndKeepsTheMinimum()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(minimum: 20), Now);
+
+        product.ReschedulePreOrder(Now.AddDays(20), Now.AddDays(60), Now.AddDays(5));
+
+        Assert.Equal(new PreOrder(Now.AddDays(20), Now.AddDays(60), 20), product.PreOrder);
+    }
+
+    [Fact]
+    public void ReschedulePreOrder_CanReopenACampaignThatEndedButIsNotClosed()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(endsInDays: 1), Now);
+
+        product.ReschedulePreOrder(Now.AddDays(3), Now.AddDays(40), Now.AddDays(2));
+
+        Assert.True(product.PreOrder!.IsOpenAt(Now.AddDays(2)));
+    }
+
+    [Fact]
+    public void ReschedulePreOrder_EndNotAfterNow_Throws()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => product.ReschedulePreOrder(Now.AddDays(5), Now.AddDays(40), Now.AddDays(5)));
+    }
+
+    [Fact]
+    public void ReschedulePreOrder_ShippingAfter80DaysFromTheCreation_Throws_EvenIfWithin80DaysFromNow()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            product.ReschedulePreOrder(Now.AddDays(30), Now.AddDays(80).AddMinutes(1), Now.AddDays(20)));
+    }
+
+    [Fact]
+    public void ReschedulePreOrder_ShippingIn80DaysFromTheCreation_IsAccepted()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+
+        product.ReschedulePreOrder(Now.AddDays(30), Now.AddDays(80), Now.AddDays(20));
+
+        Assert.Equal(Now.AddDays(80), product.PreOrder!.ShipsAt);
+    }
+
+    [Fact]
+    public void ReschedulePreOrder_AfterTheClosing_Throws()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+        product.ConfirmPreOrder();
+
+        Assert.Throws<InvalidOperationException>(() => product.ReschedulePreOrder(Now.AddDays(20), Now.AddDays(60), Now));
+    }
+
+    [Fact]
+    public void ReschedulePreOrder_OfANormalProduct_Throws()
+    {
+        var product = new Product("Kit", 100m, 5, TestPackage.Standard);
+
+        Assert.Throws<InvalidOperationException>(() => product.ReschedulePreOrder(Now.AddDays(20), Now.AddDays(60), Now));
+    }
 }

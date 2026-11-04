@@ -20,6 +20,8 @@ public static class Display
     public static string Date(DateTimeOffset moment) =>
         TimeZoneInfo.ConvertTime(moment, Brasilia).ToString("d", CultureInfo.CurrentCulture);
 
+    public static DateTimeOffset InBrasilia(DateTimeOffset moment) => TimeZoneInfo.ConvertTime(moment, Brasilia);
+
     public static DateTimeOffset FromBrasilia(DateTime local)
     {
         var unspecified = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);

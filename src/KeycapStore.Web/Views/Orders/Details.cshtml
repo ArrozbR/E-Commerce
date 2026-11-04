@@ -13,7 +13,12 @@
     @Localizer["Situação:"] <strong>@status</strong>
     @if (Model.PreOrderShipsAt is { } shipsAt)
     {
-        <br />@SharedLocalizer["Pré-venda · envio previsto em {0}", Display.Date(shipsAt)]
+        var currentShipsAt = Model.PreOrderCurrentShipsAt ?? shipsAt;
+        <br />@SharedLocalizer["Pré-venda · envio previsto em {0}", Display.Date(currentShipsAt)]
+        @if (Display.Date(currentShipsAt) != Display.Date(shipsAt))
+        {
+            <small class="text-muted">@Localizer["(na compra: {0})", Display.Date(shipsAt)]</small>
+        }
         @if (Model.PreOrderOutcome is KeycapStore.Domain.Catalog.PreOrderOutcome.Confirmed)
         {
             <br /><strong>@Localizer["Lote confirmado: o pedido será enviado perto da data prevista."]</strong>
