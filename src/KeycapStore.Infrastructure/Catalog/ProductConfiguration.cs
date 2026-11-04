@@ -25,6 +25,10 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Ignore(p => p.Package);
         builder.Ignore(p => p.PreOrder);
 
+        builder.Property(p => p.PreOrderOutcome)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
         builder.HasData(
             new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e01"), Name = "Kit Aurora (base)", Price = 349.90m, Stock = 40, IsActive = true, WeightKg = 0.8m, WidthCm = 30, HeightCm = 6, LengthCm = 20 },
             new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e02"), Name = "Kit Aurora (novelties)", Price = 129.90m, Stock = 3, IsActive = true, WeightKg = 0.3m, WidthCm = 20, HeightCm = 4, LengthCm = 12 },

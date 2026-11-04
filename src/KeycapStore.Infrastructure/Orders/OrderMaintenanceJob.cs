@@ -23,6 +23,7 @@ public sealed class OrderMaintenanceJob(IServiceScopeFactory scopes, ILogger<Ord
             ticks++;
 
             await RunAsync<IOrphanOrderReleaser>((releaser, ct) => releaser.ReleaseOrphansAsync(ct), stoppingToken);
+            await RunAsync<IPreOrderCloser>((closer, ct) => closer.CloseDueCampaignsAsync(ct), stoppingToken);
             await RunAsync<IRefundProcessor>((refunds, ct) => refunds.RefundPendingAsync(ct), stoppingToken);
 
             if (ticks % ReconcileEveryTicks == 0)

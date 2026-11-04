@@ -17,6 +17,7 @@ public sealed class Product
     public DateTimeOffset? PreOrderEndsAt { get; private set; }
     public DateTimeOffset? PreOrderShipsAt { get; private set; }
     public int? PreOrderMinimumUnits { get; private set; }
+    public PreOrderOutcome? PreOrderOutcome { get; private set; }
 
     public ProductPackage Package => new(WeightKg, WidthCm, HeightCm, LengthCm);
 
@@ -78,6 +79,26 @@ public sealed class Product
         WidthCm = package.WidthCm;
         HeightCm = package.HeightCm;
         LengthCm = package.LengthCm;
+    }
+
+    public void ConfirmPreOrder() => ClosePreOrder(Catalog.PreOrderOutcome.Confirmed);
+
+    public void CancelPreOrder() => ClosePreOrder(Catalog.PreOrderOutcome.Cancelled);
+
+    private void ClosePreOrder(PreOrderOutcome outcome)
+    {
+        if (PreOrder is null)
+        {
+            throw new InvalidOperationException("O produto não é de pré-venda.");
+        }
+
+        if (PreOrderOutcome is not null)
+        {
+            throw new InvalidOperationException("A pré-venda já foi fechada.");
+        }
+
+        PreOrderOutcome = outcome;
+        IsActive = false;
     }
 
     public void Deactivate()

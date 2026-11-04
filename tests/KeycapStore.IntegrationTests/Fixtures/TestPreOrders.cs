@@ -21,12 +21,13 @@ public static class TestPreOrders
         return product.Id;
     }
 
-    public static async Task EndCampaignAsync(WebApplicationFactory<Program> factory, Guid productId)
+    public static async Task EndCampaignAsync(WebApplicationFactory<Program> factory, Guid productId, TimeSpan? ago = null)
     {
+        var endedAt = DateTimeOffset.UtcNow - (ago ?? TimeSpan.FromMinutes(1));
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.Products.Where(p => p.Id == productId)
-            .ExecuteUpdateAsync(s => s.SetProperty(p => p.PreOrderEndsAt, DateTimeOffset.UtcNow.AddMinutes(-1)));
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.PreOrderEndsAt, endedAt));
     }
 
     public static async Task<Guid> SaveOrderAsync(WebApplicationFactory<Program> factory, Guid productId, int quantity, Action<KeycapStore.Domain.Orders.Order>? advance = null)

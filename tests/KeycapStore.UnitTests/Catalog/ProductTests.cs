@@ -231,4 +231,43 @@ public class ProductTests
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             Product.ForPreOrder("Kit", 100m, slots, TestPackage.Standard, Campaign(minimum: 1), Now));
     }
+
+    [Fact]
+    public void ConfirmPreOrder_TakesTheProductOffSale()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+
+        product.ConfirmPreOrder();
+
+        Assert.Equal(PreOrderOutcome.Confirmed, product.PreOrderOutcome);
+        Assert.False(product.IsActive);
+    }
+
+    [Fact]
+    public void CancelPreOrder_TakesTheProductOffSale()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+
+        product.CancelPreOrder();
+
+        Assert.Equal(PreOrderOutcome.Cancelled, product.PreOrderOutcome);
+        Assert.False(product.IsActive);
+    }
+
+    [Fact]
+    public void ClosingTwice_Throws()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+        product.ConfirmPreOrder();
+
+        Assert.Throws<InvalidOperationException>(product.CancelPreOrder);
+    }
+
+    [Fact]
+    public void ClosingANormalProduct_Throws()
+    {
+        var product = new Product("Kit", 100m, 5, TestPackage.Standard);
+
+        Assert.Throws<InvalidOperationException>(product.ConfirmPreOrder);
+    }
 }
