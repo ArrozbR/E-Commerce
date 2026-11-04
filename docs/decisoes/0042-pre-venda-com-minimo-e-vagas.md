@@ -1,6 +1,6 @@
 # 0042. Pré-venda: vagas no estoque, quantidade mínima, fechamento automático e prazo de 80 dias
 
-- **Status:** Aceito
+- **Status:** Aceito (decisão 3 alterada pelo ADR 0043: o fim e o envio previsto podem mudar até o fechamento)
 - **Data:** 2026-11-03
 - **Relacionado:** ADR 0025 (roadmap da v2), ADR 0006 (estoque), ADR 0031 (cancelamento), ADR 0032 (arrependimento), ADR 0034 (cadastro de produtos), ADR 0041 (frete); `.claude/rules/pagamentos.md` §1, §4 e §5; `docs/DEFINICOES.md` D03 e §3
 

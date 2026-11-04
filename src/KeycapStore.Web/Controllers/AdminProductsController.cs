@@ -114,6 +114,30 @@ public sealed class AdminProductsController(IProductAdminService products, IStri
         return BackWithMessage(text["Produto de volta à venda."].Value);
     }
 
+    [HttpPost("{id:guid}/reschedule")]
+    public async Task<IActionResult> Reschedule(Guid id, PreOrderScheduleViewModel model, CancellationToken cancellationToken)
+    {
+        if (!model.TryGetDates(out var endsAt, out var shipsAt))
+        {
+            return BackWithError(text["Pré-venda: preencha o fim da campanha, o envio previsto (depois do fim) e o mínimo."].Value);
+        }
+
+        try
+        {
+            await products.ReschedulePreOrderAsync(id, endsAt, shipsAt, cancellationToken);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return BackWithError(text["Datas recusadas: o fim precisa ser depois de agora e o envio depois do fim, em até {0} dias da criação da pré-venda.", PreOrder.MaxLeadTime.Days].Value);
+        }
+        catch (InvalidOperationException)
+        {
+            return BackWithError(text["Datas recusadas: o lote desta pré-venda já foi fechado."].Value);
+        }
+
+        return BackWithMessage(text["Datas da pré-venda atualizadas."].Value);
+    }
+
     [HttpPost("{id:guid}/deactivate")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken cancellationToken)
     {

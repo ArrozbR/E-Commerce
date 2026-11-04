@@ -15,7 +15,7 @@ internal sealed class ProductAdminService(AppDbContext db, TimeProvider clock) :
             .OrderBy(p => p.Name)
             .ToListAsync(cancellationToken);
 
-        return [.. products.Select(p => new AdminProductView(p.Id, p.Name, p.Price, p.Stock, p.IsActive, p.WeightKg, p.WidthCm, p.HeightCm, p.LengthCm, p.PreOrder))];
+        return [.. products.Select(p => new AdminProductView(p.Id, p.Name, p.Price, p.Stock, p.IsActive, p.WeightKg, p.WidthCm, p.HeightCm, p.LengthCm, p.PreOrder, p.PreOrderOutcome))];
     }
 
     public async Task<Guid> CreateAsync(string name, decimal price, int stock, ProductPackage package, CancellationToken cancellationToken = default)
@@ -37,6 +37,9 @@ internal sealed class ProductAdminService(AppDbContext db, TimeProvider clock) :
 
         return product.Id;
     }
+
+    public Task ReschedulePreOrderAsync(Guid productId, DateTimeOffset endsAt, DateTimeOffset shipsAt, CancellationToken cancellationToken = default) =>
+        ApplyAsync(productId, product => product.ReschedulePreOrder(endsAt, shipsAt, clock.GetUtcNow()), cancellationToken);
 
     public Task UpdateAsync(Guid productId, string name, decimal price, ProductPackage package, CancellationToken cancellationToken = default) =>
         ApplyAsync(productId, product =>

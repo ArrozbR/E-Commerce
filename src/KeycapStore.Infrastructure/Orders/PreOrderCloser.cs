@@ -47,7 +47,7 @@ internal sealed class PreOrderCloser(AppDbContext db, TimeProvider clock, ILogge
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
 
         var product = await db.Products.SingleAsync(p => p.Id == productId, cancellationToken);
-        if (product.PreOrderOutcome is not null)
+        if (product.PreOrderOutcome is not null || product.PreOrderEndsAt > clock.GetUtcNow() - ClosingDelay)
         {
             return false;
         }

@@ -24,7 +24,7 @@ internal sealed class OrderQueries(AppDbContext db, TimeProvider clock) : IOrder
 
         return new OrderView(order.Id, order.Status, order.CreatedAt, lines, order.ShippingFee, order.Total, order.ShippingAddress,
             order.CanWithdraw(clock.GetUtcNow()), order.DeliveredAt + Order.WithdrawalPeriod, order.ShippingService, order.ShippingDeliveryDays, order.PreOrderShipsAt,
-            await db.PreOrderOutcomeAsync(order, cancellationToken));
+            await db.PreOrderOutcomeAsync(order, cancellationToken), await db.CurrentShipsAtAsync(order, cancellationToken));
     }
 
     public async Task<IReadOnlyList<OrderSummaryView>> ListForCustomerAsync(string customerId, CancellationToken cancellationToken = default)

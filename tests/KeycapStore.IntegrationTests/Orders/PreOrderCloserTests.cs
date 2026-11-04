@@ -161,4 +161,20 @@ public class PreOrderCloserTests(PostgresFixture postgres) : IClassFixture<Postg
         Assert.Equal(OrderStatus.Paid, await StatusAsync(factory, otherOrder));
         Assert.Null((await ProductAsync(factory, other)).PreOrderOutcome);
     }
+
+    [Fact]
+    public async Task CampaignReopenedByTheAdmin_IsNotClosed()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var preOrder = await TestPreOrders.SaveOpenAsync(factory, "Kit Reaberto", minimum: 20);
+        await TestPreOrders.EndCampaignAsync(factory, preOrder, TwoHours);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<KeycapStore.Application.Catalog.IProductAdminService>()
+                .ReschedulePreOrderAsync(preOrder, DateTimeOffset.UtcNow.AddDays(5), DateTimeOffset.UtcNow.AddDays(30));
+        }
+
+        Assert.Equal(0, await CloseAsync(factory));
+        Assert.Null((await ProductAsync(factory, preOrder)).PreOrderOutcome);
+    }
 }

@@ -66,6 +66,9 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.Property<int?>("PreOrderMinimumUnits")
                         .HasColumnType("integer");
 
+                    b.Property<DateTimeOffset?>("PreOrderOpenedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("PreOrderOutcome")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");

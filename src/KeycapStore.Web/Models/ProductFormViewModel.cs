@@ -94,3 +94,29 @@ public static class AdminLimits
 {
     public const int MaxStockChange = 100_000;
 }
+
+public sealed class PreOrderScheduleViewModel
+{
+    public string? PreOrderEndsAt { get; set; }
+
+    public string? PreOrderShipsOn { get; set; }
+
+    public bool TryGetDates(out DateTimeOffset endsAt, out DateTimeOffset shipsAt)
+    {
+        endsAt = default;
+        shipsAt = default;
+        if (!DateTime.TryParseExact(PreOrderEndsAt, "yyyy-MM-dd'T'HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var ends)
+            || !DateTime.TryParseExact(PreOrderShipsOn, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var ships))
+        {
+            return false;
+        }
+
+        endsAt = Display.FromBrasilia(ends);
+        shipsAt = Display.FromBrasilia(ships);
+        return true;
+    }
+
+    public static string FormatEnd(DateTimeOffset moment) => Display.InBrasilia(moment).ToString("yyyy-MM-dd'T'HH:mm", CultureInfo.InvariantCulture);
+
+    public static string FormatShip(DateTimeOffset moment) => Display.InBrasilia(moment).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+}
