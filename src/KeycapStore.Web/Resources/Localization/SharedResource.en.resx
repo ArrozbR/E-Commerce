@@ -351,4 +351,19 @@
   <data name="Muitas consultas de frete seguidas. Espere um minuto e tente de novo." xml:space="preserve">
     <value>Too many shipping quotes in a row. Wait a minute and try again.</value>
   </data>
+  <data name="Pagamento cancelado. Em alguns segundos o pedido aparece como expirado, os itens voltam para a loja e você já pode fazer outro pedido." xml:space="preserve">
+    <value>Payment cancelled. In a few seconds the order shows as expired, the items go back to the store and you can place another order.</value>
+  </data>
+  <data name="Este pedido não está mais aguardando pagamento." xml:space="preserve">
+    <value>This order is no longer awaiting payment.</value>
+  </data>
+  <data name="Não foi possível cancelar o pagamento agora. Tente de novo em alguns minutos." xml:space="preserve">
+    <value>The payment could not be cancelled right now. Try again in a few minutes.</value>
+  </data>
+  <data name="Só há {0} unidades deste kit disponíveis." xml:space="preserve">
+    <value>Only {0} units of this kit are available.</value>
+  </data>
+  <data name="Este kit está esgotado." xml:space="preserve">
+    <value>This kit is sold out.</value>
+  </data>
 </root>

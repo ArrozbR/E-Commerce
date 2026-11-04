@@ -11,6 +11,8 @@ public interface IPaymentGateway
     Task<string> GetPaymentIntentIdAsync(string checkoutSessionId, CancellationToken cancellationToken = default);
 
     Task<CheckoutSessionState> GetCheckoutSessionAsync(string checkoutSessionId, CancellationToken cancellationToken = default);
+
+    Task ExpireCheckoutSessionAsync(string checkoutSessionId, CancellationToken cancellationToken = default);
 }
 
 public sealed record CheckoutSession(string Id, string ClientSecret);

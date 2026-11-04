@@ -30,6 +30,12 @@ internal sealed class CartService(AppDbContext db, TimeProvider clock) : ICartSe
             }
         }
 
+        var inCart = cart?.Items.FirstOrDefault(i => i.ProductId == productId)?.Quantity ?? 0;
+        if ((long)inCart + quantity > product.Stock)
+        {
+            throw new CartStockLimitException(productId, product.Stock);
+        }
+
         if (cart is null)
         {
             cart = new Cart(customerId);
@@ -45,6 +51,12 @@ internal sealed class CartService(AppDbContext db, TimeProvider clock) : ICartSe
     {
         var cart = await db.Carts.SingleOrDefaultAsync(c => c.CustomerId == customerId, cancellationToken)
             ?? throw new CartItemNotFoundException(productId);
+
+        var stock = await db.Products.Where(p => p.Id == productId).Select(p => (int?)p.Stock).SingleOrDefaultAsync(cancellationToken);
+        if (stock is { } available && quantity > available && quantity <= Cart.MaxQuantityPerItem)
+        {
+            throw new CartStockLimitException(productId, available);
+        }
 
         cart.ChangeQuantity(productId, quantity);
 
@@ -80,7 +92,7 @@ internal sealed class CartService(AppDbContext db, TimeProvider clock) : ICartSe
             .ToDictionaryAsync(p => p.Id, cancellationToken);
 
         var lines = cart.Items
-            .Select(i => new CartLineView(i.ProductId, products[i.ProductId].Name, products[i.ProductId].Price, i.Quantity, products[i.ProductId].IsActive, products[i.ProductId].PreOrderShipsAt))
+            .Select(i => new CartLineView(i.ProductId, products[i.ProductId].Name, products[i.ProductId].Price, i.Quantity, products[i.ProductId].IsActive, products[i.ProductId].Stock, products[i.ProductId].PreOrderShipsAt))
             .OrderBy(l => l.ProductName)
             .ToList();
 

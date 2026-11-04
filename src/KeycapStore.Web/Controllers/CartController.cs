@@ -40,6 +40,10 @@ public sealed class CartController(ICartService carts, IStringLocalizer<SharedRe
         {
             TempData["Error"] = LimitMessage();
         }
+        catch (CartStockLimitException ex)
+        {
+            TempData["Error"] = StockMessage(ex.Available);
+        }
 
         return RedirectToAction(nameof(Index));
     }
@@ -56,6 +60,10 @@ public sealed class CartController(ICartService carts, IStringLocalizer<SharedRe
         {
             TempData["Error"] = LimitMessage();
         }
+        catch (CartStockLimitException ex)
+        {
+            TempData["Error"] = StockMessage(ex.Available);
+        }
 
         return RedirectToAction(nameof(Index));
     }
@@ -69,4 +77,8 @@ public sealed class CartController(ICartService carts, IStringLocalizer<SharedRe
     }
 
     private string LimitMessage() => text["Cada kit vai no máximo {0} unidades por pedido.", Cart.MaxQuantityPerItem].Value;
+
+    private string StockMessage(int available) => available > 0
+        ? text["Só há {0} unidades deste kit disponíveis.", available].Value
+        : text["Este kit está esgotado."].Value;
 }

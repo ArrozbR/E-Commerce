@@ -137,8 +137,6 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.UseRateLimiter();
-
 app.MapStaticAssets();
 
 app.MapHealthChecks("/health");

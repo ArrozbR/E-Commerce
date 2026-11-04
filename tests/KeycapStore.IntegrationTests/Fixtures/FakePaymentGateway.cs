@@ -23,6 +23,10 @@ public sealed class FakePaymentGateway : IPaymentGateway
 
     public ConcurrentQueue<(Guid OrderId, string CustomerEmail, Uri ReturnUrl)> SessionRequests { get; } = [];
 
+    public bool FailExpirations { get; set; }
+
+    public ConcurrentQueue<string> ExpiredSessions { get; } = [];
+
     public static string ClientSecretFor(string sessionId) => $"{sessionId}_secret_de_teste";
 
     public Task<CheckoutSession> CreateCheckoutSessionAsync(Order order, string customerEmail, Uri returnUrl, CancellationToken cancellationToken = default)
@@ -68,5 +72,16 @@ public sealed class FakePaymentGateway : IPaymentGateway
         return Task.FromResult(Sessions.TryGetValue(checkoutSessionId, out var state)
             ? state
             : new CheckoutSessionState("open", "unpaid", null, null, null, ClientSecretFor(checkoutSessionId)));
+    }
+
+    public Task ExpireCheckoutSessionAsync(string checkoutSessionId, CancellationToken cancellationToken = default)
+    {
+        if (FailExpirations)
+        {
+            throw new PaymentGatewayException("Stripe recusou expirar a sessão (simulado).");
+        }
+
+        ExpiredSessions.Enqueue(checkoutSessionId);
+        return Task.CompletedTask;
     }
 }

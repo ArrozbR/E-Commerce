@@ -1,11 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using System.Security.Claims;
 using System.Threading.RateLimiting;
 
-using KeycapStore.Web.Localization;
-
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 
 namespace KeycapStore.Web.RateLimiting;
@@ -21,49 +16,30 @@ public sealed class ShippingQuoteLimitOptions
     public int TotalPerMinute { get; set; } = 100;
 }
 
-public static class ShippingQuoteRateLimit
+public sealed class ShippingQuoteLimiter : IDisposable
 {
-    public const string PolicyName = "shipping-quote";
-
     private static readonly TimeSpan Window = TimeSpan.FromMinutes(1);
 
-    public static IServiceCollection AddShippingQuoteRateLimit(this IServiceCollection services, IConfiguration configuration)
+    private readonly PartitionedRateLimiter<string> limiter;
+
+    public ShippingQuoteLimiter(IOptions<ShippingQuoteLimitOptions> options)
     {
-        services.AddOptions<ShippingQuoteLimitOptions>()
-            .Bind(configuration.GetSection(ShippingQuoteLimitOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        var limits = options.Value;
 
-        services.AddRateLimiter(options =>
-        {
-            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-            options.AddPolicy(PolicyName, context => RateLimitPartition.GetFixedWindowLimiter(
-                context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous",
-                _ => FixedWindow(LimitsOf(context).PerCustomerPerMinute)));
-
-            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
-                IsShippingQuote(context)
-                    ? RateLimitPartition.GetFixedWindowLimiter("all-customers", _ => FixedWindow(LimitsOf(context).TotalPerMinute))
-                    : RateLimitPartition.GetNoLimiter("not-limited"));
-
-            options.OnRejected = async (rejected, cancellationToken) =>
-            {
-                var text = rejected.HttpContext.RequestServices.GetRequiredService<IStringLocalizer<SharedResource>>();
-                rejected.HttpContext.Response.ContentType = "text/plain; charset=utf-8";
-                await rejected.HttpContext.Response.WriteAsync(
-                    text["Muitas consultas de frete seguidas. Espere um minuto e tente de novo."].Value, cancellationToken);
-            };
-        });
-
-        return services;
+        limiter = PartitionedRateLimiter.CreateChained(
+            PartitionedRateLimiter.Create<string, string>(customerId =>
+                RateLimitPartition.GetFixedWindowLimiter(customerId, _ => FixedWindow(limits.PerCustomerPerMinute))),
+            PartitionedRateLimiter.Create<string, string>(_ =>
+                RateLimitPartition.GetFixedWindowLimiter("all-customers", _ => FixedWindow(limits.TotalPerMinute))));
     }
 
-    private static bool IsShippingQuote(HttpContext context) =>
-        context.GetEndpoint()?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName == PolicyName;
+    public bool TryAcquire(string customerId)
+    {
+        using var lease = limiter.AttemptAcquire(customerId);
+        return lease.IsAcquired;
+    }
 
-    private static ShippingQuoteLimitOptions LimitsOf(HttpContext context) =>
-        context.RequestServices.GetRequiredService<IOptions<ShippingQuoteLimitOptions>>().Value;
+    public void Dispose() => limiter.Dispose();
 
     private static FixedWindowRateLimiterOptions FixedWindow(int permits) => new()
     {
@@ -72,4 +48,19 @@ public static class ShippingQuoteRateLimit
         QueueLimit = 0,
         AutoReplenishment = true,
     };
+}
+
+public static class ShippingQuoteRateLimit
+{
+    public static IServiceCollection AddShippingQuoteRateLimit(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<ShippingQuoteLimitOptions>()
+            .Bind(configuration.GetSection(ShippingQuoteLimitOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddSingleton<ShippingQuoteLimiter>();
+
+        return services;
+    }
 }

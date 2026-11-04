@@ -6,6 +6,11 @@
     var address = Model.ShippingAddress;
 }
 
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-info">@message</div>
+}
+
 <h1 class="mb-1">@Localizer["Pedido criado"]</h1>
 <p class="text-muted">
     @Localizer["Número: {0}", Model.Id]<br />
@@ -81,7 +86,12 @@
 }
 @if (awaitingPayment)
 {
-    <a asp-controller="Checkout" asp-action="Pay" asp-route-id="@Model.Id" class="btn btn-primary">@Localizer["Continuar o pagamento"]</a>
+    <div class="d-flex gap-2">
+        <a asp-controller="Checkout" asp-action="Pay" asp-route-id="@Model.Id" class="btn btn-primary">@Localizer["Continuar o pagamento"]</a>
+        <form asp-action="CancelPayment" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Cancelar o pagamento deste pedido? Os itens voltam para a loja."]');">
+            <button type="submit" class="btn btn-outline-secondary">@Localizer["Cancelar o pagamento"]</button>
+        </form>
+    </div>
     <p class="text-muted small mt-1">@Localizer["O pedido fica reservado por 30 minutos depois de criado. Depois disso, ele expira e o estoque volta à loja."]</p>
 }
 
