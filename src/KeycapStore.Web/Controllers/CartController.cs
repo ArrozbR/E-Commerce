@@ -1,16 +1,19 @@
 ﻿using System.Security.Claims;
 
 using KeycapStore.Application.Carts;
+using KeycapStore.Domain.Carts;
 using KeycapStore.Web.Filters;
+using KeycapStore.Web.Localization;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace KeycapStore.Web.Controllers;
 
 [Authorize]
 [DomainExceptionFilter]
-public sealed class CartController(ICartService carts) : Controller
+public sealed class CartController(ICartService carts, IStringLocalizer<SharedResource> text) : Controller
 {
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -25,7 +28,14 @@ public sealed class CartController(ICartService carts) : Controller
     [HttpPost]
     public async Task<IActionResult> Add(Guid productId, CancellationToken cancellationToken)
     {
-        await carts.AddItemAsync(CustomerId, productId, 1, cancellationToken);
+        try
+        {
+            await carts.AddItemAsync(CustomerId, productId, 1, cancellationToken);
+        }
+        catch (PreOrderMustBeAloneException)
+        {
+            TempData["Error"] = text["Kits de pré-venda são comprados sozinhos. Finalize ou esvazie o carrinho antes de adicionar este."].Value;
+        }
 
         return RedirectToAction(nameof(Index));
     }

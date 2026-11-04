@@ -162,4 +162,112 @@ public class ProductTests
 
         Assert.Equal(new ProductPackage(1.25m, 40, 8, 25), product.Package);
     }
+
+    private static readonly DateTimeOffset Now = new(2026, 11, 3, 12, 0, 0, TimeSpan.Zero);
+
+    private static PreOrder Campaign(int endsInDays = 10, int shipsInDays = 40, int minimum = 20) =>
+        new(Now.AddDays(endsInDays), Now.AddDays(shipsInDays), minimum);
+
+    [Fact]
+    public void NormalProduct_IsNotAPreOrder()
+    {
+        var product = new Product("Kit Aurora (base)", 349.90m, 40, TestPackage.Standard);
+
+        Assert.Null(product.PreOrder);
+    }
+
+    [Fact]
+    public void ForPreOrder_UsesTheSlotsAsStock_AndKeepsTheCampaign()
+    {
+        var product = Product.ForPreOrder("Kit Nebulosa (base)", 399.90m, 50, TestPackage.Standard, Campaign(), Now);
+
+        Assert.Equal(50, product.Stock);
+        Assert.True(product.IsActive);
+        Assert.Equal(Campaign(), product.PreOrder);
+    }
+
+    [Fact]
+    public void ForPreOrder_ThatAlreadyEnded_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, new PreOrder(Now, Now.AddDays(30), 5), Now));
+    }
+
+    [Fact]
+    public void ForPreOrder_ShippingAfter80Days_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, new PreOrder(Now.AddDays(10), Now.AddDays(80).AddMinutes(1), 5), Now));
+    }
+
+    [Fact]
+    public void ForPreOrder_ShippingIn80Days_IsAccepted()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, new PreOrder(Now.AddDays(10), Now.AddDays(80), 5), Now);
+
+        Assert.Equal(Now.AddDays(80), product.PreOrder!.ShipsAt);
+    }
+
+    [Fact]
+    public void ForPreOrder_MinimumAboveTheSlots_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(minimum: 51), Now));
+    }
+
+    [Fact]
+    public void ForPreOrder_MinimumEqualToTheSlots_IsAccepted()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(minimum: 50), Now);
+
+        Assert.Equal(50, product.PreOrder!.MinimumUnits);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void ForPreOrder_WithoutSlots_Throws(int slots)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            Product.ForPreOrder("Kit", 100m, slots, TestPackage.Standard, Campaign(minimum: 1), Now));
+    }
+
+    [Fact]
+    public void ConfirmPreOrder_TakesTheProductOffSale()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+
+        product.ConfirmPreOrder();
+
+        Assert.Equal(PreOrderOutcome.Confirmed, product.PreOrderOutcome);
+        Assert.False(product.IsActive);
+    }
+
+    [Fact]
+    public void CancelPreOrder_TakesTheProductOffSale()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+
+        product.CancelPreOrder();
+
+        Assert.Equal(PreOrderOutcome.Cancelled, product.PreOrderOutcome);
+        Assert.False(product.IsActive);
+    }
+
+    [Fact]
+    public void ClosingTwice_Throws()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+        product.ConfirmPreOrder();
+
+        Assert.Throws<InvalidOperationException>(product.CancelPreOrder);
+    }
+
+    [Fact]
+    public void ClosingANormalProduct_Throws()
+    {
+        var product = new Product("Kit", 100m, 5, TestPackage.Standard);
+
+        Assert.Throws<InvalidOperationException>(product.ConfirmPreOrder);
+    }
 }

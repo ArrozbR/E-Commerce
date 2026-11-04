@@ -17,7 +17,7 @@ internal static class StockRelease
         }
     }
 
-    public static async Task<bool> TryReserveStockAsync(this AppDbContext db, Order order, CancellationToken cancellationToken)
+    public static async Task<bool> TryReserveStockAsync(this AppDbContext db, Order order, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var transaction = db.Database.CurrentTransaction
             ?? throw new InvalidOperationException("A reserva de estoque precisa de uma transação aberta.");
@@ -27,7 +27,8 @@ internal static class StockRelease
         foreach (var item in order.Items.OrderBy(i => i.ProductId))
         {
             var reserved = await db.Products
-                .Where(p => p.Id == item.ProductId && p.Stock >= item.Quantity && p.IsActive)
+                .Where(p => p.Id == item.ProductId && p.Stock >= item.Quantity && p.IsActive
+                    && (p.PreOrderEndsAt == null || p.PreOrderEndsAt > now))
                 .ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, p => p.Stock - item.Quantity), cancellationToken);
 
             if (reserved == 0)

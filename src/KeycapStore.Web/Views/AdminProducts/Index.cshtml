@@ -42,6 +42,24 @@
         </div>
     </div>
     <div class="col-12">
+        <div class="form-check">
+            <input id="new-preorder" name="IsPreOrder" type="checkbox" value="true" class="form-check-input" />
+            <label for="new-preorder" class="form-check-label">@Localizer["Pré-venda (as vagas são o estoque inicial; nada disso muda depois)"]</label>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <label for="new-preorder-ends" class="form-label">@Localizer["Fim da campanha"]</label>
+        <input id="new-preorder-ends" name="PreOrderEndsAt" type="datetime-local" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label for="new-preorder-ships" class="form-label">@Localizer["Envio previsto"]</label>
+        <input id="new-preorder-ships" name="PreOrderShipsOn" type="date" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label for="new-preorder-minimum" class="form-label">@Localizer["Mínimo para o lote sair"]</label>
+        <input id="new-preorder-minimum" name="PreOrderMinimum" type="number" min="1" class="form-control" />
+    </div>
+    <div class="col-12">
         <button type="submit" class="btn btn-primary">@Localizer["Criar produto"]</button>
     </div>
 </form>
@@ -69,6 +87,10 @@
                         <input name="LengthCm" value="@product.LengthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control form-control-sm" style="max-width: 4.5rem" aria-label="@Localizer["Comprimento"]" required />
                         <button type="submit" class="btn btn-sm btn-outline-primary">@Localizer["Salvar"]</button>
                     </form>
+                    @if (product.PreOrder is { } campaign)
+                    {
+                        <small class="text-muted">@Localizer["Pré-venda até {0} · envio previsto em {1} · mínimo {2}", Display.DateAndTime(campaign.EndsAt), Display.Date(campaign.ShipsAt), campaign.MinimumUnits]</small>
+                    }
                 </td>
                 <td class="text-end"><strong>@product.Stock</strong></td>
                 <td>

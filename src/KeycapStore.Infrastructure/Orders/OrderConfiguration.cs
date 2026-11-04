@@ -27,6 +27,8 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.ShippingService)
             .HasMaxLength(ShippingChoice.MaxServiceNameLength);
 
+        builder.Property(o => o.PreOrderShipsAt);
+
         builder.Property(o => o.StripeSessionId)
             .HasMaxLength(255);
 

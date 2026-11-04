@@ -5,6 +5,11 @@
 
 <h1 class="mb-4">@Localizer["Carrinho"]</h1>
 
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-warning">@error</div>
+}
+
 @if (Model.Lines.Count == 0)
 {
     <p>@Localizer["Seu carrinho está vazio."] <a asp-controller="Catalog" asp-action="Index">@Localizer["Ver o catálogo"]</a></p>
@@ -27,6 +32,10 @@ else
                 <tr>
                     <td>
                         @line.ProductName
+                        @if (line.PreOrderShipsAt is { } shipsAt)
+                        {
+                            <br /><small class="text-muted">@SharedLocalizer["Pré-venda · envio previsto em {0}", Display.Date(shipsAt)]</small>
+                        }
                         @if (!line.IsAvailable)
                         {
                             <br /><span class="badge bg-secondary">@Localizer["Indisponível"]</span>

@@ -1,5 +1,6 @@
 ﻿using KeycapStore.Application.Orders;
 using KeycapStore.Domain.Carts;
+using KeycapStore.Domain.Catalog;
 using KeycapStore.Domain.Orders;
 using KeycapStore.Infrastructure.Persistence;
 
@@ -9,8 +10,21 @@ namespace KeycapStore.Infrastructure.Orders;
 
 internal sealed class ShippingService(AppDbContext db, TimeProvider clock) : IShippingService
 {
-    public Task StartPickingAsync(Guid orderId, CancellationToken cancellationToken = default) =>
-        ApplyAsync(orderId, order => order.StartPicking(), cancellationToken);
+    public async Task StartPickingAsync(Guid orderId, CancellationToken cancellationToken = default)
+    {
+        var order = await db.Orders.SingleOrDefaultAsync(o => o.Id == orderId, cancellationToken)
+            ?? throw new OrderNotFoundException(orderId);
+
+        var batchNotConfirmed = order.PreOrderShipsAt is not null && await db.PreOrderOutcomeAsync(order, cancellationToken) is not PreOrderOutcome.Confirmed;
+        if (batchNotConfirmed)
+        {
+            throw new InvalidOrderTransitionException(order.Status, OrderStatus.Picking);
+        }
+
+        order.StartPicking();
+
+        await db.SaveChangesAsync(cancellationToken);
+    }
 
     public Task ShipAsync(Guid orderId, string trackingCode, CancellationToken cancellationToken = default) =>
         ApplyAsync(orderId, order => order.MarkShipped(trackingCode), cancellationToken);

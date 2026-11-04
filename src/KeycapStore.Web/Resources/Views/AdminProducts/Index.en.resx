@@ -78,4 +78,19 @@
   <data name="Nome, preço, peso (kg) e medidas (L × A × C, cm)" xml:space="preserve">
     <value>Name, price, weight (kg) and dimensions (W × H × L, cm)</value>
   </data>
+  <data name="Pré-venda (as vagas são o estoque inicial; nada disso muda depois)" xml:space="preserve">
+    <value>Pre-order (the slots are the initial stock; none of this changes later)</value>
+  </data>
+  <data name="Fim da campanha" xml:space="preserve">
+    <value>Campaign ends</value>
+  </data>
+  <data name="Envio previsto" xml:space="preserve">
+    <value>Expected to ship</value>
+  </data>
+  <data name="Mínimo para o lote sair" xml:space="preserve">
+    <value>Minimum for the batch</value>
+  </data>
+  <data name="Pré-venda até {0} · envio previsto em {1} · mínimo {2}" xml:space="preserve">
+    <value>Pre-order until {0} · ships on {1} · minimum {2}</value>
+  </data>
 </root>

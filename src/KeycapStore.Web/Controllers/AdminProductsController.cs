@@ -44,6 +44,25 @@ public sealed class AdminProductsController(IProductAdminService products, IStri
             return BackWithError(WeightError());
         }
 
+        if (model.IsPreOrder)
+        {
+            if (!model.TryGetPreOrder(out var preOrder))
+            {
+                return BackWithError(text["Pré-venda: preencha o fim da campanha, o envio previsto (depois do fim) e o mínimo."].Value);
+            }
+
+            try
+            {
+                await products.CreatePreOrderAsync(model.Name.Trim(), price, model.Stock, package!, preOrder!, cancellationToken);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return BackWithError(text["Pré-venda recusada: o fim precisa ser depois de agora, o envio em até {0} dias, as vagas (estoque inicial) maiores que zero e o mínimo até as vagas.", PreOrder.MaxLeadTime.Days].Value);
+            }
+
+            return BackWithMessage(text["Produto \"{0}\" criado.", model.Name.Trim()].Value);
+        }
+
         await products.CreateAsync(model.Name.Trim(), price, model.Stock, package!, cancellationToken);
 
         return BackWithMessage(text["Produto \"{0}\" criado.", model.Name.Trim()].Value);

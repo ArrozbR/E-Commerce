@@ -29,7 +29,7 @@ public class CatalogQueriesTests(PostgresFixture postgres) : IClassFixture<Postg
 
         await using (var db = CreateContext())
         {
-            var products = await new CatalogQueries(db).ListProductsAsync();
+            var products = await new CatalogQueries(db, TimeProvider.System).ListProductsAsync();
 
             var testProducts = products
                 .Where(p => p.Name.StartsWith("Test", StringComparison.Ordinal))
@@ -54,7 +54,7 @@ public class CatalogQueriesTests(PostgresFixture postgres) : IClassFixture<Postg
 
         await using (var db = CreateContext())
         {
-            var products = await new CatalogQueries(db).ListProductsAsync();
+            var products = await new CatalogQueries(db, TimeProvider.System).ListProductsAsync();
 
             var seedProducts = products
                 .Where(p => !p.Name.StartsWith("Test", StringComparison.Ordinal))
@@ -82,7 +82,7 @@ public class CatalogQueriesTests(PostgresFixture postgres) : IClassFixture<Postg
 
         await using (var db = CreateContext())
         {
-            var products = await new CatalogQueries(db).ListProductsAsync();
+            var products = await new CatalogQueries(db, TimeProvider.System).ListProductsAsync();
 
             Assert.DoesNotContain(products, p => p.Id == inactive.Id);
         }

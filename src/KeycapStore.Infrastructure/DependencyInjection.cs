@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IWithdrawalService, WithdrawalService>();
         services.AddScoped<ISavedAddressService, SavedAddressService>();
         services.AddScoped<IOrphanOrderReleaser, OrphanOrderReleaser>();
+        services.AddScoped<IPreOrderCloser, PreOrderCloser>();
         services.AddHostedService<OrderMaintenanceJob>();
         services.TryAddSingleton(TimeProvider.System);
         services.AddOptions<StripeOptions>()

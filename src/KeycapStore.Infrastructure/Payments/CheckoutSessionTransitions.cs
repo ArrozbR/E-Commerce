@@ -9,7 +9,7 @@ using Stripe.Checkout;
 
 namespace KeycapStore.Infrastructure.Payments;
 
-internal sealed class CheckoutSessionTransitions(AppDbContext db, ILogger<CheckoutSessionTransitions> logger)
+internal sealed class CheckoutSessionTransitions(AppDbContext db, TimeProvider clock, ILogger<CheckoutSessionTransitions> logger)
 {
     public static CheckoutSessionState StateOf(Session session) =>
         new(session.Status, session.PaymentStatus, session.AmountTotal, session.Currency, session.PaymentIntentId, session.ClientSecret);
@@ -58,7 +58,7 @@ internal sealed class CheckoutSessionTransitions(AppDbContext db, ILogger<Checko
         }
         else if (order.Status is OrderStatus.Expired or OrderStatus.Failed)
         {
-            if (await db.TryReserveStockAsync(order, cancellationToken))
+            if (await db.TryReserveStockAsync(order, clock.GetUtcNow(), cancellationToken))
             {
                 order.ConfirmLatePayment(session.PaymentIntentId);
             }

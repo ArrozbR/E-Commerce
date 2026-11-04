@@ -6,20 +6,31 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeycapStore.Infrastructure.Catalog;
 
-internal sealed class ProductAdminService(AppDbContext db) : IProductAdminService
+internal sealed class ProductAdminService(AppDbContext db, TimeProvider clock) : IProductAdminService
 {
     public async Task<IReadOnlyList<AdminProductView>> ListAsync(CancellationToken cancellationToken = default)
     {
-        return await db.Products
+        var products = await db.Products
             .AsNoTracking()
             .OrderBy(p => p.Name)
-            .Select(p => new AdminProductView(p.Id, p.Name, p.Price, p.Stock, p.IsActive, p.WeightKg, p.WidthCm, p.HeightCm, p.LengthCm))
             .ToListAsync(cancellationToken);
+
+        return [.. products.Select(p => new AdminProductView(p.Id, p.Name, p.Price, p.Stock, p.IsActive, p.WeightKg, p.WidthCm, p.HeightCm, p.LengthCm, p.PreOrder))];
     }
 
     public async Task<Guid> CreateAsync(string name, decimal price, int stock, ProductPackage package, CancellationToken cancellationToken = default)
     {
         var product = new Product(name, price, stock, package);
+
+        db.Products.Add(product);
+        await db.SaveChangesAsync(cancellationToken);
+
+        return product.Id;
+    }
+
+    public async Task<Guid> CreatePreOrderAsync(string name, decimal price, int slots, ProductPackage package, PreOrder preOrder, CancellationToken cancellationToken = default)
+    {
+        var product = Product.ForPreOrder(name, price, slots, package, preOrder, clock.GetUtcNow());
 
         db.Products.Add(product);
         await db.SaveChangesAsync(cancellationToken);

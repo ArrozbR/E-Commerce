@@ -51,13 +51,25 @@ else
                     </td>
                     <td>
                         <strong>@SharedLocalizer[OrderStatusText.For(order.Status)]</strong>
+                        @if (order.PreOrderShipsAt is { } shipsAt)
+                        {
+                            <br /><small>@SharedLocalizer["Pré-venda · envio previsto em {0}", Display.Date(shipsAt)]</small>
+                            @if (order.PreOrderOutcome is KeycapStore.Domain.Catalog.PreOrderOutcome.Confirmed)
+                            {
+                                <br /><small class="text-success">@SharedLocalizer["Lote confirmado"]</small>
+                            }
+                        }
                         @if (order.TrackingCode is not null)
                         {
                             <br /><small>@Localizer["Rastreio: {0}", order.TrackingCode]</small>
                         }
                     </td>
                     <td>
-                        @if (order.Status == KeycapStore.Domain.Orders.OrderStatus.Paid)
+                        @if (order.Status == KeycapStore.Domain.Orders.OrderStatus.Paid && order.WaitsForTheBatch)
+                        {
+                            <small class="text-muted">@Localizer["Aguardando o fechamento do lote"]</small>
+                        }
+                        else if (order.Status == KeycapStore.Domain.Orders.OrderStatus.Paid)
                         {
                             <form asp-action="StartPicking" asp-route-id="@order.Id" method="post">
                                 <button type="submit" class="btn btn-sm btn-primary">@Localizer["Iniciar separação"]</button>

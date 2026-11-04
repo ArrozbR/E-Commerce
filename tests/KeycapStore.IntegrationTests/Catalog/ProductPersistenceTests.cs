@@ -126,4 +126,33 @@ public class ProductPersistenceTests(PostgresFixture postgres) : IClassFixture<P
             Assert.Equal(4, saved.Stock);
         }
     }
+
+    [Fact]
+    public async Task PreOrderProduct_IsSavedAndReadBack()
+    {
+        await using (var db = CreateContext())
+        {
+            await db.Database.MigrateAsync();
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var campaign = new PreOrder(now.AddDays(10), now.AddDays(40), 20);
+        var product = Product.ForPreOrder("Kit Nebulosa (base)", 399.90m, 50, TestPackage.Standard, campaign, now);
+
+        await using (var db = CreateContext())
+        {
+            db.Products.Add(product);
+            await db.SaveChangesAsync();
+        }
+
+        await using (var db = CreateContext())
+        {
+            var saved = await db.Products.AsNoTracking().SingleAsync(p => p.Id == product.Id);
+
+            Assert.Equal(campaign.EndsAt.ToUnixTimeMilliseconds(), saved.PreOrder!.EndsAt.ToUnixTimeMilliseconds());
+            Assert.Equal(campaign.ShipsAt.ToUnixTimeMilliseconds(), saved.PreOrder.ShipsAt.ToUnixTimeMilliseconds());
+            Assert.Equal(20, saved.PreOrder.MinimumUnits);
+            Assert.Equal(50, saved.Stock);
+        }
+    }
 }

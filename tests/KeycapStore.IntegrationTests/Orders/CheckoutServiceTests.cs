@@ -255,4 +255,74 @@ public class CheckoutServiceTests(PostgresFixture postgres) : IClassFixture<Post
         Assert.Equal(PlaceOrderFailure.ShippingUnavailable, result.Failure);
         Assert.Equal(5, await StockOfAsync(factory, kit));
     }
+
+    [Fact]
+    public async Task PlaceOrder_PreOrderOpen_TakesASlot_AndKeepsTheExpectedShipDate()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var preOrder = await TestPreOrders.SaveOpenAsync(factory, "Kit Pré-venda Pedido", slots: 50);
+        await AddToCartAsync(factory, "customer-preorder", preOrder, 2);
+
+        var result = await PlaceOrderAsync(factory, "customer-preorder");
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(48, await StockOfAsync(factory, preOrder));
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var order = await db.Orders.AsNoTracking().SingleAsync(o => o.Id == result.OrderId);
+        var product = await db.Products.AsNoTracking().SingleAsync(p => p.Id == preOrder);
+        Assert.Equal(product.PreOrderShipsAt, order.PreOrderShipsAt);
+    }
+
+    [Fact]
+    public async Task PlaceOrder_NormalKit_HasNoExpectedShipDate()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var kit = await NewProductAsync(factory, "Kit Pronta Entrega", stock: 5);
+        await AddToCartAsync(factory, "customer-ready", kit, 1);
+
+        var result = await PlaceOrderAsync(factory, "customer-ready");
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var order = await scope.ServiceProvider.GetRequiredService<AppDbContext>().Orders.AsNoTracking().SingleAsync(o => o.Id == result.OrderId);
+        Assert.Null(order.PreOrderShipsAt);
+    }
+
+    [Fact]
+    public async Task PlaceOrder_AfterTheCampaignEnded_IsRefused_AndNoSlotIsTaken()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var preOrder = await TestPreOrders.SaveOpenAsync(factory, "Kit Pré-venda Fechou", slots: 50);
+        await AddToCartAsync(factory, "customer-preorder-ended", preOrder, 1);
+        await TestPreOrders.EndCampaignAsync(factory, preOrder);
+
+        var result = await PlaceOrderAsync(factory, "customer-preorder-ended");
+
+        Assert.Equal(PlaceOrderFailure.PreOrderClosed, result.Failure);
+        Assert.Equal("Kit Pré-venda Fechou", result.ProductName);
+        Assert.Equal(50, await StockOfAsync(factory, preOrder));
+    }
+
+    [Fact]
+    public async Task PlaceOrder_CartMixingAPreOrderWithAnotherKit_IsRefused()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var preOrder = await TestPreOrders.SaveOpenAsync(factory, "Kit Pré-venda Misturado", slots: 50);
+        var kit = await NewProductAsync(factory, "Kit Misturado", stock: 5);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var cart = new KeycapStore.Domain.Carts.Cart("customer-mixed");
+            cart.AddItem(preOrder, 1);
+            cart.AddItem(kit, 1);
+            db.Carts.Add(cart);
+            await db.SaveChangesAsync();
+        }
+
+        var result = await PlaceOrderAsync(factory, "customer-mixed");
+
+        Assert.Equal(PlaceOrderFailure.PreOrderMustBeAlone, result.Failure);
+        Assert.Equal(50, await StockOfAsync(factory, preOrder));
+        Assert.Equal(5, await StockOfAsync(factory, kit));
+    }
 }
