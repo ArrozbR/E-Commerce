@@ -325,4 +325,114 @@ public class CheckoutServiceTests(PostgresFixture postgres) : IClassFixture<Post
         Assert.Equal(50, await StockOfAsync(factory, preOrder));
         Assert.Equal(5, await StockOfAsync(factory, kit));
     }
+
+    [Fact]
+    public async Task PlaceOrder_WithAnotherOrderAwaitingPayment_IsRefused_AndNothingIsReserved()
+    {
+        var shipping = new FakeShippingQuotes();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+        var kit = await NewProductAsync(factory, "Kit Pedido Aberto", stock: 5);
+        await TestPreOrders.SaveOrderAsync(factory, kit, 1, customerId: "customer-open-order");
+        await AddToCartAsync(factory, "customer-open-order", kit, 2);
+
+        var result = await PlaceOrderAsync(factory, "customer-open-order");
+
+        Assert.Equal(PlaceOrderFailure.OpenOrderExists, result.Failure);
+        Assert.Equal(5, await StockOfAsync(factory, kit));
+        Assert.Empty(shipping.Requests);
+    }
+
+    [Fact]
+    public async Task QuoteShipping_WithAnotherOrderAwaitingPayment_IsRefused_WithoutCallingTheMelhorEnvio()
+    {
+        var shipping = new FakeShippingQuotes();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+        var kit = await NewProductAsync(factory, "Kit Cotação Com Pedido Aberto", stock: 5);
+        await TestPreOrders.SaveOrderAsync(factory, kit, 1, o => o.MarkAwaitingConfirmation(), customerId: "customer-open-quote");
+        await AddToCartAsync(factory, "customer-open-quote", kit, 1);
+
+        var result = await QuoteAsync(factory, "customer-open-quote");
+
+        Assert.Equal(PlaceOrderFailure.OpenOrderExists, result.Failure);
+        Assert.Empty(shipping.Requests);
+    }
+
+    [Fact]
+    public async Task PlaceOrder_AfterTheOpenOrderExpired_IsAccepted()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var kit = await NewProductAsync(factory, "Kit Pedido Expirado", stock: 5);
+        await TestPreOrders.SaveOrderAsync(factory, kit, 1, o => o.Expire(), customerId: "customer-expired-order");
+        await AddToCartAsync(factory, "customer-expired-order", kit, 1);
+
+        var result = await PlaceOrderAsync(factory, "customer-expired-order");
+
+        Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public async Task PlaceOrder_WhenAnOrderAppearsDuringTheQuote_IsRefusedByTheDatabase_AndNothingIsReserved()
+    {
+        var shipping = new FakeShippingQuotes();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+        var kit = await NewProductAsync(factory, "Kit Pedido Em Outra Aba", stock: 5);
+        await AddToCartAsync(factory, "customer-other-tab", kit, 2);
+        shipping.DuringQuote = () => TestPreOrders.SaveOrderAsync(factory, kit, 1, customerId: "customer-other-tab");
+
+        var result = await PlaceOrderAsync(factory, "customer-other-tab");
+
+        Assert.Equal(PlaceOrderFailure.OpenOrderExists, result.Failure);
+        Assert.Equal(5, await StockOfAsync(factory, kit));
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Equal(1, await db.Orders.CountAsync(o => o.CustomerId == "customer-other-tab"));
+        Assert.True(await db.Carts.AnyAsync(c => c.CustomerId == "customer-other-tab"));
+    }
+
+    [Fact]
+    public async Task Database_RefusesTwoOrdersAwaitingPaymentForTheSameCustomer()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var kit = await NewProductAsync(factory, "Kit Índice Pedido Aberto", stock: 5);
+        await TestPreOrders.SaveOrderAsync(factory, kit, 1, customerId: "customer-index");
+
+        var second = await Assert.ThrowsAsync<DbUpdateException>(() => TestPreOrders.SaveOrderAsync(factory, kit, 1, customerId: "customer-index"));
+
+        Assert.Contains("IX_orders_CustomerId_Open", second.InnerException!.Message);
+    }
+
+    [Fact]
+    public async Task PlaceOrder_WhenTheCartChangesDuringTheQuote_IsRefused_AndNothingIsReserved()
+    {
+        var shipping = new FakeShippingQuotes();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(shipping);
+        var kit = await NewProductAsync(factory, "Kit Carrinho Mudou", stock: 10);
+        await AddToCartAsync(factory, "customer-cart-changed", kit, 1);
+        shipping.DuringQuote = () => AddToCartAsync(factory, "customer-cart-changed", kit, 4);
+
+        var result = await PlaceOrderAsync(factory, "customer-cart-changed");
+
+        Assert.Equal(PlaceOrderFailure.CartChanged, result.Failure);
+        Assert.Equal(10, await StockOfAsync(factory, kit));
+    }
+
+    [Fact]
+    public async Task PlaceOrder_WithAnOldCartOverTheLimit_IsRefused_AndNothingIsReserved()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var kit = await NewProductAsync(factory, "Kit Carrinho Antigo", stock: 50);
+        await AddToCartAsync(factory, "customer-old-cart", kit, 1);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE cart_items SET \"Quantity\" = 30 WHERE \"ProductId\" = {kit}");
+        }
+
+        var result = await PlaceOrderAsync(factory, "customer-old-cart");
+
+        Assert.Equal(PlaceOrderFailure.QuantityLimit, result.Failure);
+        Assert.Equal("Kit Carrinho Antigo", result.ProductName);
+        Assert.Equal(50, await StockOfAsync(factory, kit));
+    }
 }

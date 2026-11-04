@@ -86,8 +86,9 @@ Ordem obrigatória:
     AND (pre_order_ends_at IS NULL OR pre_order_ends_at > @now)
   ```
   (ou `ExecuteUpdateAsync` equivalente). Se afetar 0 linhas, a transação inteira é desfeita, e o cliente vê "esgotado". **Nunca ler o estoque, checar em C# e depois gravar.** Produto inativo não é reservado, nem no "Finalizar" nem na nova reserva do pagamento atrasado (ADR 0034).
+- **Limites da reserva (ADR 0044):** no máximo **1 pedido aguardando pagamento por cliente** (índice único parcial `IX_orders_CustomerId_Open`, a violação vira a recusa `OpenOrderExists`) e no máximo **10 unidades por kit** (`Cart.MaxQuantityPerItem`). Os itens reservados são os **mesmos que foram cotados** no frete; se o carrinho mudou durante a cotação, o "Finalizar" é recusado (`CartChanged`). As cotações de frete têm limite por cliente e no total (`ShippingQuoteLimits`).
 - **Liberação SÓ por evento da Stripe** (`expired`, `async_payment_failed`). **Nunca por timer próprio.**
-- **Pré-venda (ADR 0042):** as vagas do lote são o próprio `Stock` e a reserva é a mesma; a campanha precisa estar aberta (condição acima, também na nova reserva do pagamento atrasado). Um lote que não atingiu o mínimo devolve as vagas pelo `Cancel()` de cada pedido.
+- **Pré-venda (ADR 0042):** as vagas do lote são o próprio `Stock` e a reserva é a mesma; a campanha precisa estar aberta (condição acima, também na nova reserva do pagamento atrasado). Um lote que não atingiu o mínimo devolve as vagas pelo `Cancel()` de cada pedido. O fechamento começa com um `UPDATE` condicional que tira o produto de venda e tranca a linha (ADR 0044); só depois confere pagamentos pendentes e conta as vendas. O "Salvar datas" grava com `WHERE` sem resultado do lote.
 - **Única exceção (D35):** um job libera pedidos `AwaitingPayment` **sem `StripeSessionId`** há mais de 10 minutos. Sem sessão, não existe forma de pagar.
 - Se a criação da sessão na Stripe falhar: `MarkFailed()` + liberar estoque (compensação).
 - **Ajuste de estoque pelo admin (ADR 0034):** sempre por diferença, `UPDATE products SET stock = stock + @delta WHERE id = @id AND stock + @delta >= 0`. Nunca gravar um valor final de estoque lido antes.

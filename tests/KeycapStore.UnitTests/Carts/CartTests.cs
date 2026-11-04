@@ -44,6 +44,50 @@ public class CartTests
     }
 
     [Fact]
+    public void AddItem_UpToTheLimit_IsAccepted()
+    {
+        var cart = NewCart();
+        cart.AddItem(KitA, Cart.MaxQuantityPerItem - 1);
+
+        cart.AddItem(KitA, 1);
+
+        Assert.Equal(Cart.MaxQuantityPerItem, Assert.Single(cart.Items).Quantity);
+    }
+
+    [Fact]
+    public void AddItem_PastTheLimit_ThrowsAndKeepsTheQuantity()
+    {
+        var cart = NewCart();
+        cart.AddItem(KitA, Cart.MaxQuantityPerItem);
+
+        Assert.Throws<CartItemLimitException>(() => cart.AddItem(KitA, 1));
+
+        Assert.Equal(Cart.MaxQuantityPerItem, Assert.Single(cart.Items).Quantity);
+    }
+
+    [Fact]
+    public void AddItem_WithAHugeQuantity_DoesNotOverflow()
+    {
+        var cart = NewCart();
+        cart.AddItem(KitA, 1);
+
+        Assert.Throws<CartItemLimitException>(() => cart.AddItem(KitA, int.MaxValue));
+
+        Assert.Equal(1, Assert.Single(cart.Items).Quantity);
+    }
+
+    [Fact]
+    public void ChangeQuantity_PastTheLimit_ThrowsAndKeepsTheQuantity()
+    {
+        var cart = NewCart();
+        cart.AddItem(KitA, 2);
+
+        Assert.Throws<CartItemLimitException>(() => cart.ChangeQuantity(KitA, Cart.MaxQuantityPerItem + 1));
+
+        Assert.Equal(2, Assert.Single(cart.Items).Quantity);
+    }
+
+    [Fact]
     public void ChangeQuantity_WithProductInCart_ReplacesQuantity()
     {
         var cart = NewCart();

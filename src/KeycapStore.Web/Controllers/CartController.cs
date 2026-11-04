@@ -36,6 +36,10 @@ public sealed class CartController(ICartService carts, IStringLocalizer<SharedRe
         {
             TempData["Error"] = text["Kits de pré-venda são comprados sozinhos. Finalize ou esvazie o carrinho antes de adicionar este."].Value;
         }
+        catch (CartItemLimitException)
+        {
+            TempData["Error"] = LimitMessage();
+        }
 
         return RedirectToAction(nameof(Index));
     }
@@ -44,7 +48,14 @@ public sealed class CartController(ICartService carts, IStringLocalizer<SharedRe
     [HttpPost]
     public async Task<IActionResult> ChangeQuantity(Guid productId, int quantity, CancellationToken cancellationToken)
     {
-        await carts.ChangeQuantityAsync(CustomerId, productId, quantity, cancellationToken);
+        try
+        {
+            await carts.ChangeQuantityAsync(CustomerId, productId, quantity, cancellationToken);
+        }
+        catch (CartItemLimitException)
+        {
+            TempData["Error"] = LimitMessage();
+        }
 
         return RedirectToAction(nameof(Index));
     }
@@ -56,4 +67,6 @@ public sealed class CartController(ICartService carts, IStringLocalizer<SharedRe
 
         return RedirectToAction(nameof(Index));
     }
+
+    private string LimitMessage() => text["Cada kit vai no máximo {0} unidades por pedido.", Cart.MaxQuantityPerItem].Value;
 }

@@ -336,4 +336,19 @@
   <data name="Uma pré-venda fechada não volta à venda." xml:space="preserve">
     <value>A closed pre-order cannot go back on sale.</value>
   </data>
+  <data name="Cada kit vai no máximo {0} unidades por pedido." xml:space="preserve">
+    <value>Each kit is limited to {0} units per order.</value>
+  </data>
+  <data name="{0} passa do limite de {1} unidades por pedido. Diminua a quantidade no carrinho." xml:space="preserve">
+    <value>{0} is over the limit of {1} units per order. Lower the quantity in your cart.</value>
+  </data>
+  <data name="Você já tem um pedido aguardando pagamento. Pague ou espere ele expirar (em Meus pedidos) antes de fazer outro." xml:space="preserve">
+    <value>You already have an order awaiting payment. Pay for it or wait for it to expire (in My orders) before placing another.</value>
+  </data>
+  <data name="Seu carrinho mudou enquanto o frete era calculado. Confira as opções de frete de novo." xml:space="preserve">
+    <value>Your cart changed while shipping was being calculated. Check the shipping options again.</value>
+  </data>
+  <data name="Muitas consultas de frete seguidas. Espere um minuto e tente de novo." xml:space="preserve">
+    <value>Too many shipping quotes in a row. Wait a minute and try again.</value>
+  </data>
 </root>

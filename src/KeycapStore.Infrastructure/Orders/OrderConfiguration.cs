@@ -8,6 +8,8 @@ namespace KeycapStore.Infrastructure.Orders;
 
 internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
 {
+    public const string OpenOrderPerCustomerIndex = "IX_orders_CustomerId_Open";
+
     public void Configure(EntityTypeBuilder<Order> builder)
     {
         builder.ToTable("orders");
@@ -16,6 +18,9 @@ internal sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.CustomerId)
             .HasMaxLength(450);
         builder.HasIndex(o => o.CustomerId);
+        builder.HasIndex(o => o.CustomerId, OpenOrderPerCustomerIndex)
+            .IsUnique()
+            .HasFilter($"\"Status\" IN ('{nameof(OrderStatus.AwaitingPayment)}', '{nameof(OrderStatus.AwaitingConfirmation)}')");
 
         builder.Property(o => o.Status)
             .HasConversion<string>()

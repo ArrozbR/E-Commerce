@@ -37,6 +37,20 @@ public class GoogleLoginTests(PostgresFixture postgres) : IClassFixture<Postgres
     private static async Task<string> CatalogAsync(HttpClient client) =>
         WebUtility.HtmlDecode(await client.GetStringAsync("/Catalog"));
 
+    private static async Task MakeAdminDirectlyAsync(WebApplicationFactory<Program> factory, string email)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        if (!await roles.RoleExistsAsync(AdminCommand.AdminRole))
+        {
+            await roles.CreateAsync(new IdentityRole(AdminCommand.AdminRole));
+        }
+
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var user = await users.FindByEmailAsync(email);
+        Assert.True((await users.AddToRoleAsync(user!, AdminCommand.AdminRole)).Succeeded);
+    }
+
     [Fact]
     public async Task FirstTimeWithGoogle_CreatesAnAccountWithoutPassword_AndSignsIn()
     {
@@ -91,7 +105,7 @@ public class GoogleLoginTests(PostgresFixture postgres) : IClassFixture<Postgres
         var google = new FakeGoogleAccount { Id = "google-admin", Email = "virou-admin@gmail.com" };
         await using var factory = await postgres.CreateMigratedFactoryAsync(google);
         await SignInWithGoogleAsync(PageClient.Anonymous(factory));
-        Assert.True((await factory.Services.CreateAdminAsync("virou-admin@gmail.com")).Succeeded);
+        await MakeAdminDirectlyAsync(factory, "virou-admin@gmail.com");
         var client = PageClient.Anonymous(factory);
 
         var response = await SignInWithGoogleAsync(client);

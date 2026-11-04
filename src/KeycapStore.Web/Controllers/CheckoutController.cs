@@ -2,13 +2,16 @@
 using System.Security.Claims;
 
 using KeycapStore.Application.Orders;
+using KeycapStore.Domain.Carts;
 using KeycapStore.Web.Filters;
 using KeycapStore.Web.Localization;
 using KeycapStore.Web.Models;
+using KeycapStore.Web.RateLimiting;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Localization;
 
 namespace KeycapStore.Web.Controllers;
@@ -42,6 +45,7 @@ public sealed class CheckoutController(
     public IActionResult Shipping() => RedirectToAction(nameof(Index));
 
     [HttpPost("Checkout/Shipping")]
+    [EnableRateLimiting(ShippingQuoteRateLimit.PolicyName)]
     public async Task<IActionResult> Shipping(CheckoutViewModel model, CancellationToken cancellationToken)
     {
         ModelState.Remove(nameof(CheckoutViewModel.ShippingServiceId));
@@ -54,6 +58,7 @@ public sealed class CheckoutController(
     }
 
     [HttpPost]
+    [EnableRateLimiting(ShippingQuoteRateLimit.PolicyName)]
     public async Task<IActionResult> Index(CheckoutViewModel model, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
@@ -68,7 +73,7 @@ public sealed class CheckoutController(
         if (!result.Succeeded)
         {
             ModelState.AddModelError(string.Empty, FailureMessage(result.Failure, result.ProductName));
-            return result.Failure is PlaceOrderFailure.ShippingOptionGone
+            return result.Failure is PlaceOrderFailure.ShippingOptionGone or PlaceOrderFailure.CartChanged
                 ? await WithShippingOptionsAsync(model, cancellationToken)
                 : View(model);
         }
@@ -133,6 +138,9 @@ public sealed class CheckoutController(
         PlaceOrderFailure.ShippingOptionGone => text["A opção de frete escolhida não está mais disponível. Escolha outra."],
         PlaceOrderFailure.PreOrderClosed => text["A pré-venda de {0} já terminou. Remova do carrinho para continuar.", productName!],
         PlaceOrderFailure.PreOrderMustBeAlone => text["Kits de pré-venda são comprados sozinhos. Deixe no carrinho só o kit de pré-venda ou só os outros."],
+        PlaceOrderFailure.QuantityLimit => text["{0} passa do limite de {1} unidades por pedido. Diminua a quantidade no carrinho.", productName!, Cart.MaxQuantityPerItem],
+        PlaceOrderFailure.OpenOrderExists => text["Você já tem um pedido aguardando pagamento. Pague ou espere ele expirar (em Meus pedidos) antes de fazer outro."],
+        PlaceOrderFailure.CartChanged => text["Seu carrinho mudou enquanto o frete era calculado. Confira as opções de frete de novo."],
         _ => text["Não foi possível finalizar o pedido."],
     }).Value;
 }

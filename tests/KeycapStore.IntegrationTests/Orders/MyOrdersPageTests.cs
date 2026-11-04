@@ -26,6 +26,7 @@ public class MyOrdersPageTests(PostgresFixture postgres) : IClassFixture<Postgre
     private static async Task<Guid> SaveOrderAsync(WebApplicationFactory<Program> factory, string customerId, DateTimeOffset createdAt)
     {
         var order = new Order(customerId, createdAt, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba, TestShipping.Pac);
+        order.ConfirmPayment();
 
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

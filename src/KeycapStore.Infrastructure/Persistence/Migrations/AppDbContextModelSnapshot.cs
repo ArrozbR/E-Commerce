@@ -231,6 +231,10 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CustomerId");
 
+                    b.HasIndex(new[] { "CustomerId" }, "IX_orders_CustomerId_Open")
+                        .IsUnique()
+                        .HasFilter("\"Status\" IN ('AwaitingPayment', 'AwaitingConfirmation')");
+
                     b.ToTable("orders", (string)null);
                 });
 
