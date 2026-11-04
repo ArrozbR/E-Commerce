@@ -58,7 +58,9 @@ else
 <div class="row">
     <div class="col-md-7">
         <p>
-            @Localizer["Ao excluir a conta, o seu e-mail, a sua senha e o endereço salvo são apagados e você não consegue mais entrar."]
+            @(account.HasPassword
+                ? Localizer["Ao excluir a conta, o seu e-mail, a sua senha e o endereço salvo são apagados e você não consegue mais entrar."]
+                : Localizer["Ao excluir a conta, o seu e-mail, a ligação com o Google e o endereço salvo são apagados e você não consegue mais entrar."])
             @Localizer["Os pedidos já feitos continuam registrados, sem ligação com a conta, pelo prazo que a lei exige para registros de venda."]
         </p>
         <p>

@@ -109,7 +109,14 @@ public sealed class AdminProductsController(IProductAdminService products, IStri
     [HttpPost("{id:guid}/activate")]
     public async Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken)
     {
-        await products.ActivateAsync(id, cancellationToken);
+        try
+        {
+            await products.ActivateAsync(id, cancellationToken);
+        }
+        catch (InvalidOperationException)
+        {
+            return BackWithError(text["Uma pré-venda fechada não volta à venda."].Value);
+        }
 
         return BackWithMessage(text["Produto de volta à venda."].Value);
     }

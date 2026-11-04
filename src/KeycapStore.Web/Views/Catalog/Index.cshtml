@@ -20,7 +20,7 @@
                         <p class="small mt-2 mb-1">@Localizer["Até {0} · envio previsto em {1}", Display.DateAndTime(campaign.EndsAt), Display.Date(campaign.ShipsAt)]</p>
                         <p class="small mb-1">
                             @(campaign.MinimumReached
-                                ? Localizer["Mínimo atingido: {0} vendidas", campaign.SoldUnits]
+                                ? (campaign.SoldUnits == 1 ? Localizer["Mínimo atingido: 1 vendida"] : Localizer["Mínimo atingido: {0} vendidas", campaign.SoldUnits])
                                 : Localizer["{0} de {1} para o lote sair", campaign.SoldUnits, campaign.MinimumUnits])
                         </p>
                         @if (!campaign.IsOpen)
@@ -33,7 +33,7 @@
                         }
                         else
                         {
-                            <span class="badge bg-success">@Localizer["{0} vagas", product.Stock]</span>
+                            <span class="badge bg-success">@(product.Stock == 1 ? Localizer["1 vaga"] : Localizer["{0} vagas", product.Stock])</span>
                         }
                     }
                     else if (product.Stock == 0)

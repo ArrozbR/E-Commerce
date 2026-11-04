@@ -140,4 +140,18 @@ public class GoogleAccountTests(PostgresFixture postgres) : IClassFixture<Postgr
         Assert.Contains("O e-mail digitado não é o desta conta.", WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync()));
         Assert.Equal(1, await GoogleLoginsAsync(factory, "fica@gmail.com"));
     }
+
+    [Fact]
+    public async Task GoogleOnlyAccount_DeletionText_DoesNotMentionAPassword()
+    {
+        var google = new FakeGoogleAccount { Id = "google-texto", Email = "texto-google@gmail.com" };
+        await using var factory = await postgres.CreateMigratedFactoryAsync(google);
+        var client = PageClient.Anonymous(factory);
+        await SignInWithGoogleAsync(client);
+
+        var html = await MyAccountAsync(client);
+
+        Assert.Contains("a ligação com o Google", html);
+        Assert.DoesNotContain("a sua senha e o endereço salvo", html);
+    }
 }

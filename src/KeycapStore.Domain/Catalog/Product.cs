@@ -131,6 +131,11 @@ public sealed class Product
 
     public void Activate()
     {
+        if (PreOrderOutcome is not null)
+        {
+            throw new InvalidOperationException("Uma pré-venda fechada não volta à venda.");
+        }
+
         IsActive = true;
     }
 }
