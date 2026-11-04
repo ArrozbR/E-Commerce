@@ -50,3 +50,4 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0040](0040-payment-element-com-checkout-sessions.md) | Payment Element com a sessão do Checkout, na mesma página do endereço |
 | [0041](0041-frete-real-pelo-melhor-envio.md) | Frete real pelo Melhor Envio: o cliente escolhe o serviço, peso e medidas em cada produto |
 | [0042](0042-pre-venda-com-minimo-e-vagas.md) | Pré-venda: vagas no estoque, quantidade mínima, fechamento automático e prazo de 80 dias |
+| [0043](0043-pre-venda-com-datas-editaveis.md) | Pré-venda: fim da campanha e envio previsto editáveis até o fechamento |
