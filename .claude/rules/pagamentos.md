@@ -6,7 +6,7 @@ Estas regras são inegociáveis. Qualquer código que toque em pedido, estoque, 
 
 - **O webhook assinado da Stripe é a ÚNICA fonte da verdade sobre pagamento.** Só o handler do webhook muda um pedido para `Paid`, `AwaitingConfirmation`, `Expired`, `Failed` ou `PaidOutOfStock`. `Refunded` só pelo job de reembolso, depois de a Stripe aceitar o reembolso.
 - **O redirecionamento (`success_url`) não prova nada.** A página de retorno apenas consulta o próprio backend (`GET /orders/{id}/status`, restrito ao dono do pedido) e **nunca** altera estado.
-- Nenhum endpoint de admin, nenhuma tela e nenhum comando altera estado de pagamento. **Exceção (ADR 0031):** o cliente pode **cancelar** o próprio pedido `Paid`/`Picking`; o reembolso continua sendo do job, pela API da Stripe. **Exceção (ADR 0032):** o cliente pode **desistir** (arrependimento) de um pedido `Shipped` ou `Delivered` há até 7 dias; o reembolso também é do job. **Exceção (ADR 0037):** a **conciliação** pode levar um pedido parado (`AwaitingPayment`/`AwaitingConfirmation` com sessão, há mais de 40 min) a `Paid`, `PaidOutOfStock` ou `Expired`, **somente** pelo que a API da Stripe responder sobre a sessão desse pedido, e pelo **mesmo código** de transição do webhook (com a conferência de valor e moeda).
+- Nenhum endpoint de admin, nenhuma tela e nenhum comando altera estado de pagamento. **Exceção (ADR 0031):** o cliente pode **cancelar** o próprio pedido `Paid`/`Picking`; o reembolso continua sendo do job, pela API da Stripe. **Exceção (ADR 0032):** o cliente pode **desistir** (arrependimento) de um pedido `Shipped` ou `Delivered` há até 7 dias; o reembolso também é do job. **Exceção (ADR 0037):** a **conciliação** pode levar um pedido parado (`AwaitingPayment`/`AwaitingConfirmation` com sessão, há mais de 40 min) a `Paid`, `PaidOutOfStock` ou `Expired`, **somente** pelo que a API da Stripe responder sobre a sessão desse pedido, e pelo **mesmo código** de transição do webhook (com a conferência de valor e moeda). **Exceção (ADR 0042):** o **fechamento da pré-venda** (job, 1 hora depois do fim da campanha) cancela os pedidos `Paid` de um lote que não atingiu o mínimo, pelo mesmo `Cancel()`; o reembolso continua sendo do job.
 - Consultar a API da Stripe (polling) é só rede de segurança (conciliação a cada 10 min, ADR 0037), nunca o caminho principal.
 
 ## 2. Webhook: `POST /webhooks/stripe`
@@ -65,7 +65,7 @@ Ordem obrigatória:
 | `Expire()` | `AwaitingPayment` | `Expired` | webhook |
 | `MarkFailed()` | `AwaitingPayment`, `AwaitingConfirmation` | `Failed` | webhook, falha ao criar sessão, job de órfãos |
 | `MarkOutOfStock()` | (confirmação sem reserva) | `PaidOutOfStock` | webhook |
-| `Cancel()` | `Paid`, `Picking` | `Cancelled` (+ estoque devolvido na mesma transação) | cliente dono do pedido (ADR 0031) |
+| `Cancel()` | `Paid`, `Picking` | `Cancelled` (+ estoque devolvido na mesma transação) | cliente dono do pedido (ADR 0031); job de fechamento da pré-venda que não atingiu o mínimo (ADR 0042) |
 | `MarkRefunded()` | `PaidOutOfStock`, `Cancelled` / `Withdrawn` | `Refunded` / `AwaitingReturn` (ADR 0032) | job de reembolso |
 | `StartPicking()` | `Paid` | `Picking` | admin |
 | `MarkShipped(trackingCode)` | `Picking` | `Shipped` | admin |
@@ -83,9 +83,11 @@ Ordem obrigatória:
 - **Reserva** em "Finalizar", na mesma transação que cria o pedido, **atômica e condicional**:
   ```sql
   UPDATE products SET stock = stock - @qty WHERE id = @id AND stock >= @qty AND is_active
+    AND (pre_order_ends_at IS NULL OR pre_order_ends_at > @now)
   ```
   (ou `ExecuteUpdateAsync` equivalente). Se afetar 0 linhas, a transação inteira é desfeita, e o cliente vê "esgotado". **Nunca ler o estoque, checar em C# e depois gravar.** Produto inativo não é reservado, nem no "Finalizar" nem na nova reserva do pagamento atrasado (ADR 0034).
 - **Liberação SÓ por evento da Stripe** (`expired`, `async_payment_failed`). **Nunca por timer próprio.**
+- **Pré-venda (ADR 0042):** as vagas do lote são o próprio `Stock` e a reserva é a mesma; a campanha precisa estar aberta (condição acima, também na nova reserva do pagamento atrasado). Um lote que não atingiu o mínimo devolve as vagas pelo `Cancel()` de cada pedido.
 - **Única exceção (D35):** um job libera pedidos `AwaitingPayment` **sem `StripeSessionId`** há mais de 10 minutos. Sem sessão, não existe forma de pagar.
 - Se a criação da sessão na Stripe falhar: `MarkFailed()` + liberar estoque (compensação).
 - **Ajuste de estoque pelo admin (ADR 0034):** sempre por diferença, `UPDATE products SET stock = stock + @delta WHERE id = @id AND stock + @delta >= 0`. Nunca gravar um valor final de estoque lido antes.
