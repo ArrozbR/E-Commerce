@@ -14,7 +14,15 @@ public sealed class Product
     public int HeightCm { get; private set; }
     public int LengthCm { get; private set; }
 
+    public DateTimeOffset? PreOrderEndsAt { get; private set; }
+    public DateTimeOffset? PreOrderShipsAt { get; private set; }
+    public int? PreOrderMinimumUnits { get; private set; }
+
     public ProductPackage Package => new(WeightKg, WidthCm, HeightCm, LengthCm);
+
+    public PreOrder? PreOrder => PreOrderEndsAt is { } endsAt
+        ? new PreOrder(endsAt, PreOrderShipsAt!.Value, PreOrderMinimumUnits!.Value)
+        : null;
 
     private Product()
     {
@@ -34,6 +42,22 @@ public sealed class Product
         Stock = stock;
         IsActive = true;
         ChangePackage(package);
+    }
+
+    public static Product ForPreOrder(string name, decimal price, int slots, ProductPackage package, PreOrder preOrder, DateTimeOffset now)
+    {
+        ArgumentNullException.ThrowIfNull(preOrder);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(slots);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(preOrder.EndsAt, now, nameof(preOrder));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(preOrder.ShipsAt, now + PreOrder.MaxLeadTime, nameof(preOrder));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(preOrder.MinimumUnits, slots, nameof(preOrder));
+
+        return new Product(name, price, slots, package)
+        {
+            PreOrderEndsAt = preOrder.EndsAt,
+            PreOrderShipsAt = preOrder.ShipsAt,
+            PreOrderMinimumUnits = preOrder.MinimumUnits,
+        };
     }
 
     public void Update(string name, decimal price)

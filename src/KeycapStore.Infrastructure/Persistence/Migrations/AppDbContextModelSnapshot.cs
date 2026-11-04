@@ -60,6 +60,15 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<DateTimeOffset?>("PreOrderEndsAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("PreOrderMinimumUnits")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("PreOrderShipsAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<decimal>("Price")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
