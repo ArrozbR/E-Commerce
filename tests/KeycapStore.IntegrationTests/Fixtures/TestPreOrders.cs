@@ -28,4 +28,21 @@ public static class TestPreOrders
         await db.Products.Where(p => p.Id == productId)
             .ExecuteUpdateAsync(s => s.SetProperty(p => p.PreOrderEndsAt, DateTimeOffset.UtcNow.AddMinutes(-1)));
     }
+
+    public static async Task<Guid> SaveOrderAsync(WebApplicationFactory<Program> factory, Guid productId, int quantity, Action<KeycapStore.Domain.Orders.Order>? advance = null)
+    {
+        var order = new KeycapStore.Domain.Orders.Order(
+            $"customer-{Guid.NewGuid():N}",
+            DateTimeOffset.UtcNow,
+            [new KeycapStore.Domain.Orders.OrderItem(productId, "Kit Pré-venda", 100m, quantity)],
+            new KeycapStore.Domain.Orders.ShippingAddress("Bruno Lima", "Rua XV de Novembro", "200", null, "Centro", "Curitiba", "PR", "80020310"),
+            TestShipping.Pac);
+        advance?.Invoke(order);
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Orders.Add(order);
+        await db.SaveChangesAsync();
+        return order.Id;
+    }
 }

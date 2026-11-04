@@ -14,7 +14,29 @@
                     <h5 class="card-title">@product.Name</h5>
                     <p class="card-text fs-4">@Display.Price(product.Price)</p>
 
-                    @if (product.Stock == 0)
+                    @if (product.PreOrder is { } campaign)
+                    {
+                        <span class="badge bg-info text-dark">@Localizer["Pré-venda"]</span>
+                        <p class="small mt-2 mb-1">@Localizer["Até {0} · envio previsto em {1}", Display.DateAndTime(campaign.EndsAt), Display.Date(campaign.ShipsAt)]</p>
+                        <p class="small mb-1">
+                            @(campaign.MinimumReached
+                                ? Localizer["Mínimo atingido: {0} vendidas", campaign.SoldUnits]
+                                : Localizer["{0} de {1} para o lote sair", campaign.SoldUnits, campaign.MinimumUnits])
+                        </p>
+                        @if (!campaign.IsOpen)
+                        {
+                            <span class="badge bg-secondary">@Localizer["Pré-venda encerrada"]</span>
+                        }
+                        else if (product.Stock == 0)
+                        {
+                            <span class="badge bg-secondary">@Localizer["Vagas esgotadas"]</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">@Localizer["{0} vagas", product.Stock]</span>
+                        }
+                    }
+                    else if (product.Stock == 0)
                     {
                         <span class="badge bg-secondary">@Localizer["Esgotado"]</span>
                     }
@@ -31,11 +53,11 @@
                         <span class="badge bg-success">@Localizer["Em estoque"]</span>
                     }
 
-                    @if (product.Stock > 0)
+                    @if (product.CanBeBought)
                     {
                         <form asp-controller="Cart" asp-action="Add" method="post" class="mt-3">
                             <input type="hidden" name="productId" value="@product.Id" />
-                            <button type="submit" class="btn btn-primary btn-sm">@Localizer["Adicionar ao carrinho"]</button>
+                            <button type="submit" class="btn btn-primary btn-sm">@(product.PreOrder is null ? Localizer["Adicionar ao carrinho"] : Localizer["Reservar na pré-venda"])</button>
                         </form>
                     }
                 </div>

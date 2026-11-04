@@ -312,4 +312,13 @@
   <data name="Kits de pré-venda são comprados sozinhos. Deixe no carrinho só o kit de pré-venda ou só os outros." xml:space="preserve">
     <value>Pre-order kits are bought on their own. Keep only the pre-order kit or only the other kits in your cart.</value>
   </data>
+  <data name="Pré-venda · envio previsto em {0}" xml:space="preserve">
+    <value>Pre-order · expected to ship on {0}</value>
+  </data>
+  <data name="Pré-venda: preencha o fim da campanha, o envio previsto (depois do fim) e o mínimo." xml:space="preserve">
+    <value>Pre-order: fill in the campaign end, the expected ship date (after the end) and the minimum.</value>
+  </data>
+  <data name="Pré-venda recusada: o fim precisa ser depois de agora, o envio em até {0} dias, as vagas (estoque inicial) maiores que zero e o mínimo até as vagas." xml:space="preserve">
+    <value>Pre-order refused: the end must be after now, shipping within {0} days, the slots (initial stock) above zero and the minimum up to the slots.</value>
+  </data>
 </root>

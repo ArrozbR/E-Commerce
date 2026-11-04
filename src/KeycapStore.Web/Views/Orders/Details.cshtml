@@ -11,6 +11,10 @@
     @Localizer["Número: {0}", Model.Id]<br />
     @Localizer["Feito em {0}", Display.DateAndTime(Model.CreatedAt)]<br />
     @Localizer["Situação:"] <strong>@status</strong>
+    @if (Model.PreOrderShipsAt is { } shipsAt)
+    {
+        <br />@SharedLocalizer["Pré-venda · envio previsto em {0}", Display.Date(shipsAt)]
+    }
 </p>
 
 <table class="table">

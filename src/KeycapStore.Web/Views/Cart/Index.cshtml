@@ -32,6 +32,10 @@ else
                 <tr>
                     <td>
                         @line.ProductName
+                        @if (line.PreOrderShipsAt is { } shipsAt)
+                        {
+                            <br /><small class="text-muted">@SharedLocalizer["Pré-venda · envio previsto em {0}", Display.Date(shipsAt)]</small>
+                        }
                         @if (!line.IsAvailable)
                         {
                             <br /><span class="badge bg-secondary">@Localizer["Indisponível"]</span>

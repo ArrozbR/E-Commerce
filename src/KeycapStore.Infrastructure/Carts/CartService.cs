@@ -80,7 +80,7 @@ internal sealed class CartService(AppDbContext db, TimeProvider clock) : ICartSe
             .ToDictionaryAsync(p => p.Id, cancellationToken);
 
         var lines = cart.Items
-            .Select(i => new CartLineView(i.ProductId, products[i.ProductId].Name, products[i.ProductId].Price, i.Quantity, products[i.ProductId].IsActive))
+            .Select(i => new CartLineView(i.ProductId, products[i.ProductId].Name, products[i.ProductId].Price, i.Quantity, products[i.ProductId].IsActive, products[i.ProductId].PreOrderShipsAt))
             .OrderBy(l => l.ProductName)
             .ToList();
 

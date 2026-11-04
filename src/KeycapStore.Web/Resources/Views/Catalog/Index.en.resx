@@ -135,4 +135,28 @@
   <data name="Adicionar ao carrinho" xml:space="preserve">
     <value>Add to cart</value>
   </data>
+  <data name="Pré-venda" xml:space="preserve">
+    <value>Pre-order</value>
+  </data>
+  <data name="Até {0} · envio previsto em {1}" xml:space="preserve">
+    <value>Until {0} · expected to ship on {1}</value>
+  </data>
+  <data name="Mínimo atingido: {0} vendidas" xml:space="preserve">
+    <value>Minimum reached: {0} sold</value>
+  </data>
+  <data name="{0} de {1} para o lote sair" xml:space="preserve">
+    <value>{0} of {1} needed for the batch</value>
+  </data>
+  <data name="Pré-venda encerrada" xml:space="preserve">
+    <value>Pre-order closed</value>
+  </data>
+  <data name="Vagas esgotadas" xml:space="preserve">
+    <value>No slots left</value>
+  </data>
+  <data name="{0} vagas" xml:space="preserve">
+    <value>{0} slots left</value>
+  </data>
+  <data name="Reservar na pré-venda" xml:space="preserve">
+    <value>Pre-order now</value>
+  </data>
 </root>

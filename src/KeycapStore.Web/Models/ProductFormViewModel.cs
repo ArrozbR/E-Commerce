@@ -2,6 +2,7 @@
 using System.Globalization;
 
 using KeycapStore.Domain.Catalog;
+using KeycapStore.Web.Localization;
 
 namespace KeycapStore.Web.Models;
 
@@ -58,6 +59,35 @@ public sealed class NewProductViewModel : ProductFormViewModel
 {
     [Range(0, AdminLimits.MaxStockChange, ErrorMessage = "O estoque inicial vai de {1} a {2}.")]
     public int Stock { get; set; }
+
+    public bool IsPreOrder { get; set; }
+
+    public string? PreOrderEndsAt { get; set; }
+
+    public string? PreOrderShipsOn { get; set; }
+
+    public int? PreOrderMinimum { get; set; }
+
+    public bool TryGetPreOrder(out PreOrder? preOrder)
+    {
+        preOrder = null;
+        if (!DateTime.TryParseExact(PreOrderEndsAt, "yyyy-MM-dd'T'HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var endsAt)
+            || !DateTime.TryParseExact(PreOrderShipsOn, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var shipsOn)
+            || PreOrderMinimum is not { } minimum)
+        {
+            return false;
+        }
+
+        var ends = Display.FromBrasilia(endsAt);
+        var ships = Display.FromBrasilia(shipsOn);
+        if (ships <= ends || minimum <= 0)
+        {
+            return false;
+        }
+
+        preOrder = new PreOrder(ends, ships, minimum);
+        return true;
+    }
 }
 
 public static class AdminLimits
