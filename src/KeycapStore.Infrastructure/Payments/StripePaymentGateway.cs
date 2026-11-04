@@ -72,4 +72,16 @@ internal sealed class StripePaymentGateway(IOptions<StripeOptions> options) : IP
             throw new PaymentGatewayException("A Stripe recusou a consulta da sessão.", ex);
         }
     }
+
+    public async Task ExpireCheckoutSessionAsync(string checkoutSessionId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await new SessionService(_client).ExpireAsync(checkoutSessionId, cancellationToken: cancellationToken);
+        }
+        catch (StripeException ex)
+        {
+            throw new PaymentGatewayException("A Stripe recusou expirar a sessão.", ex);
+        }
+    }
 }

@@ -73,6 +73,21 @@ public sealed class OrdersController(
         return RedirectToAction(nameof(Details), new { id });
     }
 
+    [HttpPost("orders/{id:guid}/cancel-payment")]
+    public async Task<IActionResult> CancelPayment(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await cancellations.CancelPaymentAsync(id, CustomerId, cancellationToken);
+
+        TempData["Message"] = (result switch
+        {
+            CancelPaymentResult.Requested => text["Pagamento cancelado. Em alguns segundos o pedido aparece como expirado, os itens voltam para a loja e você já pode fazer outro pedido."],
+            CancelPaymentResult.NotAwaitingPayment => text["Este pedido não está mais aguardando pagamento."],
+            _ => text["Não foi possível cancelar o pagamento agora. Tente de novo em alguns minutos."],
+        }).Value;
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
     [HttpPost("orders/{id:guid}/withdraw")]
     public async Task<IActionResult> Withdraw(Guid id, CancellationToken cancellationToken)
     {

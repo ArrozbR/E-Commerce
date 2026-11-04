@@ -76,6 +76,56 @@ public class CartServiceTests(PostgresFixture postgres) : IClassFixture<Postgres
     }
 
     [Fact]
+    public async Task AddItem_PastTheStock_IsRefused_AndKeepsTheQuantity()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var kit = new Product("Kit Três Unidades", 100m, 3, TestPackage.Standard);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Products.Add(kit);
+            await db.SaveChangesAsync();
+            await scope.ServiceProvider.GetRequiredService<ICartService>().AddItemAsync("customer-stock-add", kit.Id, 3);
+        }
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var carts = scope.ServiceProvider.GetRequiredService<ICartService>();
+
+            var refused = await Assert.ThrowsAsync<CartStockLimitException>(() => carts.AddItemAsync("customer-stock-add", kit.Id, 1));
+
+            Assert.Equal(3, refused.Available);
+            Assert.Equal(3, Assert.Single((await carts.GetAsync("customer-stock-add")).Lines).Quantity);
+        }
+    }
+
+    [Fact]
+    public async Task ChangeQuantity_PastTheStock_IsRefused_ButLoweringIsAccepted()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var kit = new Product("Kit Estoque Baixo", 100m, 3, TestPackage.Standard);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Products.Add(kit);
+            await db.SaveChangesAsync();
+            await scope.ServiceProvider.GetRequiredService<ICartService>().AddItemAsync("customer-stock-change", kit.Id, 2);
+        }
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var carts = scope.ServiceProvider.GetRequiredService<ICartService>();
+
+            await Assert.ThrowsAsync<CartStockLimitException>(() => carts.ChangeQuantityAsync("customer-stock-change", kit.Id, 4));
+            await carts.ChangeQuantityAsync("customer-stock-change", kit.Id, 3);
+
+            var line = Assert.Single((await carts.GetAsync("customer-stock-change")).Lines);
+            Assert.Equal(3, line.Quantity);
+            Assert.Equal(3, line.AvailableStock);
+        }
+    }
+
+    [Fact]
     public async Task RemoveItem_DeletesTheLineFromTheDatabase()
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();

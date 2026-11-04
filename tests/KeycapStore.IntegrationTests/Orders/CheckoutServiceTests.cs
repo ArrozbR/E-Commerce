@@ -84,9 +84,14 @@ public class CheckoutServiceTests(PostgresFixture postgres) : IClassFixture<Post
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
         var available = await NewProductAsync(factory, "Kit Teste Disponível", stock: 5);
-        var scarce = await NewProductAsync(factory, "Kit Teste Escasso", stock: 1);
+        var scarce = await NewProductAsync(factory, "Kit Teste Escasso", stock: 2);
         await AddToCartAsync(factory, "customer-rollback", available, 1);
         await AddToCartAsync(factory, "customer-rollback", scarce, 2);
+        await using (var sold = factory.Services.CreateAsyncScope())
+        {
+            await sold.ServiceProvider.GetRequiredService<AppDbContext>().Products.Where(p => p.Id == scarce)
+                .ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, 1));
+        }
 
         var result = await PlaceOrderAsync(factory, "customer-rollback");
 

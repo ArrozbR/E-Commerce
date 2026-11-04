@@ -96,4 +96,10 @@
   <data name="(na compra: {0})" xml:space="preserve">
     <value>(at purchase: {0})</value>
   </data>
+  <data name="Cancelar o pagamento" xml:space="preserve">
+    <value>Cancel payment</value>
+  </data>
+  <data name="Cancelar o pagamento deste pedido? Os itens voltam para a loja." xml:space="preserve">
+    <value>Cancel the payment for this order? The items go back to the store.</value>
+  </data>
 </root>

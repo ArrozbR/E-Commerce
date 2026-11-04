@@ -47,6 +47,24 @@ public class RegisterPageTests(PostgresFixture postgres) : IClassFixture<Postgre
     }
 
     [Fact]
+    public async Task Post_WithValidData_AlsoSignsIn()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var client = PageClient.Anonymous(factory);
+        var token = await GetAntiforgeryTokenAsync(client);
+
+        await client.PostAsync("/Account/Register", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["Email"] = "ja-entra@example.com",
+            ["Password"] = Password,
+            ["ConfirmPassword"] = Password,
+            ["__RequestVerificationToken"] = token,
+        }));
+
+        Assert.Contains("Olá, ja-entra@example.com", WebUtility.HtmlDecode(await client.GetStringAsync("/Catalog")));
+    }
+
+    [Fact]
     public async Task Post_WithoutAntiforgeryToken_IsRejected()
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();

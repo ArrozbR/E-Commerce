@@ -47,7 +47,7 @@ public class EnglishResultsTests(PostgresFixture postgres) : IClassFixture<Postg
 
     private static async Task CartWithAsync(WebApplicationFactory<Program> factory, string email, string productName, int stock, int quantity, bool active = true)
     {
-        var product = new Product(productName, 100m, stock, TestPackage.Standard);
+        var product = new Product(productName, 100m, Math.Max(stock, quantity), TestPackage.Standard);
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Products.Add(product);
@@ -55,6 +55,7 @@ public class EnglishResultsTests(PostgresFixture postgres) : IClassFixture<Postg
 
         var user = await scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>().FindByEmailAsync(email);
         await scope.ServiceProvider.GetRequiredService<ICartService>().AddItemAsync(user!.Id, product.Id, quantity);
+        await db.Products.Where(p => p.Id == product.Id).ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, stock));
 
         if (!active)
         {

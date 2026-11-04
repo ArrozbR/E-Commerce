@@ -11,7 +11,6 @@ using KeycapStore.Web.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Localization;
 
 namespace KeycapStore.Web.Controllers;
@@ -22,6 +21,7 @@ public sealed class CheckoutController(
     ICheckoutService checkout,
     ISavedAddressService savedAddresses,
     IOrderQueries orders,
+    ShippingQuoteLimiter quoteLimiter,
     IStringLocalizer<SharedResource> text) : Controller
 {
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -45,7 +45,6 @@ public sealed class CheckoutController(
     public IActionResult Shipping() => RedirectToAction(nameof(Index));
 
     [HttpPost("Checkout/Shipping")]
-    [EnableRateLimiting(ShippingQuoteRateLimit.PolicyName)]
     public async Task<IActionResult> Shipping(CheckoutViewModel model, CancellationToken cancellationToken)
     {
         ModelState.Remove(nameof(CheckoutViewModel.ShippingServiceId));
@@ -54,16 +53,30 @@ public sealed class CheckoutController(
             return View(nameof(Index), model);
         }
 
+        if (!quoteLimiter.TryAcquire(CustomerId))
+        {
+            return TooManyQuotes(model);
+        }
+
         return await WithShippingOptionsAsync(model, cancellationToken);
     }
 
     [HttpPost]
-    [EnableRateLimiting(ShippingQuoteRateLimit.PolicyName)]
     public async Task<IActionResult> Index(CheckoutViewModel model, CancellationToken cancellationToken)
     {
+        if (!ModelState.IsValid && !AddressIsValid())
+        {
+            return View(model);
+        }
+
+        if (!quoteLimiter.TryAcquire(CustomerId))
+        {
+            return TooManyQuotes(model);
+        }
+
         if (!ModelState.IsValid)
         {
-            return AddressIsValid() ? await WithShippingOptionsAsync(model, cancellationToken) : View(model);
+            return await WithShippingOptionsAsync(model, cancellationToken);
         }
 
         var address = model.ToShippingAddress();
@@ -122,6 +135,15 @@ public sealed class CheckoutController(
         }
 
         return View(nameof(Index), model);
+    }
+
+    private ViewResult TooManyQuotes(CheckoutViewModel model)
+    {
+        ModelState.AddModelError(string.Empty, text["Muitas consultas de frete seguidas. Espere um minuto e tente de novo."].Value);
+
+        var view = View(nameof(Index), model);
+        view.StatusCode = StatusCodes.Status429TooManyRequests;
+        return view;
     }
 
     private bool AddressIsValid() => ModelState

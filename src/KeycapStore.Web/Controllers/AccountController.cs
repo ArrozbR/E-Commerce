@@ -41,6 +41,8 @@ public sealed class AccountController(
             return View(model);
         }
 
+        await accounts.SignInAsync(model.Email, model.Password, cancellationToken);
+
         return RedirectToAction("Index", "Catalog");
     }
 
