@@ -66,4 +66,7 @@
   <data name="Envio: {0}" xml:space="preserve">
     <value>Ship with: {0}</value>
   </data>
+  <data name="Aguardando o fechamento do lote" xml:space="preserve">
+    <value>Waiting for the batch to close</value>
+  </data>
 </root>

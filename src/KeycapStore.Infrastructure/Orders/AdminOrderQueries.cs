@@ -18,6 +18,8 @@ internal sealed class AdminOrderQueries(AppDbContext db) : IAdminOrderQueries
             .OrderBy(o => o.CreatedAt)
             .ToListAsync(cancellationToken);
 
+        var outcomes = await db.PreOrderOutcomesAsync(orders, cancellationToken);
+
         return orders
             .Select(o => new AdminOrderView(
                 o.Id,
@@ -27,7 +29,9 @@ internal sealed class AdminOrderQueries(AppDbContext db) : IAdminOrderQueries
                 o.Total,
                 o.ShippingAddress,
                 o.TrackingCode,
-                o.ShippingService))
+                o.ShippingService,
+                o.PreOrderShipsAt,
+                outcomes.GetValueOrDefault(o.Id)))
             .ToList();
     }
 }

@@ -87,4 +87,10 @@
   <data name="O pedido fica reservado por 30 minutos depois de criado. Depois disso, ele expira e o estoque volta à loja." xml:space="preserve">
     <value>The order is reserved for 30 minutes after it is placed. After that, it expires and the stock goes back to the store.</value>
   </data>
+  <data name="Lote confirmado: o pedido será enviado perto da data prevista." xml:space="preserve">
+    <value>Batch confirmed: the order will ship close to the expected date.</value>
+  </data>
+  <data name="Lote cancelado: o mínimo não foi atingido e o valor é devolvido automaticamente." xml:space="preserve">
+    <value>Batch cancelled: the minimum was not reached and the payment is refunded automatically.</value>
+  </data>
 </root>

@@ -1,4 +1,5 @@
-﻿using KeycapStore.Domain.Orders;
+﻿using KeycapStore.Domain.Catalog;
+using KeycapStore.Domain.Orders;
 
 namespace KeycapStore.Application.Orders;
 
@@ -19,6 +20,7 @@ public sealed record OrderView(
     DateTimeOffset? WithdrawalDeadline,
     string? ShippingService = null,
     int? ShippingDeliveryDays = null,
-    DateTimeOffset? PreOrderShipsAt = null);
+    DateTimeOffset? PreOrderShipsAt = null,
+    PreOrderOutcome? PreOrderOutcome = null);
 
 public sealed record OrderSummaryView(Guid Id, OrderStatus Status, DateTimeOffset CreatedAt, decimal Total);

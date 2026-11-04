@@ -321,4 +321,7 @@
   <data name="Pré-venda recusada: o fim precisa ser depois de agora, o envio em até {0} dias, as vagas (estoque inicial) maiores que zero e o mínimo até as vagas." xml:space="preserve">
     <value>Pre-order refused: the end must be after now, shipping within {0} days, the slots (initial stock) above zero and the minimum up to the slots.</value>
   </data>
+  <data name="Lote confirmado" xml:space="preserve">
+    <value>Batch confirmed</value>
+  </data>
 </root>

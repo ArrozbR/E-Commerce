@@ -14,6 +14,14 @@
     @if (Model.PreOrderShipsAt is { } shipsAt)
     {
         <br />@SharedLocalizer["Pré-venda · envio previsto em {0}", Display.Date(shipsAt)]
+        @if (Model.PreOrderOutcome is KeycapStore.Domain.Catalog.PreOrderOutcome.Confirmed)
+        {
+            <br /><strong>@Localizer["Lote confirmado: o pedido será enviado perto da data prevista."]</strong>
+        }
+        else if (Model.PreOrderOutcome is KeycapStore.Domain.Catalog.PreOrderOutcome.Cancelled)
+        {
+            <br /><strong>@Localizer["Lote cancelado: o mínimo não foi atingido e o valor é devolvido automaticamente."]</strong>
+        }
     }
 </p>
 
