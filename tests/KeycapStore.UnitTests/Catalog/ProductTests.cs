@@ -342,4 +342,25 @@ public class ProductTests
 
         Assert.Throws<InvalidOperationException>(() => product.ReschedulePreOrder(Now.AddDays(20), Now.AddDays(60), Now));
     }
+
+    [Fact]
+    public void Activate_ClosedPreOrder_Throws_AndStaysOffSale()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+        product.CancelPreOrder();
+
+        Assert.Throws<InvalidOperationException>(product.Activate);
+        Assert.False(product.IsActive);
+    }
+
+    [Fact]
+    public void Activate_OpenPreOrderTakenOffSale_GoesBackOnSale()
+    {
+        var product = Product.ForPreOrder("Kit", 100m, 50, TestPackage.Standard, Campaign(), Now);
+        product.Deactivate();
+
+        product.Activate();
+
+        Assert.True(product.IsActive);
+    }
 }

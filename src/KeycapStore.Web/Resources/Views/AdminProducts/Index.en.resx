@@ -96,4 +96,7 @@
   <data name="Salvar datas" xml:space="preserve">
     <value>Save dates</value>
   </data>
+  <data name="Pré-venda fechada" xml:space="preserve">
+    <value>Pre-order closed</value>
+  </data>
 </root>

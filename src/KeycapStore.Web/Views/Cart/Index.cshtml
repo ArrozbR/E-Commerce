@@ -72,8 +72,10 @@ else
     {
         <p class="text-danger text-end">@Localizer["Um item do carrinho não está mais à venda. Remova-o para finalizar a compra."]</p>
     }
-
-    <div class="text-end">
-        <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary">@Localizer["Finalizar compra"]</a>
-    </div>
+    else
+    {
+        <div class="text-end">
+            <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary">@Localizer["Finalizar compra"]</a>
+        </div>
+    }
 }

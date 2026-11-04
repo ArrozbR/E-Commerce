@@ -184,4 +184,39 @@ public class PreOrderCatalogTests(PostgresFixture postgres) : IClassFixture<Post
 
         Assert.Contains("Pré-venda · envio previsto em", cart);
     }
+
+    [Fact]
+    public async Task CatalogPage_UsesTheSingular_ForOneSoldAndOneSlot()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        await TestPreOrders.SaveOpenAsync(factory, "Kit Singular", slots: 1, minimum: 1);
+        var sold = await TestPreOrders.SaveOpenAsync(factory, "Kit Uma Vendida", slots: 5, minimum: 1);
+        await TestPreOrders.SaveOrderAsync(factory, sold, 1, o => o.ConfirmPayment());
+
+        var html = WebUtility.HtmlDecode(await PageClient.Anonymous(factory).GetStringAsync("/Catalog"));
+
+        Assert.Contains("1 vaga<", html);
+        Assert.Contains("Mínimo atingido: 1 vendida", html);
+        Assert.DoesNotContain("1 vendidas", html);
+        Assert.DoesNotContain("1 vagas", html);
+    }
+
+    [Fact]
+    public async Task Admin_ClosedPreOrder_HasNoBackOnSaleButton_AndIsRefused()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var preOrder = await TestPreOrders.SaveOpenAsync(factory, "Kit Fechado Sem Volta");
+        await TestPreOrders.CloseAsync(factory, preOrder, confirmed: false);
+        var admin = await AdminAsync(factory, "admin-sem-volta@example.com");
+
+        var html = WebUtility.HtmlDecode(await admin.GetStringAsync("/admin/products"));
+        Assert.DoesNotContain($"/admin/products/{preOrder}/activate", html);
+        Assert.Contains("Pré-venda fechada", html);
+
+        var token = PageClient.TokenFrom(html);
+        await admin.PostAsync($"/admin/products/{preOrder}/activate", new FormUrlEncodedContent(new Dictionary<string, string> { ["__RequestVerificationToken"] = token }));
+
+        Assert.False((await ProductAsync(factory, "Kit Fechado Sem Volta"))!.IsActive);
+        Assert.Contains("Uma pré-venda fechada não volta à venda.", WebUtility.HtmlDecode(await admin.GetStringAsync("/admin/products")));
+    }
 }

@@ -159,4 +159,10 @@
   <data name="Reservar na pré-venda" xml:space="preserve">
     <value>Pre-order now</value>
   </data>
+  <data name="Mínimo atingido: 1 vendida" xml:space="preserve">
+    <value>Minimum reached: 1 sold</value>
+  </data>
+  <data name="1 vaga" xml:space="preserve">
+    <value>1 slot left</value>
+  </data>
 </root>

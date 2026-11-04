@@ -5,6 +5,7 @@ using KeycapStore.Application.Identity;
 using KeycapStore.IntegrationTests.Fixtures;
 
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace KeycapStore.IntegrationTests.Carts;
@@ -164,5 +165,34 @@ public class CartPageTests(PostgresFixture postgres) : IClassFixture<PostgresFix
         var html = WebUtility.HtmlDecode(await client.GetStringAsync("/Cart"));
         Assert.Contains("Kits de pré-venda são comprados sozinhos.", html);
         Assert.DoesNotContain("Kit Pré-venda Página", html);
+    }
+
+    [Fact]
+    public async Task CartWithAnItemOffSale_HasNoCheckoutButton()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var product = new KeycapStore.Domain.Catalog.Product("Kit Sai Do Carrinho", 100m, 5, TestPackage.Standard);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<KeycapStore.Infrastructure.Persistence.AppDbContext>();
+            db.Products.Add(product);
+            await db.SaveChangesAsync();
+        }
+
+        var client = await PageClient.LoggedInAsync(factory, "carrinho-indisponivel@example.com");
+        var token = PageClient.TokenFrom(await client.GetStringAsync("/Catalog"));
+        await client.PostAsync("/Cart/Add", new FormUrlEncodedContent(new Dictionary<string, string> { ["productId"] = product.Id.ToString(), ["__RequestVerificationToken"] = token }));
+        Assert.Contains("href=\"/Checkout\"", await client.GetStringAsync("/Cart"));
+
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<KeycapStore.Infrastructure.Persistence.AppDbContext>();
+            await db.Products.Where(p => p.Id == product.Id).ExecuteUpdateAsync(s => s.SetProperty(p => p.IsActive, false));
+        }
+
+        var html = WebUtility.HtmlDecode(await client.GetStringAsync("/Cart"));
+
+        Assert.Contains("não está mais à venda. Remova-o para finalizar a compra.", html);
+        Assert.DoesNotContain("href=\"/Checkout\"", html);
     }
 }

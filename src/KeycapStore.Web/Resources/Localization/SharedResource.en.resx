@@ -333,4 +333,7 @@
   <data name="Datas da pré-venda atualizadas." xml:space="preserve">
     <value>Pre-order dates updated.</value>
   </data>
+  <data name="Uma pré-venda fechada não volta à venda." xml:space="preserve">
+    <value>A closed pre-order cannot go back on sale.</value>
+  </data>
 </root>

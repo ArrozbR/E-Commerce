@@ -75,4 +75,7 @@
   <data name="Para confirmar, digite o e-mail desta conta" xml:space="preserve">
     <value>To confirm, type the e-mail of this account</value>
   </data>
+  <data name="Ao excluir a conta, o seu e-mail, a ligação com o Google e o endereço salvo são apagados e você não consegue mais entrar." xml:space="preserve">
+    <value>When you delete your account, your e-mail, the link to Google and your saved address are erased and you can no longer sign in.</value>
+  </data>
 </root>
