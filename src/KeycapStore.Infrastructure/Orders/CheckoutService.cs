@@ -1,11 +1,14 @@
 ﻿using KeycapStore.Application.Orders;
 using KeycapStore.Application.Payments;
+using KeycapStore.Domain.Carts;
 using KeycapStore.Domain.Orders;
 using KeycapStore.Infrastructure.Payments;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+
+using Npgsql;
 
 namespace KeycapStore.Infrastructure.Orders;
 
@@ -22,6 +25,11 @@ internal sealed class CheckoutService(
         if (shippingItems.Count == 0)
         {
             return ShippingOptionsResult.Fail(PlaceOrderFailure.EmptyCart);
+        }
+
+        if (await HasOpenOrderAsync(customerId, cancellationToken))
+        {
+            return ShippingOptionsResult.Fail(PlaceOrderFailure.OpenOrderExists);
         }
 
         var quote = await shippingQuotes.QuoteAsync(postalCode, shippingItems, cancellationToken);
@@ -51,6 +59,11 @@ internal sealed class CheckoutService(
             return PlaceOrderResult.Fail(PlaceOrderFailure.EmptyCart);
         }
 
+        if (await HasOpenOrderAsync(customerId, cancellationToken))
+        {
+            return PlaceOrderResult.Fail(PlaceOrderFailure.OpenOrderExists);
+        }
+
         var quote = await shippingQuotes.QuoteAsync(shippingAddress.PostalCode, shippingItems, cancellationToken);
         if (!quote.Available)
         {
@@ -73,10 +86,21 @@ internal sealed class CheckoutService(
             return PlaceOrderResult.Fail(PlaceOrderFailure.EmptyCart);
         }
 
+        if (!SameItems(shippingItems, cart.Items))
+        {
+            return PlaceOrderResult.Fail(PlaceOrderFailure.CartChanged);
+        }
+
         var productIds = cart.Items.Select(i => i.ProductId).ToList();
         var products = await db.Products.AsNoTracking()
             .Where(p => productIds.Contains(p.Id))
             .ToDictionaryAsync(p => p.Id, cancellationToken);
+
+        var overLimit = cart.Items.FirstOrDefault(i => i.Quantity > Cart.MaxQuantityPerItem);
+        if (overLimit is not null)
+        {
+            return PlaceOrderResult.Fail(PlaceOrderFailure.QuantityLimit, products[overLimit.ProductId].Name);
+        }
 
         var preOrder = products.Values.Select(p => p.PreOrder).FirstOrDefault(p => p is not null);
         if (preOrder is not null && products.Count > 1)
@@ -108,7 +132,16 @@ internal sealed class CheckoutService(
         db.Orders.Add(order);
         db.Carts.Remove(cart);
 
-        await db.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: OrderConfiguration.OpenOrderPerCustomerIndex })
+        {
+            db.ChangeTracker.Clear();
+            return PlaceOrderResult.Fail(PlaceOrderFailure.OpenOrderExists);
+        }
+
         await transaction.CommitAsync(cancellationToken);
 
         return PlaceOrderResult.Success(order.Id);
@@ -173,6 +206,15 @@ internal sealed class CheckoutService(
 
         return new PaymentForm(order.Id, session.ClientSecret, stripe.Value.PublishableKey, order.Language);
     }
+
+    private Task<bool> HasOpenOrderAsync(string customerId, CancellationToken cancellationToken) =>
+        db.Orders.AnyAsync(
+            o => o.CustomerId == customerId && (o.Status == OrderStatus.AwaitingPayment || o.Status == OrderStatus.AwaitingConfirmation),
+            cancellationToken);
+
+    private static bool SameItems(IEnumerable<ShippingQuoteItem> quoted, IEnumerable<CartItem> current) =>
+        quoted.Select(i => (i.ProductId, i.Quantity)).Order()
+            .SequenceEqual(current.Select(i => (i.ProductId, i.Quantity)).Order());
 
     private async Task<List<ShippingQuoteItem>> ShippingItemsAsync(string customerId, CancellationToken cancellationToken)
     {

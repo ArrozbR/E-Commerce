@@ -113,6 +113,30 @@ public class CartPageTests(PostgresFixture postgres) : IClassFixture<PostgresFix
     }
 
     [Fact]
+    public async Task ChangeQuantity_PastTheLimit_ShowsAMessage_AndKeepsTheQuantity()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var client = await LoggedInClientAsync(factory, "quantidade-demais@example.com");
+        await client.PostAsync("/Cart/Add", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["productId"] = KitAurora,
+            ["__RequestVerificationToken"] = TokenFrom(await client.GetStringAsync("/Catalog")),
+        }));
+
+        var change = await client.PostAsync("/Cart/ChangeQuantity", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["productId"] = KitAurora,
+            ["quantity"] = "11",
+            ["__RequestVerificationToken"] = TokenFrom(await client.GetStringAsync("/Cart")),
+        }));
+        Assert.Equal(HttpStatusCode.Redirect, change.StatusCode);
+
+        var cart = WebUtility.HtmlDecode(await client.GetStringAsync("/Cart"));
+        Assert.Contains("Cada kit vai no máximo 10 unidades por pedido.", cart);
+        Assert.Contains("R$ 349,90", cart);
+    }
+
+    [Fact]
     public async Task TamperedCartRequests_GetClientErrors_InsteadOf500()
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();

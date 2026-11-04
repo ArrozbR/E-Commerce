@@ -15,6 +15,8 @@ public sealed class FakeShippingQuotes : IShippingQuotes
 
     public bool Unavailable { get; set; }
 
+    public Func<Task>? DuringQuote { get; set; }
+
     public IReadOnlyList<(string PostalCode, IReadOnlyList<ShippingQuoteItem> Items)> Requests
     {
         get
@@ -26,12 +28,19 @@ public sealed class FakeShippingQuotes : IShippingQuotes
         }
     }
 
-    public Task<ShippingQuote> QuoteAsync(string destinationPostalCode, IReadOnlyList<ShippingQuoteItem> items, CancellationToken cancellationToken = default)
+    public async Task<ShippingQuote> QuoteAsync(string destinationPostalCode, IReadOnlyList<ShippingQuoteItem> items, CancellationToken cancellationToken = default)
     {
         lock (gate)
         {
             requests.Add((destinationPostalCode, items));
-            return Task.FromResult(Unavailable ? ShippingQuote.Unavailable : new ShippingQuote(true, [.. Options]));
         }
+
+        if (DuringQuote is { } during)
+        {
+            DuringQuote = null;
+            await during();
+        }
+
+        return Unavailable ? ShippingQuote.Unavailable : new ShippingQuote(true, [.. Options]);
     }
 }

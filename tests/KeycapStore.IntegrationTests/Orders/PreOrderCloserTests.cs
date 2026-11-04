@@ -177,4 +177,54 @@ public class PreOrderCloserTests(PostgresFixture postgres) : IClassFixture<Postg
         Assert.Equal(0, await CloseAsync(factory));
         Assert.Null((await ProductAsync(factory, preOrder)).PreOrderOutcome);
     }
+
+    [Fact]
+    public async Task CampaignReopenedByTheAdminWhileTheClosingRuns_IsNotClosed()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var preOrder = await TestPreOrders.SaveOpenAsync(factory, "Kit Reaberto Durante o Fechamento", minimum: 20);
+        var paid = await TestPreOrders.SaveOrderAsync(factory, preOrder, 1, o => o.ConfirmPayment());
+        await TestPreOrders.EndCampaignAsync(factory, preOrder, TwoHours);
+
+        await using var adminScope = factory.Services.CreateAsyncScope();
+        var adminDb = adminScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var adminSave = await adminDb.Database.BeginTransactionAsync();
+        await adminDb.Products.Where(p => p.Id == preOrder)
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.PreOrderEndsAt, DateTimeOffset.UtcNow.AddDays(5)));
+
+        var closing = CloseAsync(factory);
+        await Task.Delay(TimeSpan.FromMilliseconds(500));
+        await adminSave.CommitAsync();
+
+        Assert.Equal(0, await closing);
+        var product = await ProductAsync(factory, preOrder);
+        Assert.Null(product.PreOrderOutcome);
+        Assert.True(product.IsActive);
+        Assert.Equal(OrderStatus.Paid, await StatusAsync(factory, paid));
+    }
+
+    [Fact]
+    public async Task DatesSavedByTheAdminWhileTheBatchIsBeingClosed_AreRefused()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var preOrder = await TestPreOrders.SaveOpenAsync(factory, "Kit Datas Durante o Fechamento", minimum: 20);
+        var endsAtBefore = (await ProductAsync(factory, preOrder)).PreOrderEndsAt;
+
+        await using var closerScope = factory.Services.CreateAsyncScope();
+        var closerDb = closerScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var closing = await closerDb.Database.BeginTransactionAsync();
+        await closerDb.Products.Where(p => p.Id == preOrder)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(p => p.PreOrderOutcome, PreOrderOutcome.Cancelled)
+                .SetProperty(p => p.IsActive, false));
+
+        await using var adminScope = factory.Services.CreateAsyncScope();
+        var saving = adminScope.ServiceProvider.GetRequiredService<KeycapStore.Application.Catalog.IProductAdminService>()
+            .ReschedulePreOrderAsync(preOrder, DateTimeOffset.UtcNow.AddDays(5), DateTimeOffset.UtcNow.AddDays(30));
+        await Task.Delay(TimeSpan.FromMilliseconds(500));
+        await closing.CommitAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => saving);
+        Assert.Equal(endsAtBefore, (await ProductAsync(factory, preOrder)).PreOrderEndsAt);
+    }
 }

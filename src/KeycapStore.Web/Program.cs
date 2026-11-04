@@ -1,6 +1,7 @@
 ﻿using KeycapStore.Infrastructure;
 using KeycapStore.Infrastructure.Identity;
 using KeycapStore.Web.Localization;
+using KeycapStore.Web.RateLimiting;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -33,6 +34,7 @@ builder.Services.AddControllersWithViews(options =>
     .AddDataAnnotationsLocalization(options =>
         options.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource)));
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddShippingQuoteRateLimit(builder.Configuration);
 
 var authentication = builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme);
 authentication.AddIdentityCookies();
@@ -52,6 +54,8 @@ builder.Services.ConfigureApplicationCookie(options =>
         return Task.CompletedTask;
     };
 });
+
+builder.Services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.Zero);
 
 var app = builder.Build();
 
@@ -132,6 +136,8 @@ app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseRateLimiter();
 
 app.MapStaticAssets();
 

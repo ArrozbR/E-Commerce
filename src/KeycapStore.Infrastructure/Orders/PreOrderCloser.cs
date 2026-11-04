@@ -34,6 +34,17 @@ internal sealed class PreOrderCloser(AppDbContext db, TimeProvider clock, ILogge
 
     private async Task<bool> CloseAsync(Guid productId, CancellationToken cancellationToken)
     {
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+
+        var limit = clock.GetUtcNow() - ClosingDelay;
+        var locked = await db.Products
+            .Where(p => p.Id == productId && p.PreOrderOutcome == null && p.PreOrderEndsAt <= limit)
+            .ExecuteUpdateAsync(s => s.SetProperty(p => p.IsActive, false), cancellationToken);
+        if (locked == 0)
+        {
+            return false;
+        }
+
         var pending = await db.Orders.AnyAsync(
             o => (o.Status == OrderStatus.AwaitingPayment || o.Status == OrderStatus.AwaitingConfirmation)
                 && o.Items.Any(i => i.ProductId == productId),
@@ -44,13 +55,7 @@ internal sealed class PreOrderCloser(AppDbContext db, TimeProvider clock, ILogge
             return false;
         }
 
-        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-
         var product = await db.Products.SingleAsync(p => p.Id == productId, cancellationToken);
-        if (product.PreOrderOutcome is not null || product.PreOrderEndsAt > clock.GetUtcNow() - ClosingDelay)
-        {
-            return false;
-        }
 
         var sold = (await db.SoldUnitsAsync([productId], cancellationToken)).GetValueOrDefault(productId);
         var minimumReached = sold >= product.PreOrder!.MinimumUnits;

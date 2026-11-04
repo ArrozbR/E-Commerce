@@ -2,6 +2,8 @@
 
 public sealed class Cart
 {
+    public const int MaxQuantityPerItem = 10;
+
     private readonly List<CartItem> _items = [];
 
     public Guid Id { get; private set; }
@@ -21,13 +23,19 @@ public sealed class Cart
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
 
         var item = _items.Find(i => i.ProductId == productId);
+        var total = (long)quantity + (item?.Quantity ?? 0);
+        if (total > MaxQuantityPerItem)
+        {
+            throw new CartItemLimitException(productId);
+        }
+
         if (item is null)
         {
             _items.Add(new CartItem(productId, quantity));
             return;
         }
 
-        item.SetQuantity(item.Quantity + quantity);
+        item.SetQuantity((int)total);
     }
 
     public void ChangeQuantity(Guid productId, int quantity)
@@ -38,6 +46,11 @@ public sealed class Cart
         if (item is null)
         {
             throw new CartItemNotFoundException(productId);
+        }
+
+        if (quantity > MaxQuantityPerItem)
+        {
+            throw new CartItemLimitException(productId);
         }
 
         item.SetQuantity(quantity);

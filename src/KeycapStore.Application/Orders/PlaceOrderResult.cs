@@ -10,6 +10,9 @@ public enum PlaceOrderFailure
     ShippingOptionGone,
     PreOrderClosed,
     PreOrderMustBeAlone,
+    QuantityLimit,
+    OpenOrderExists,
+    CartChanged,
 }
 
 public sealed record PlaceOrderResult(Guid? OrderId, PlaceOrderFailure? Failure, string? ProductName)

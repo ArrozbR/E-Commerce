@@ -101,8 +101,9 @@ public class GoogleAccountTests(PostgresFixture postgres) : IClassFixture<Postgr
     {
         var google = new FakeGoogleAccount { Id = "google-do-admin", Email = "admin-conecta@example.com" };
         await using var factory = await postgres.CreateMigratedFactoryAsync(google);
-        var client = await PageClient.LoggedInAsync(factory, "admin-conecta@example.com");
+        await PageClient.LoggedInAsync(factory, "admin-conecta@example.com");
         Assert.True((await factory.Services.CreateAdminAsync("admin-conecta@example.com")).Succeeded);
+        var client = await PageClient.LoggedInAsync(factory, "admin-conecta@example.com");
 
         await LinkGoogleAsync(client);
 

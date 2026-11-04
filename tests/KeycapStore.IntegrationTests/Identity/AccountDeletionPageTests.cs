@@ -99,8 +99,9 @@ public class AccountDeletionPageTests(PostgresFixture postgres) : IClassFixture<
     public async Task Admin_ShowsTheMessage_AndKeepsTheAccount()
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
-        var client = await PageClient.LoggedInAsync(factory, "admin-pagina@example.com");
+        await PageClient.LoggedInAsync(factory, "admin-pagina@example.com");
         Assert.True((await factory.Services.CreateAdminAsync("admin-pagina@example.com")).Succeeded);
+        var client = await PageClient.LoggedInAsync(factory, "admin-pagina@example.com");
 
         var response = await DeleteAsync(client, PageClient.Password);
 

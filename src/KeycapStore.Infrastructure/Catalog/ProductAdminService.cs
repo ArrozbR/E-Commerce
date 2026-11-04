@@ -38,8 +38,24 @@ internal sealed class ProductAdminService(AppDbContext db, TimeProvider clock) :
         return product.Id;
     }
 
-    public Task ReschedulePreOrderAsync(Guid productId, DateTimeOffset endsAt, DateTimeOffset shipsAt, CancellationToken cancellationToken = default) =>
-        ApplyAsync(productId, product => product.ReschedulePreOrder(endsAt, shipsAt, clock.GetUtcNow()), cancellationToken);
+    public async Task ReschedulePreOrderAsync(Guid productId, DateTimeOffset endsAt, DateTimeOffset shipsAt, CancellationToken cancellationToken = default)
+    {
+        var product = await db.Products.AsNoTracking().SingleOrDefaultAsync(p => p.Id == productId, cancellationToken)
+            ?? throw new ProductNotFoundException(productId);
+
+        product.ReschedulePreOrder(endsAt, shipsAt, clock.GetUtcNow());
+
+        var saved = await db.Products
+            .Where(p => p.Id == productId && p.PreOrderOutcome == null)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(p => p.PreOrderEndsAt, product.PreOrderEndsAt)
+                .SetProperty(p => p.PreOrderShipsAt, product.PreOrderShipsAt), cancellationToken);
+
+        if (saved == 0)
+        {
+            throw new InvalidOperationException("A pré-venda já foi fechada.");
+        }
+    }
 
     public Task UpdateAsync(Guid productId, string name, decimal price, ProductPackage package, CancellationToken cancellationToken = default) =>
         ApplyAsync(productId, product =>

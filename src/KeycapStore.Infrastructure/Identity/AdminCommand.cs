@@ -45,12 +45,23 @@ public static class AdminCommand
             }
         }
 
+        if ((await users.GetLoginsAsync(user)).Count > 0)
+        {
+            return new CreateAdminResult(false, null, ["Esta conta entra pelo Google, e admin entra só com senha. Use outro e-mail para o admin."]);
+        }
+
         if (!await users.IsInRoleAsync(user, AdminRole))
         {
             var addResult = await users.AddToRoleAsync(user, AdminRole);
             if (!addResult.Succeeded)
             {
                 return Failure(addResult);
+            }
+
+            var stampResult = await users.UpdateSecurityStampAsync(user);
+            if (!stampResult.Succeeded)
+            {
+                return Failure(stampResult);
             }
         }
 

@@ -45,7 +45,7 @@ else
                     <td class="text-end">
                         <form asp-action="ChangeQuantity" method="post" class="d-inline-flex gap-2">
                             <input type="hidden" name="productId" value="@line.ProductId" />
-                            <input type="number" name="quantity" value="@line.Quantity" min="1" class="form-control form-control-sm" style="width: 5rem" />
+                            <input type="number" name="quantity" value="@line.Quantity" min="1" max="@KeycapStore.Domain.Carts.Cart.MaxQuantityPerItem" class="form-control form-control-sm" style="width: 5rem" />
                             <button type="submit" class="btn btn-outline-secondary btn-sm">@Localizer["Atualizar"]</button>
                         </form>
                     </td>

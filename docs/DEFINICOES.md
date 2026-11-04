@@ -25,7 +25,7 @@ Fatia vertical: **catálogo → carrinho → pagamento → resultado → envio**
 |---|---|
 | Catálogo | Público (sem login). Produtos inseridos por **seed**. Cada kit é um produto separado, **sem variações**. Estoque visível ("últimas unidades", "esgotado"). |
 | Conta | Cadastro e login com ASP.NET Core Identity. **Conta obrigatória para comprar.** |
-| Carrinho | Guardado no banco, por cliente (exige login para adicionar). Adicionar, remover e alterar quantidade. |
+| Carrinho | Guardado no banco, por cliente (exige login para adicionar). Adicionar, remover e alterar quantidade. **No máximo 10 unidades por kit e 1 pedido aguardando pagamento por cliente** (ADR 0044). |
 | Checkout | Endereço de entrega digitado no checkout, com **frete por estado** (grátis no Centro-Oeste, SP e RJ; R$ 15,00 nos demais; ADR 0024). Clicar em "Finalizar" cria o pedido e **reserva o estoque**. |
 | Pagamento | **Stripe Checkout hospedado**, com **cartão e Pix**. |
 | Resultado | Página de retorno que consulta o próprio backend até o status mudar. |
