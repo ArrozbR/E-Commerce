@@ -18,6 +18,7 @@ public sealed class Order
     public decimal ShippingFee { get; private set; }
     public string? ShippingService { get; private set; }
     public int? ShippingDeliveryDays { get; private set; }
+    public DateTimeOffset? PreOrderShipsAt { get; private set; }
     public decimal Total => Items.Sum(i => i.LineTotal) + ShippingFee;
     public string? StripeSessionId { get; private set; }
     public string? StripePaymentIntentId { get; private set; }
@@ -37,7 +38,8 @@ public sealed class Order
         IEnumerable<OrderItem> items,
         ShippingAddress shippingAddress,
         ShippingChoice shipping,
-        string language = DefaultLanguage)
+        string language = DefaultLanguage,
+        DateTimeOffset? preOrderShipsAt = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(customerId);
         ArgumentNullException.ThrowIfNull(shippingAddress);
@@ -66,6 +68,7 @@ public sealed class Order
         ShippingService = shipping.ServiceName;
         ShippingDeliveryDays = shipping.DeliveryDays;
         Language = language;
+        PreOrderShipsAt = preOrderShipsAt?.ToUniversalTime();
     }
 
     public void AttachStripeSession(string sessionId)

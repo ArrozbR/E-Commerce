@@ -1,4 +1,6 @@
 ﻿using KeycapStore.Application.Carts;
+using KeycapStore.Domain.Carts;
+using KeycapStore.Domain.Catalog;
 using KeycapStore.Infrastructure.Persistence;
 using KeycapStore.IntegrationTests.Fixtures;
 
@@ -142,5 +144,57 @@ public class CartServiceTests(PostgresFixture postgres) : IClassFixture<Postgres
 
         Assert.False(Assert.Single(view.Lines).IsAvailable);
         Assert.True(view.HasUnavailableItems);
+    }
+
+    [Fact]
+    public async Task AddItem_PreOrderToACartWithOtherKits_IsRefused()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var preOrder = await TestPreOrders.SaveOpenAsync(factory, "Kit Pré-venda Carrinho 1");
+        await using var scope = factory.Services.CreateAsyncScope();
+        var carts = scope.ServiceProvider.GetRequiredService<ICartService>();
+        await carts.AddItemAsync("customer-mix-1", KitAurora, 1);
+
+        await Assert.ThrowsAsync<PreOrderMustBeAloneException>(() => carts.AddItemAsync("customer-mix-1", preOrder, 1));
+
+        Assert.Equal("Kit Aurora (base)", Assert.Single((await carts.GetAsync("customer-mix-1")).Lines).ProductName);
+    }
+
+    [Fact]
+    public async Task AddItem_KitToACartWithAPreOrder_IsRefused()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var preOrder = await TestPreOrders.SaveOpenAsync(factory, "Kit Pré-venda Carrinho 2");
+        await using var scope = factory.Services.CreateAsyncScope();
+        var carts = scope.ServiceProvider.GetRequiredService<ICartService>();
+        await carts.AddItemAsync("customer-mix-2", preOrder, 1);
+
+        await Assert.ThrowsAsync<PreOrderMustBeAloneException>(() => carts.AddItemAsync("customer-mix-2", KitAurora, 1));
+    }
+
+    [Fact]
+    public async Task AddItem_SamePreOrderAgain_AddsToTheQuantity()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var preOrder = await TestPreOrders.SaveOpenAsync(factory, "Kit Pré-venda Carrinho 3");
+        await using var scope = factory.Services.CreateAsyncScope();
+        var carts = scope.ServiceProvider.GetRequiredService<ICartService>();
+        await carts.AddItemAsync("customer-mix-3", preOrder, 1);
+
+        await carts.AddItemAsync("customer-mix-3", preOrder, 1);
+
+        Assert.Equal(2, Assert.Single((await carts.GetAsync("customer-mix-3")).Lines).Quantity);
+    }
+
+    [Fact]
+    public async Task AddItem_PreOrderThatEnded_IsTreatedAsNotFound()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var preOrder = await TestPreOrders.SaveOpenAsync(factory, "Kit Pré-venda Encerrada");
+        await TestPreOrders.EndCampaignAsync(factory, preOrder);
+        await using var scope = factory.Services.CreateAsyncScope();
+        var carts = scope.ServiceProvider.GetRequiredService<ICartService>();
+
+        await Assert.ThrowsAsync<ProductNotFoundException>(() => carts.AddItemAsync("customer-ended", preOrder, 1));
     }
 }

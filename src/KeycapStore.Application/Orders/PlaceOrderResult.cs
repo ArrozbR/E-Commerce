@@ -8,6 +8,8 @@ public enum PlaceOrderFailure
     ShippingUnavailable,
     NoShippingOption,
     ShippingOptionGone,
+    PreOrderClosed,
+    PreOrderMustBeAlone,
 }
 
 public sealed record PlaceOrderResult(Guid? OrderId, PlaceOrderFailure? Failure, string? ProductName)

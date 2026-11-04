@@ -183,6 +183,9 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
+                    b.Property<DateTimeOffset?>("PreOrderShipsAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int?>("ShippingDeliveryDays")
                         .HasColumnType("integer");
 

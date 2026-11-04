@@ -5,6 +5,11 @@
 
 <h1 class="mb-4">@Localizer["Carrinho"]</h1>
 
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-warning">@error</div>
+}
+
 @if (Model.Lines.Count == 0)
 {
     <p>@Localizer["Seu carrinho está vazio."] <a asp-controller="Catalog" asp-action="Index">@Localizer["Ver o catálogo"]</a></p>

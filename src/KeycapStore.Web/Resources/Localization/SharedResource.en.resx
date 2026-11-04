@@ -303,4 +303,13 @@
   <data name="A opção de frete escolhida não está mais disponível. Escolha outra." xml:space="preserve">
     <value>The chosen shipping option is no longer available. Please choose another one.</value>
   </data>
+  <data name="Kits de pré-venda são comprados sozinhos. Finalize ou esvazie o carrinho antes de adicionar este." xml:space="preserve">
+    <value>Pre-order kits are bought on their own. Check out or empty your cart before adding this one.</value>
+  </data>
+  <data name="A pré-venda de {0} já terminou. Remova do carrinho para continuar." xml:space="preserve">
+    <value>The pre-order for {0} has ended. Remove it from your cart to continue.</value>
+  </data>
+  <data name="Kits de pré-venda são comprados sozinhos. Deixe no carrinho só o kit de pré-venda ou só os outros." xml:space="preserve">
+    <value>Pre-order kits are bought on their own. Keep only the pre-order kit or only the other kits in your cart.</value>
+  </data>
 </root>

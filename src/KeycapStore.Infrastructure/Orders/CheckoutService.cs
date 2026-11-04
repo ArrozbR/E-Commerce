@@ -78,23 +78,32 @@ internal sealed class CheckoutService(
             .Where(p => productIds.Contains(p.Id))
             .ToDictionaryAsync(p => p.Id, cancellationToken);
 
+        var preOrder = products.Values.Select(p => p.PreOrder).FirstOrDefault(p => p is not null);
+        if (preOrder is not null && products.Count > 1)
+        {
+            return PlaceOrderResult.Fail(PlaceOrderFailure.PreOrderMustBeAlone);
+        }
+
+        var now = clock.GetUtcNow();
+
         foreach (var item in cart.Items.OrderBy(i => i.ProductId))
         {
             var reserved = await db.Products
-                .Where(p => p.Id == item.ProductId && p.Stock >= item.Quantity && p.IsActive)
+                .Where(p => p.Id == item.ProductId && p.Stock >= item.Quantity && p.IsActive && (p.PreOrderEndsAt == null || p.PreOrderEndsAt > now))
                 .ExecuteUpdateAsync(s => s.SetProperty(p => p.Stock, p => p.Stock - item.Quantity), cancellationToken);
 
             if (reserved == 0)
             {
                 var product = products[item.ProductId];
-                return PlaceOrderResult.Fail(
-                    product.IsActive ? PlaceOrderFailure.OutOfStock : PlaceOrderFailure.NoLongerForSale,
-                    product.Name);
+                var failure = !product.IsActive ? PlaceOrderFailure.NoLongerForSale
+                    : product.PreOrder is { } campaign && !campaign.IsOpenAt(now) ? PlaceOrderFailure.PreOrderClosed
+                    : PlaceOrderFailure.OutOfStock;
+                return PlaceOrderResult.Fail(failure, product.Name);
             }
         }
 
         var items = cart.Items.Select(i => new OrderItem(i.ProductId, products[i.ProductId].Name, products[i.ProductId].Price, i.Quantity));
-        var order = new Order(customerId, clock.GetUtcNow(), items, shippingAddress, shipping, language);
+        var order = new Order(customerId, now, items, shippingAddress, shipping, language, preOrder?.ShipsAt);
 
         db.Orders.Add(order);
         db.Carts.Remove(cart);

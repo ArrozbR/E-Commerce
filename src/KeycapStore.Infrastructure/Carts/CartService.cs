@@ -7,15 +7,27 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeycapStore.Infrastructure.Carts;
 
-internal sealed class CartService(AppDbContext db) : ICartService
+internal sealed class CartService(AppDbContext db, TimeProvider clock) : ICartService
 {
     public async Task AddItemAsync(string customerId, Guid productId, int quantity, CancellationToken cancellationToken = default)
     {
         var cart = await db.Carts.SingleOrDefaultAsync(c => c.CustomerId == customerId, cancellationToken);
 
-        if (!await db.Products.AnyAsync(p => p.Id == productId && p.IsActive, cancellationToken))
+        var product = await db.Products.AsNoTracking().SingleOrDefaultAsync(p => p.Id == productId && p.IsActive, cancellationToken);
+        if (product is null || (product.PreOrder is { } campaign && !campaign.IsOpenAt(clock.GetUtcNow())))
         {
             throw new ProductNotFoundException(productId);
+        }
+
+        var otherIds = cart?.Items.Select(i => i.ProductId).Where(id => id != productId).ToList() ?? [];
+        if (otherIds.Count > 0)
+        {
+            var othersArePreOrder = await db.Products.AnyAsync(p => otherIds.Contains(p.Id) && p.PreOrderEndsAt != null, cancellationToken);
+            var mixesPreOrder = product.PreOrder is not null || othersArePreOrder;
+            if (mixesPreOrder)
+            {
+                throw new PreOrderMustBeAloneException(productId);
+            }
         }
 
         if (cart is null)

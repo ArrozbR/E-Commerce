@@ -131,6 +131,8 @@ public sealed class CheckoutController(
         PlaceOrderFailure.ShippingUnavailable => text["Não foi possível calcular o frete agora. Tente de novo em alguns minutos."],
         PlaceOrderFailure.NoShippingOption => text["Nenhuma transportadora entrega este pedido neste CEP."],
         PlaceOrderFailure.ShippingOptionGone => text["A opção de frete escolhida não está mais disponível. Escolha outra."],
+        PlaceOrderFailure.PreOrderClosed => text["A pré-venda de {0} já terminou. Remova do carrinho para continuar.", productName!],
+        PlaceOrderFailure.PreOrderMustBeAlone => text["Kits de pré-venda são comprados sozinhos. Deixe no carrinho só o kit de pré-venda ou só os outros."],
         _ => text["Não foi possível finalizar o pedido."],
     }).Value;
 }

@@ -148,4 +148,21 @@ public class CartPageTests(PostgresFixture postgres) : IClassFixture<PostgresFix
         }));
         Assert.Equal(HttpStatusCode.NotFound, notInCart.StatusCode);
     }
+
+    [Fact]
+    public async Task AddingAPreOrderToACartWithAnotherKit_ShowsAMessage()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var preOrder = await TestPreOrders.SaveOpenAsync(factory, "Kit Pré-venda Página");
+        var client = await PageClient.LoggedInAsync(factory, "carrinho-misturado@example.com");
+        var token = PageClient.TokenFrom(await client.GetStringAsync("/Catalog"));
+        await client.PostAsync("/Cart/Add", new FormUrlEncodedContent(new Dictionary<string, string> { ["productId"] = "6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e01", ["__RequestVerificationToken"] = token }));
+
+        var response = await client.PostAsync("/Cart/Add", new FormUrlEncodedContent(new Dictionary<string, string> { ["productId"] = preOrder.ToString(), ["__RequestVerificationToken"] = token }));
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        var html = WebUtility.HtmlDecode(await client.GetStringAsync("/Cart"));
+        Assert.Contains("Kits de pré-venda são comprados sozinhos.", html);
+        Assert.DoesNotContain("Kit Pré-venda Página", html);
+    }
 }
