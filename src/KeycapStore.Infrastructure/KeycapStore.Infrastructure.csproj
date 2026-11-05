@@ -19,7 +19,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.14" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
-    <PackageReference Include="Stripe.net" Version="53.0.0" />
+    <PackageReference Include="Stripe.net" Version="53.1.0" />
   </ItemGroup>
 
   <PropertyGroup>
