@@ -1,16 +1,19 @@
 using System.Diagnostics;
 
+using KeycapStore.Application.Catalog;
 using KeycapStore.Web.Models;
 
 using Microsoft.AspNetCore.Mvc;
 
 namespace KeycapStore.Web.Controllers;
 
-public class HomeController : Controller
+public class HomeController(ICatalogQueries catalog) : Controller
 {
-    public IActionResult Index()
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
-        return View();
+        var products = await catalog.ListProductsAsync(cancellationToken);
+
+        return View(HomeViewModel.From(products));
     }
 
     public IActionResult Privacy()
