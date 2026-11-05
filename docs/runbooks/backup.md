@@ -124,4 +124,5 @@ docker compose exec db psql -U keycapstore -d postgres -c "DROP DATABASE restore
 | Data | Backup | Resultado |
 |---|---|---|
 | 15/10/2026 | `keycapstore-20261015T145913Z.dump.age` (da VM) | ✅ contagem por status igual à de produção (2 Delivered, 2 Expired, 1 Failed, 1 Paid, 1 Picking, 2 Shipped) |
-| 22/10/2026 | `keycapstore-20261022T053150Z.dump.age` (**da R2**, `daily/`, sem usar a VM) | ✅ contagem por status igual à de produção até a hora do backup (2 Delivered, 2 Expired, 2 Failed, 2 Paid, 1 Picking, 2 Refunded, 1 Returned, 2 Shipped). Próximo teste até 22/11/2026 |
+| 22/10/2026 | `keycapstore-20261022T053150Z.dump.age` (**da R2**, `daily/`, sem usar a VM) | ✅ contagem por status igual à de produção até a hora do backup (2 Delivered, 2 Expired, 2 Failed, 2 Paid, 1 Picking, 2 Refunded, 1 Returned, 2 Shipped) |
+| 05/11/2026 | `daily_keycapstore-20261105T053041Z.dump.age` (**da R2**, `daily/`) | ✅ contagem por status igual à de produção até a hora do backup (3 Delivered, 7 Expired, 2 Failed, 4 Paid, 2 Picking, 7 Refunded, 1 Returned, 2 Shipped). Próximo teste até 05/12/2026 |
