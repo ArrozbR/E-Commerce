@@ -18,9 +18,6 @@
   <data name="Catálogo" xml:space="preserve">
     <value>Catalog</value>
   </data>
-  <data name="Carrinho" xml:space="preserve">
-    <value>Cart</value>
-  </data>
   <data name="Meus pedidos" xml:space="preserve">
     <value>My orders</value>
   </data>
@@ -59,5 +56,14 @@
   </data>
   <data name="Tema: escuro" xml:space="preserve">
     <value>Theme: dark</value>
+  </data>
+  <data name="Kit adicionado ao carrinho." xml:space="preserve">
+    <value>Kit added to your cart.</value>
+  </data>
+  <data name="Ver carrinho" xml:space="preserve">
+    <value>View cart</value>
+  </data>
+  <data name="Fechar aviso" xml:space="preserve">
+    <value>Close notice</value>
   </data>
 </root>

@@ -11,14 +11,21 @@
         } catch {
             document.documentElement.classList.toggle("dark", window.matchMedia("(prefers-color-scheme: dark)").matches);
         }
+        if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            document.documentElement.classList.add("motion");
+        }
     </script>
     <link rel="preload" href="~/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
 </head>
 <body class="flex min-h-screen flex-col">
-    <header class="border-b border-line">
+    <div class="bg-dots pointer-events-none fixed inset-x-0 top-0 -z-10 h-[36rem]" aria-hidden="true"></div>
+    <header class="sticky top-0 z-40 border-b border-line/70 bg-bg/70 backdrop-blur-md">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-            <a asp-area="" asp-controller="Catalog" asp-action="Index" class="font-display text-lg font-bold tracking-tight text-fg hover:no-underline">KeycapStore</a>
+            <a asp-area="" asp-controller="Catalog" asp-action="Index" class="logo inline-flex items-center gap-2 font-display text-lg font-bold tracking-tight text-fg hover:no-underline">
+                <span class="logo-cap" aria-hidden="true">K</span>
+                <span>KeycapStore</span>
+            </a>
 
             <input type="checkbox" id="menu-toggle" class="peer sr-only" />
             <label for="menu-toggle" class="ml-auto cursor-pointer rounded-md border border-line px-3 py-1.5 text-sm peer-focus-visible:ring-2 peer-focus-visible:ring-brand md:hidden">@Localizer["Menu"]</label>
@@ -27,7 +34,7 @@
                 <a class="py-1 text-fg" asp-area="" asp-controller="Catalog" asp-action="Index">@Localizer["Catálogo"]</a>
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <a class="py-1 text-fg" asp-area="" asp-controller="Cart" asp-action="Index">@Localizer["Carrinho"]</a>
+                    @await Component.InvokeAsync("CartCount")
                     <a class="py-1 text-fg" asp-area="" asp-controller="Orders" asp-action="Index">@Localizer["Meus pedidos"]</a>
                     @if (User.IsInRole(KeycapStore.Application.Identity.Roles.Admin))
                     {
@@ -64,6 +71,20 @@
         @RenderBody()
     </main>
 
+    @if (TempData[KeycapStore.Web.Controllers.CartController.CartAddedKey] is not null)
+    {
+        <div class="toast" role="status" data-toast>
+            <span class="toast-icon" aria-hidden="true">
+                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+            </span>
+            <span data-toast-message>@Localizer["Kit adicionado ao carrinho."]</span>
+            <a class="shrink-0 font-medium" asp-area="" asp-controller="Cart" asp-action="Index">@Localizer["Ver carrinho"]</a>
+            <button type="button" class="toast-close" data-toast-close aria-label="@Localizer["Fechar aviso"]">
+                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
+        </div>
+    }
+
     <footer class="border-t border-line">
         <div class="mx-auto max-w-6xl px-4 py-6 text-sm text-muted">
             &copy; 2026 KeycapStore · <a asp-area="" asp-controller="Home" asp-action="Privacy">@Localizer["Privacidade"]</a>
@@ -71,6 +92,9 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/gsap/gsap.min.js" asp-append-version="true" defer></script>
+    <script src="~/lib/gsap/ScrollTrigger.min.js" asp-append-version="true" defer></script>
+    <script src="~/js/motion.js" asp-append-version="true" defer></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

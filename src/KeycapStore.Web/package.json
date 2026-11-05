@@ -1,13 +1,19 @@
 {
   "name": "keycapstore-web-css",
   "private": true,
-  "description": "Gera o CSS da loja com o Tailwind (ADR 0045).",
+  "description": "Gera o CSS da loja com o Tailwind e copia o GSAP para o wwwroot (ADRs 0045 e 0047).",
   "scripts": {
+    "build": "npm run gsap:copy && npm run css:build",
+    "dev": "npm run gsap:copy && npm run css:watch",
+    "gsap:copy": "node ./scripts/copy-gsap.mjs",
     "css:build": "tailwindcss -i ./Styles/app.css -o ./wwwroot/css/app.css --minify",
     "css:watch": "tailwindcss -i ./Styles/app.css -o ./wwwroot/css/app.css --watch"
   },
   "devDependencies": {
     "@tailwindcss/cli": "4.3.4",
     "tailwindcss": "4.3.4"
+  },
+  "dependencies": {
+    "gsap": "3.15.1"
   }
 }

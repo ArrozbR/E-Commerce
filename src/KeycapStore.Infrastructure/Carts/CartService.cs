@@ -98,4 +98,10 @@ internal sealed class CartService(AppDbContext db, TimeProvider clock) : ICartSe
 
         return new CartView(lines);
     }
+
+    public Task<int> CountItemsAsync(string customerId, CancellationToken cancellationToken = default) =>
+        db.Carts
+            .Where(c => c.CustomerId == customerId)
+            .SelectMany(c => c.Items)
+            .SumAsync(i => i.Quantity, cancellationToken);
 }

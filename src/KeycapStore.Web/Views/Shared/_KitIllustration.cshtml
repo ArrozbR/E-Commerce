@@ -17,7 +17,7 @@
         var iconScale = (unit * 0.46) / 24;
         var iconX = key.X + (key.Width / 2) - (12 * iconScale);
         var iconY = key.Y + (key.Height * 0.42) - (12 * iconScale);
-        <g>
+        <g class="keycap" style="--d: @N(key.X / KitIllustration.ViewWidth)">
             <rect x="@N(key.X)" y="@N(key.Y)" width="@N(key.Width)" height="@N(key.Height)" rx="@N(radius)" fill="@cap" stroke="#000000" stroke-opacity="0.15" />
             <rect x="@N(key.X)" y="@N(key.Y + (key.Height * 0.72))" width="@N(key.Width)" height="@N(key.Height * 0.28)" rx="@N(radius)" fill="#000000" fill-opacity="0.18" />
             <rect x="@N(key.X + inset)" y="@N(key.Y + (inset * 0.6))" width="@N(key.Width - (inset * 2))" height="@N(key.Height * 0.7)" rx="@N(radius * 0.75)" fill="#ffffff" fill-opacity="0.12" />

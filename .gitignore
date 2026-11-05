@@ -481,6 +481,7 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 
-# Tailwind (V3, ADR 0045): pacotes do npm e o CSS gerado
+# Tailwind e GSAP (V3, ADRs 0045 e 0047): pacotes do npm e os arquivos gerados
 node_modules/
 src/KeycapStore.Web/wwwroot/css/app.css
+src/KeycapStore.Web/wwwroot/lib/gsap/

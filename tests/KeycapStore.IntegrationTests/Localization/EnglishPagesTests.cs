@@ -49,6 +49,28 @@ public class EnglishPagesTests(PostgresFixture postgres) : IClassFixture<Postgre
     }
 
     [Fact]
+    public async Task CartNoticeAndCount_InEnglish()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var client = await PageClient.LoggedInAsync(factory, "aviso-ingles@example.com");
+        await InEnglishAsync(client);
+
+        await client.PostAsync("/Cart/Add", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["productId"] = KitAurora.ToString(),
+            ["returnUrl"] = "/Catalog",
+            ["__RequestVerificationToken"] = PageClient.TokenFrom(await client.GetStringAsync("/Catalog")),
+        }));
+        var html = await PageAsync(client, "/Catalog");
+
+        Assert.Contains("Kit added to your cart.", html);
+        Assert.Contains(">View cart</a>", html);
+        Assert.Contains("aria-label=\"Close notice\"", html);
+        Assert.Contains("<span>Cart</span>", html);
+        Assert.Contains("(1 item)", html);
+    }
+
+    [Fact]
     public async Task EmptyCart_InEnglish()
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();

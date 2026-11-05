@@ -9,4 +9,6 @@ public interface ICartService
     Task RemoveItemAsync(string customerId, Guid productId, CancellationToken cancellationToken = default);
 
     Task<CartView> GetAsync(string customerId, CancellationToken cancellationToken = default);
+
+    Task<int> CountItemsAsync(string customerId, CancellationToken cancellationToken = default);
 }
