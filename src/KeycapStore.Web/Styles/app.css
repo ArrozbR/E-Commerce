@@ -368,14 +368,35 @@
     box-shadow: 0 0 14px -2px var(--glow);
   }
 
+  .toast-region {
+    @apply pointer-events-none fixed inset-x-4 bottom-4 z-50 flex flex-col gap-2 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-sm;
+  }
+
   .toast {
-    @apply fixed inset-x-4 bottom-4 z-50 flex items-center gap-3 rounded-xl border border-brand/40 bg-bg/90 px-4 py-3 text-sm backdrop-blur-md sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-sm;
+    @apply pointer-events-auto flex items-center gap-3 rounded-xl border border-brand/40 bg-bg/90 px-4 py-3 text-sm backdrop-blur-md;
     box-shadow: 0 4px 0 0 var(--edge), 0 18px 40px -16px var(--glow);
     animation: toast-fallback-hide 300ms ease-in 6s forwards;
   }
 
   .toast-icon {
     @apply grid size-7 shrink-0 place-items-center rounded-full bg-brand text-on-brand;
+  }
+
+  .toast-icon-error,
+  .toast-error .toast-icon-ok {
+    display: none;
+  }
+
+  .toast-error .toast-icon-error {
+    display: block;
+  }
+
+  .toast-error {
+    border-color: color-mix(in srgb, var(--danger) 50%, transparent);
+  }
+
+  .toast-error .toast-icon {
+    @apply bg-danger text-on-danger;
   }
 
   .toast-close {
@@ -391,16 +412,52 @@
     animation: none;
   }
 
+  .keycap {
+    cursor: pointer;
+  }
+
+  .keycap-top {
+    transition: translate 70ms ease-out;
+  }
+
+  .keycap.is-pressed {
+    filter: brightness(0.92);
+  }
+
+  .keycap.is-pressed .keycap-top {
+    translate: 0 var(--press, 2px);
+  }
+
   @media (prefers-reduced-motion: no-preference) {
-    .card-interactive:hover .keycap {
-      animation: keycap-tap 260ms ease-out calc(var(--d, 0) * 380ms) both;
+    .card-interactive:hover .keycap-top {
+      animation: keycap-tap 260ms ease-out calc(var(--d, 0) * 380ms);
     }
+  }
+
+  .stage {
+    background-image: radial-gradient(ellipse 80% 60% at 50% 0%, var(--halo), transparent 70%);
+  }
+
+  .swatch {
+    @apply inline-block size-6 shrink-0 rounded-md border border-line;
+    box-shadow: 0 2px 0 0 var(--edge);
+  }
+
+  .fly-cap {
+    position: fixed;
+    z-index: 60;
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border-radius: 6px;
+    pointer-events: none;
+    box-shadow: inset 0 -5px 0 0 rgb(0 0 0 / 0.22), 0 0 18px -2px var(--glow);
   }
 }
 
 @keyframes keycap-tap {
   45% {
-    translate: 0 2.5px;
+    translate: 0 var(--press, 2px);
   }
 }
 

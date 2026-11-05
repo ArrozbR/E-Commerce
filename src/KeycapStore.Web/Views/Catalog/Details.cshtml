@@ -1,0 +1,72 @@
+@model ProductPageViewModel
+@{
+    var product = Model.Product;
+    var palette = product.Palette ?? KeycapStore.Domain.Catalog.KitPalette.Neutral;
+    var description = SharedLocalizer[KitKindText.Description(product.KitKind)].Value;
+    ViewData["Title"] = product.Name;
+}
+
+@section Head {
+    <link rel="canonical" href="@Url.Action("Details", "Catalog", new { id = product.Id, slug = Slug.From(product.Name) }, Context.Request.Scheme)" />
+    <meta name="description" content="@description" />
+}
+
+<nav aria-label="@Localizer["Caminho"]" class="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted">
+    <a asp-controller="Catalog" asp-action="Index">@Localizer["Catálogo"]</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page" class="text-fg">@product.Name</span>
+</nav>
+
+<div class="grid items-start gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-12">
+    <div class="card stage p-4 sm:p-6" data-typeable data-reveal>
+        <partial name="_KitIllustration" model="new KitIllustration(palette, product.KitKind)" />
+        <p class="mt-4 mb-0 text-center text-sm text-muted">
+            <span class="pointer-coarse:hidden">@Localizer["Clique nas teclas ou use o seu teclado para testar."]</span>
+            <span class="hidden pointer-coarse:inline">@Localizer["Toque nas teclas para testar."]</span>
+        </p>
+    </div>
+
+    <div data-reveal>
+        <span class="badge badge-neutral mb-3">@SharedLocalizer[KitKindText.For(product.KitKind)]</span>
+        <h1 class="mb-2 text-4xl sm:text-5xl">@product.Name</h1>
+        <p class="mb-4 font-display text-4xl font-semibold text-brand">@Display.Price(product.Price)</p>
+
+        <div class="mb-6 flex flex-col items-start gap-2 text-sm">
+            <partial name="_Availability" model="product" />
+        </div>
+
+        <partial name="_AddToCart" model="product" />
+
+        <h2>@Localizer["O que vem no kit"]</h2>
+        <p class="text-muted">@description</p>
+
+        <h2>@Localizer["Cores do conjunto"]</h2>
+        <ul class="flex flex-wrap gap-x-6 gap-y-3 text-sm">
+            <li class="flex items-center gap-2">
+                <span class="swatch" style="background-color: @palette.Keys"></span>
+                <span>@Localizer["Teclas"] <code class="text-muted">@palette.Keys</code></span>
+            </li>
+            <li class="flex items-center gap-2">
+                <span class="swatch" style="background-color: @palette.Legends"></span>
+                <span>@Localizer["Legendas"] <code class="text-muted">@palette.Legends</code></span>
+            </li>
+            <li class="flex items-center gap-2">
+                <span class="swatch" style="background-color: @palette.Accent"></span>
+                <span>@Localizer["Destaque"] <code class="text-muted">@palette.Accent</code></span>
+            </li>
+        </ul>
+    </div>
+</div>
+
+@if (Model.Related.Count > 0)
+{
+    <section class="mt-16" aria-labelledby="related-title">
+        <h2 id="related-title">@Localizer["Veja também"]</h2>
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach (var kit in Model.Related)
+            {
+                <partial name="_KitCard" model="new KitCard(kit, 3)" />
+            }
+        </div>
+    </section>
+}

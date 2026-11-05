@@ -1,11 +1,15 @@
 @model int
 
-<a class="inline-flex items-center gap-2 py-1 text-fg" asp-area="" asp-controller="Cart" asp-action="Index">
+<a id="cart-link" class="inline-flex items-center gap-2 py-1 text-fg" asp-area="" asp-controller="Cart" asp-action="Index">
     <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1" /><circle cx="19" cy="21" r="1" /><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" /></svg>
     <span>@Localizer["Carrinho"]</span>
-    @if (Model > 0)
-    {
-        <span id="cart-count" class="cart-count" aria-hidden="true">@Model</span>
-        <span class="sr-only">@(Model == 1 ? Localizer["(1 item)"] : Localizer["({0} itens)", Model])</span>
-    }
+    <span id="cart-count" class="cart-count" aria-hidden="true" hidden="@(Model == 0)">@(Model > 0 ? Model.ToString(System.Globalization.CultureInfo.InvariantCulture) : "")</span>
+    <span id="cart-count-text" class="sr-only" data-one="@Localizer["(1 item)"]" data-many="@Localizer["({0} itens)", "{0}"]">@if (Model == 1)
+        {
+            @Localizer["(1 item)"]
+        }
+        else if (Model > 1)
+        {
+            @Localizer["({0} itens)", Model]
+        }</span>
 </a>

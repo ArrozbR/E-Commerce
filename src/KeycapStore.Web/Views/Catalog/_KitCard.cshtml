@@ -1,0 +1,39 @@
+@model KitCard
+@{
+    var product = Model.Product;
+    var address = Url.Action("Details", "Catalog", new { id = product.Id, slug = Slug.From(product.Name) });
+
+    void Title()
+    {
+        <a class="group inline-flex items-center gap-1.5 text-fg hover:text-brand hover:no-underline" href="@address">
+            <span>@product.Name</span>
+            <svg class="size-4 shrink-0 transition-transform duration-200 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+    }
+}
+
+<article class="card card-interactive flex flex-col" data-reveal>
+    <div class="mb-4">
+        <partial name="_KitIllustration" model="new KitIllustration(product.Palette ?? KeycapStore.Domain.Catalog.KitPalette.Neutral, product.KitKind)" />
+    </div>
+    @if (Model.HeadingLevel == 3)
+    {
+        <h3 class="mt-0 mb-1 font-display text-lg font-semibold">@{ Title(); }</h3>
+    }
+    else
+    {
+        <h2 class="mt-0 mb-1 font-display text-lg font-semibold">@{ Title(); }</h2>
+    }
+    <p class="mb-3 font-display text-2xl font-semibold">@Display.Price(product.Price)</p>
+
+    <div class="flex grow flex-col items-start gap-2 text-sm">
+        <partial name="_Availability" model="product" />
+    </div>
+
+    @if (product.CanBeBought)
+    {
+        <div class="mt-5">
+            <partial name="_AddToCart" model="product" />
+        </div>
+    }
+</article>

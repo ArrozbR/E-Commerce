@@ -49,6 +49,25 @@ public class EnglishPagesTests(PostgresFixture postgres) : IClassFixture<Postgre
     }
 
     [Fact]
+    public async Task ProductPage_InEnglish()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var client = PageClient.Anonymous(factory);
+        await InEnglishAsync(client);
+
+        var html = await PageAsync(client, $"/Catalog/{KitAurora}/kit-aurora-base");
+
+        Assert.Contains(">Base</span>", html);
+        Assert.Contains("What's in the kit", html);
+        Assert.Contains("Letters, numbers and the main modifiers", html);
+        Assert.Contains(">Colorway</h2>", html);
+        Assert.Contains(">Add to cart<", html);
+        Assert.Contains("data-added-label=\"Added!\"", html);
+        Assert.Contains("You may also like", html);
+        Assert.Contains("Click the keys or use your own keyboard to try them.", html);
+    }
+
+    [Fact]
     public async Task CartNoticeAndCount_InEnglish()
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
@@ -63,7 +82,7 @@ public class EnglishPagesTests(PostgresFixture postgres) : IClassFixture<Postgre
         }));
         var html = await PageAsync(client, "/Catalog");
 
-        Assert.Contains("Kit added to your cart.", html);
+        Assert.Contains("<span data-toast-message>Kit added to your cart.</span>", html);
         Assert.Contains(">View cart</a>", html);
         Assert.Contains("aria-label=\"Close notice\"", html);
         Assert.Contains("<span>Cart</span>", html);

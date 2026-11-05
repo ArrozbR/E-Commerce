@@ -1,0 +1,13 @@
+@model string
+
+<div class="toast" data-toast>
+    <span class="toast-icon" aria-hidden="true">
+        <svg class="toast-icon-ok size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        <svg class="toast-icon-error size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v6M12 17h.01" /></svg>
+    </span>
+    <span data-toast-message>@Model</span>
+    <a class="shrink-0 font-medium" asp-area="" asp-controller="Cart" asp-action="Index">@Localizer["Ver carrinho"]</a>
+    <button type="button" class="toast-close" data-toast-close aria-label="@Localizer["Fechar aviso"]">
+        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+    </button>
+</div>

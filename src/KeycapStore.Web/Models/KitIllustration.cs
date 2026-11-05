@@ -23,7 +23,15 @@ public enum KeyIcon
     Return,
 }
 
-public sealed record KeyShape(double X, double Y, double Width, double Height, KeyRole Role, string Legend, KeyIcon Icon = KeyIcon.None);
+public sealed record KeyShape(double X, double Y, double Width, double Height, KeyRole Role, string Legend, KeyIcon Icon = KeyIcon.None)
+{
+    public string? KeyName => Icon switch
+    {
+        KeyIcon.Return => "Enter",
+        KeyIcon.None => Legend.Length > 0 ? Legend : "Space",
+        _ => null,
+    };
+}
 
 public sealed record KitIllustration(KitPalette Palette, KitKind Kind)
 {

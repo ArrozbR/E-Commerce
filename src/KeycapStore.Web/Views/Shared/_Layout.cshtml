@@ -17,6 +17,7 @@
     </script>
     <link rel="preload" href="~/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+    @await RenderSectionAsync("Head", required: false)
 </head>
 <body class="flex min-h-screen flex-col">
     <div class="bg-dots pointer-events-none fixed inset-x-0 top-0 -z-10 h-[36rem]" aria-hidden="true"></div>
@@ -71,19 +72,15 @@
         @RenderBody()
     </main>
 
-    @if (TempData[KeycapStore.Web.Controllers.CartController.CartAddedKey] is not null)
-    {
-        <div class="toast" role="status" data-toast>
-            <span class="toast-icon" aria-hidden="true">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-            </span>
-            <span data-toast-message>@Localizer["Kit adicionado ao carrinho."]</span>
-            <a class="shrink-0 font-medium" asp-area="" asp-controller="Cart" asp-action="Index">@Localizer["Ver carrinho"]</a>
-            <button type="button" class="toast-close" data-toast-close aria-label="@Localizer["Fechar aviso"]">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
-            </button>
-        </div>
-    }
+    <div id="toast-region" class="toast-region" role="status" aria-live="polite" data-added="@Localizer["Kit adicionado ao carrinho."]" data-failed="@Localizer["Não foi possível adicionar o kit. Tente de novo."]">
+        @if (TempData[KeycapStore.Web.Controllers.CartController.CartAddedKey] is not null)
+        {
+            <partial name="_Toast" model="@Localizer["Kit adicionado ao carrinho."].Value" />
+        }
+    </div>
+    <template id="toast-template">
+        <partial name="_Toast" model="string.Empty" />
+    </template>
 
     <footer class="border-t border-line">
         <div class="mx-auto max-w-6xl px-4 py-6 text-sm text-muted">
@@ -95,6 +92,7 @@
     <script src="~/lib/gsap/gsap.min.js" asp-append-version="true" defer></script>
     <script src="~/lib/gsap/ScrollTrigger.min.js" asp-append-version="true" defer></script>
     <script src="~/js/motion.js" asp-append-version="true" defer></script>
+    <script src="~/js/cart.js" asp-append-version="true" defer></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
