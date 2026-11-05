@@ -1,0 +1,27 @@
+@model int
+@{
+    var steps = new[] { Localizer["Carrinho"].Value, Localizer["Endereço"].Value, Localizer["Frete"].Value, Localizer["Pagamento"].Value };
+}
+
+<nav aria-label="@Localizer["Etapas da compra"]" class="mb-8">
+    <ol class="steps">
+        @for (var i = 0; i < steps.Length; i++)
+        {
+            var number = i + 1;
+            var state = number < Model ? "done" : number == Model ? "current" : "next";
+            <li class="steps-item" data-state="@state" aria-current="@(number == Model ? "step" : null)">
+                <span class="steps-key" aria-hidden="true">
+                    @if (number < Model)
+                    {
+                        <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                    }
+                    else
+                    {
+                        @number
+                    }
+                </span>
+                <span class="@(number == Model ? null : "hidden sm:inline")">@steps[i]</span>
+            </li>
+        }
+    </ol>
+</nav>

@@ -1,52 +1,93 @@
 ﻿@model CheckoutViewModel
 @{
     ViewData["Title"] = Localizer["Endereço de entrega"].Value;
+    var cart = Model.Cart;
+    var selected = Model.ShippingOptions.FirstOrDefault(o => o.ServiceId == Model.ShippingServiceId);
 }
 
-<h1>@Localizer["Endereço de entrega"]</h1>
-<p class="text-muted">@Localizer["O frete é calculado pelo CEP e pelo peso e tamanho dos kits."]</p>
-@if (ViewData["FromSavedAddress"] is true)
-{
-    <p class="alert alert-info">@Localizer["Preenchido com o endereço salvo na sua conta. Confira antes de finalizar."]</p>
-}
+<partial name="_CheckoutSteps" model="Model.ShippingOptions.Count > 0 ? 3 : 2" />
 
-<div>
-    <div class="max-w-xl">
-        <form asp-action="Index" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<h1 class="mb-6">@Localizer["Endereço de entrega"]</h1>
+
+<div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+    <form asp-action="Index" method="post" class="flex flex-col gap-6">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <section class="card" aria-labelledby="address-title">
+            <h2 id="address-title" class="mt-0">@Localizer["Endereço"]</h2>
+            <p class="text-sm text-muted">@Localizer["O frete é calculado pelo CEP e pelo peso e tamanho dos kits."]</p>
+            @if (ViewData["FromSavedAddress"] is true)
+            {
+                <p class="alert alert-info">@Localizer["Preenchido com o endereço salvo na sua conta. Confira antes de finalizar."]</p>
+            }
 
             <partial name="_AddressFields" model="Model" />
 
-            <div class="check mb-3">
+            <div class="check mb-4">
                 <input asp-for="SaveAddress" class="check-input" />
                 <label asp-for="SaveAddress" class="check-label"></label>
             </div>
 
             <button type="submit" formaction="@Url.Action("Shipping", "Checkout")" class="btn @(Model.ShippingOptions.Count == 0 ? "btn-primary" : "btn-secondary")">@Localizer["Ver opções de frete"]</button>
+        </section>
 
-            @if (Model.ShippingOptions.Count > 0)
-            {
-                <fieldset class="mt-4">
-                    <legend>@Localizer["Frete"]</legend>
-                    <span asp-validation-for="ShippingServiceId" class="text-danger block mb-2"></span>
+        @if (Model.ShippingOptions.Count > 0)
+        {
+            <fieldset class="card m-0">
+                <legend class="sr-only">@Localizer["Frete"]</legend>
+                <h2 class="mt-0" aria-hidden="true">@Localizer["Frete"]</h2>
+                <span asp-validation-for="ShippingServiceId" class="text-danger mb-2 block"></span>
+                <div class="flex flex-col gap-3">
                     @foreach (var option in Model.ShippingOptions)
                     {
-                        <div class="check">
-                            <input class="check-input" type="radio" name="ShippingServiceId" id="shipping-@option.ServiceId" value="@option.ServiceId" checked="@(Model.ShippingServiceId == option.ServiceId)" required data-val="true" data-val-required="@SharedLocalizer["Escolha uma opção de frete."]" />
-                            <label class="check-label" for="shipping-@option.ServiceId">
-                                @option.Carrier @option.Service: <strong>@Display.Price(option.Price)</strong>,
-                                @(option.DeliveryDays == 1 ? SharedLocalizer["até 1 dia"] : SharedLocalizer["até {0} dias", option.DeliveryDays])
+                        <div class="relative">
+                            <input class="option-input" type="radio" name="ShippingServiceId" id="shipping-@option.ServiceId" value="@option.ServiceId" checked="@(Model.ShippingServiceId == option.ServiceId)" required data-val="true" data-val-required="@SharedLocalizer["Escolha uma opção de frete."]" data-shipping="@Display.Price(option.Price)" data-total="@Display.Price(cart.Total + option.Price)" />
+                            <label class="option-card" for="shipping-@option.ServiceId">
+                                <span class="option-radio" aria-hidden="true"></span>
+                                <span class="flex grow flex-col">
+                                    <span class="font-medium">@option.Carrier @option.Service</span>
+                                    <span class="text-sm text-muted">@(option.DeliveryDays == 1 ? SharedLocalizer["até 1 dia"] : SharedLocalizer["até {0} dias", option.DeliveryDays])</span>
+                                </span>
+                                <strong class="font-display text-lg">@Display.Price(option.Price)</strong>
                             </label>
                         </div>
                     }
-                    <p class="text-muted text-sm mt-2">@Localizer["O valor do frete é conferido de novo quando você continua; o total final aparece antes de pagar."]</p>
-                </fieldset>
+                </div>
+                <p class="mt-3 mb-4 text-sm text-muted">@Localizer["O valor do frete é conferido de novo quando você continua; o total final aparece antes de pagar."]</p>
 
-                <button type="submit" class="btn btn-primary">@Localizer["Continuar para o pagamento"]</button>
+                <button type="submit" class="btn btn-primary w-full py-3 text-base">@Localizer["Continuar para o pagamento"]</button>
+            </fieldset>
+        }
+
+        <a asp-controller="Cart" asp-action="Index" class="text-sm">&larr; @Localizer["Voltar ao carrinho"]</a>
+    </form>
+
+    <aside class="card summary lg:sticky lg:top-24" aria-labelledby="summary-title">
+        <h2 id="summary-title" class="mt-0">@Localizer["Resumo do pedido"]</h2>
+        <ul class="summary-items">
+            @foreach (var line in cart.Lines)
+            {
+                <li>
+                    <span class="min-w-0">@line.ProductName <span class="text-muted">&times; @line.Quantity</span></span>
+                    <span class="shrink-0">@Display.Price(line.LineTotal)</span>
+                </li>
             }
-            <a asp-controller="Cart" asp-action="Index" class="btn btn-link">@Localizer["Voltar ao carrinho"]</a>
-        </form>
-    </div>
+        </ul>
+        <dl class="summary-list">
+            <div>
+                <dt>@Localizer["Itens"] (@cart.Units)</dt>
+                <dd>@Display.Price(cart.Total)</dd>
+            </div>
+            <div>
+                <dt>@Localizer["Frete"]</dt>
+                <dd data-summary-shipping class="@(selected is null ? "text-muted" : "")">@(selected is null ? Localizer["escolha uma opção"].Value : Display.Price(selected.Price))</dd>
+            </div>
+        </dl>
+        <div class="summary-total">
+            <span>@Localizer["Total"]</span>
+            <span data-summary-total>@Display.Price(cart.Total + (selected?.Price ?? 0))</span>
+        </div>
+    </aside>
 </div>
 
 @section Scripts {

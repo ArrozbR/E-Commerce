@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using KeycapStore.Application.Carts;
 using KeycapStore.Application.Orders;
 
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -16,4 +17,7 @@ public sealed class CheckoutViewModel : AddressViewModel
 
     [BindNever]
     public IReadOnlyList<ShippingOption> ShippingOptions { get; set; } = [];
+
+    [BindNever]
+    public CartView Cart { get; set; } = CartView.Empty;
 }

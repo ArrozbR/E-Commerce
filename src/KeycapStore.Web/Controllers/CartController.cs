@@ -77,17 +77,28 @@ public sealed class CartController(ICartService carts, IStringLocalizer<SharedRe
     [HttpPost]
     public async Task<IActionResult> ChangeQuantity(Guid productId, int quantity, CancellationToken cancellationToken)
     {
+        string? refusal = null;
         try
         {
             await carts.ChangeQuantityAsync(CustomerId, productId, quantity, cancellationToken);
         }
         catch (CartItemLimitException)
         {
-            TempData["Error"] = LimitMessage();
+            refusal = LimitMessage();
         }
         catch (CartStockLimitException ex)
         {
-            TempData["Error"] = StockMessage(ex.Available);
+            refusal = StockMessage(ex.Available);
+        }
+
+        if (WantsJson)
+        {
+            return refusal is null ? await CartStateAsync(cancellationToken) : Conflict(new { message = refusal });
+        }
+
+        if (refusal is not null)
+        {
+            TempData["Error"] = refusal;
         }
 
         return RedirectToAction(nameof(Index));
@@ -98,7 +109,26 @@ public sealed class CartController(ICartService carts, IStringLocalizer<SharedRe
     {
         await carts.RemoveItemAsync(CustomerId, productId, cancellationToken);
 
-        return RedirectToAction(nameof(Index));
+        return WantsJson ? await CartStateAsync(cancellationToken) : RedirectToAction(nameof(Index));
+    }
+
+    private async Task<IActionResult> CartStateAsync(CancellationToken cancellationToken)
+    {
+        var cart = await carts.GetAsync(CustomerId, cancellationToken);
+
+        return Ok(new
+        {
+            count = cart.Units,
+            total = Display.Price(cart.Total),
+            hasUnavailableItems = cart.HasUnavailableItems,
+            lines = cart.Lines.Select(line => new
+            {
+                productId = line.ProductId,
+                quantity = line.Quantity,
+                max = line.MaxQuantity,
+                lineTotal = Display.Price(line.LineTotal),
+            }),
+        });
     }
 
     private string LimitMessage() => text["Cada kit vai no máximo {0} unidades por pedido.", Cart.MaxQuantityPerItem].Value;

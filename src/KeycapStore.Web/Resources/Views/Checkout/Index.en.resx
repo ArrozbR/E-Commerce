@@ -36,4 +36,19 @@
   <data name="O valor do frete é conferido de novo quando você continua; o total final aparece antes de pagar." xml:space="preserve">
     <value>The shipping price is checked again when you continue; the final total is shown before you pay.</value>
   </data>
+  <data name="Endereço" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="Resumo do pedido" xml:space="preserve">
+    <value>Order summary</value>
+  </data>
+  <data name="Itens" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="escolha uma opção" xml:space="preserve">
+    <value>choose an option</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
 </root>

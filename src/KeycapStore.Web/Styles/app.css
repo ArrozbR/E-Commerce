@@ -508,6 +508,145 @@
     box-shadow: 0 0 12px var(--glow);
   }
 
+  .steps {
+    @apply m-0 flex list-none flex-wrap items-center gap-y-2 p-0 text-sm;
+  }
+
+  .steps-item {
+    @apply flex items-center gap-2 text-muted;
+  }
+
+  .steps-item + .steps-item::before {
+    content: "";
+    @apply mx-3 h-0.5 w-6 rounded-full bg-line sm:w-10;
+  }
+
+  .steps-item[data-state="done"] + .steps-item::before {
+    @apply bg-brand;
+  }
+
+  .steps-item[data-state="current"] {
+    @apply font-medium text-fg;
+  }
+
+  .steps-key {
+    @apply inline-grid size-7 shrink-0 place-items-center rounded-md border border-line bg-surface font-display text-xs font-bold text-muted;
+    box-shadow: 0 2px 0 0 var(--edge);
+  }
+
+  .steps-item[data-state="done"] .steps-key,
+  .steps-item[data-state="current"] .steps-key {
+    @apply border-transparent bg-brand text-on-brand;
+    box-shadow: 0 2px 0 0 var(--brand-edge);
+  }
+
+  .steps-item[data-state="current"] .steps-key {
+    box-shadow: 0 2px 0 0 var(--brand-edge), 0 0 18px -3px var(--glow);
+  }
+
+  .stepper {
+    @apply inline-flex items-center rounded-lg border border-line bg-surface;
+    box-shadow: 0 3px 0 0 var(--edge);
+  }
+
+  .stepper-button {
+    @apply grid size-10 cursor-pointer place-items-center rounded-lg text-fg hover:text-brand disabled:cursor-not-allowed disabled:opacity-35;
+    transition: translate 80ms ease-out, color 160ms ease-out;
+  }
+
+  .stepper-button:active:not(:disabled) {
+    translate: 0 2px;
+  }
+
+  .stepper-value {
+    @apply min-w-8 text-center font-display font-semibold tabular-nums;
+  }
+
+  .summary h2 {
+    @apply mb-4 text-xl;
+  }
+
+  .summary-items {
+    @apply m-0 mb-4 flex list-none flex-col gap-2 border-b border-line p-0 pb-4 text-sm;
+  }
+
+  .summary-items li {
+    @apply flex justify-between gap-3;
+  }
+
+  .summary-list {
+    @apply m-0 flex flex-col gap-2 text-sm;
+  }
+
+  .summary-list > div {
+    @apply flex justify-between gap-3;
+  }
+
+  .summary-list dd {
+    @apply m-0 text-right;
+  }
+
+  .summary-total {
+    @apply my-4 flex items-baseline justify-between gap-3 border-t border-line pt-4 font-display text-2xl font-semibold;
+  }
+
+  .option-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  .option-card {
+    @apply flex cursor-pointer items-center gap-4 rounded-xl border border-line bg-bg p-4;
+    box-shadow: 0 3px 0 0 var(--edge);
+    transition: border-color 160ms ease-out, box-shadow 160ms ease-out, translate 80ms ease-out;
+  }
+
+  .option-card:hover {
+    border-color: color-mix(in srgb, var(--brand) 45%, var(--line));
+  }
+
+  .option-card:active {
+    translate: 0 2px;
+  }
+
+  .option-input:checked + .option-card {
+    border-color: var(--brand);
+    box-shadow: 0 3px 0 0 var(--brand-edge), 0 0 24px -8px var(--glow);
+  }
+
+  .option-input:focus-visible + .option-card {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+
+  .option-radio {
+    @apply grid size-5 shrink-0 place-items-center rounded-full border-2 border-line;
+  }
+
+  .option-input:checked + .option-card .option-radio {
+    @apply border-brand;
+  }
+
+  .option-input:checked + .option-card .option-radio::after {
+    content: "";
+    @apply size-2.5 rounded-full bg-brand;
+    box-shadow: 0 0 8px var(--glow);
+  }
+
+  .countdown {
+    @apply inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 text-sm font-medium tabular-nums;
+  }
+
+  .countdown-late {
+    @apply border-warning/60 text-warning;
+  }
+
+  .countdown-over {
+    @apply border-danger/60 text-danger;
+  }
+
   .fly-cap {
     position: fixed;
     z-index: 60;

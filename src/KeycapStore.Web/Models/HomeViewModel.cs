@@ -7,9 +7,16 @@ public sealed record HomeViewModel(IReadOnlyList<ProductSummary> Showcase, IRead
 {
     public const string Words = "qwerty|thock|wasd|clack|switch";
 
-    public static HomeViewModel From(IReadOnlyList<ProductSummary> catalog, int featured = 3) => new(
+    public static HomeViewModel From(IReadOnlyList<ProductSummary> catalog, Random random, int featured = 3) => new(
         [.. catalog.Where(p => p.KitKind == KitKind.Base && p.Palette is not null)],
-        [.. catalog.OrderByDescending(p => p.CanBeBought).Take(featured)]);
+        [.. Shuffled(catalog.Where(p => p.CanBeBought), random).Concat(Shuffled(catalog.Where(p => !p.CanBeBought), random)).Take(featured)]);
+
+    private static ProductSummary[] Shuffled(IEnumerable<ProductSummary> kits, Random random)
+    {
+        var array = kits.ToArray();
+        random.Shuffle(array);
+        return array;
+    }
 
     public KitPalette FirstPalette => Showcase.FirstOrDefault()?.Palette ?? KitPalette.Neutral;
 }

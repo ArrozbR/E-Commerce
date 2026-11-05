@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Security.Claims;
 
+using KeycapStore.Application.Carts;
 using KeycapStore.Application.Orders;
 using KeycapStore.Domain.Carts;
 using KeycapStore.Web.Filters;
@@ -19,6 +20,7 @@ namespace KeycapStore.Web.Controllers;
 [DomainExceptionFilter]
 public sealed class CheckoutController(
     ICheckoutService checkout,
+    ICartService carts,
     ISavedAddressService savedAddresses,
     IOrderQueries orders,
     ShippingQuoteLimiter quoteLimiter,
@@ -38,7 +40,7 @@ public sealed class CheckoutController(
             ViewData["FromSavedAddress"] = true;
         }
 
-        return View(model);
+        return await CheckoutViewAsync(model, cancellationToken);
     }
 
     [HttpGet("Checkout/Shipping")]
@@ -50,12 +52,12 @@ public sealed class CheckoutController(
         ModelState.Remove(nameof(CheckoutViewModel.ShippingServiceId));
         if (!ModelState.IsValid)
         {
-            return View(nameof(Index), model);
+            return await CheckoutViewAsync(model, cancellationToken);
         }
 
         if (!quoteLimiter.TryAcquire(CustomerId))
         {
-            return TooManyQuotes(model);
+            return await TooManyQuotesAsync(model, cancellationToken);
         }
 
         return await WithShippingOptionsAsync(model, cancellationToken);
@@ -66,12 +68,12 @@ public sealed class CheckoutController(
     {
         if (!ModelState.IsValid && !AddressIsValid())
         {
-            return View(model);
+            return await CheckoutViewAsync(model, cancellationToken);
         }
 
         if (!quoteLimiter.TryAcquire(CustomerId))
         {
-            return TooManyQuotes(model);
+            return await TooManyQuotesAsync(model, cancellationToken);
         }
 
         if (!ModelState.IsValid)
@@ -88,7 +90,7 @@ public sealed class CheckoutController(
             ModelState.AddModelError(string.Empty, FailureMessage(result.Failure, result.ProductName));
             return result.Failure is PlaceOrderFailure.ShippingOptionGone or PlaceOrderFailure.CartChanged
                 ? await WithShippingOptionsAsync(model, cancellationToken)
-                : View(model);
+                : await CheckoutViewAsync(model, cancellationToken);
         }
 
         if (model.SaveAddress)
@@ -134,16 +136,23 @@ public sealed class CheckoutController(
             ModelState.AddModelError(string.Empty, FailureMessage(quote.Failure, null));
         }
 
-        return View(nameof(Index), model);
+        return await CheckoutViewAsync(model, cancellationToken);
     }
 
-    private ViewResult TooManyQuotes(CheckoutViewModel model)
+    private async Task<ViewResult> TooManyQuotesAsync(CheckoutViewModel model, CancellationToken cancellationToken)
     {
         ModelState.AddModelError(string.Empty, text["Muitas consultas de frete seguidas. Espere um minuto e tente de novo."].Value);
 
-        var view = View(nameof(Index), model);
+        var view = await CheckoutViewAsync(model, cancellationToken);
         view.StatusCode = StatusCodes.Status429TooManyRequests;
         return view;
+    }
+
+    private async Task<ViewResult> CheckoutViewAsync(CheckoutViewModel model, CancellationToken cancellationToken)
+    {
+        model.Cart = await carts.GetAsync(CustomerId, cancellationToken);
+
+        return View(nameof(Index), model);
     }
 
     private bool AddressIsValid() => ModelState
