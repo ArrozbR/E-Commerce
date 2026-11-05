@@ -2,44 +2,29 @@
 @model KeycapStore.Application.Orders.OrderView
 @{
     ViewData["Title"] = Localizer["Pagamento"].Value;
+    var confirmed = OrderStatusText.Tone(Model.Status) == "success";
 }
 
-<h1 class="mb-3">@Localizer["Obrigado pela compra!"]</h1>
+<section class="mx-auto max-w-xl py-4 md:py-10">
+    <div class="card stage relative flex flex-col items-center gap-4 overflow-hidden px-6 py-10 text-center"
+         data-order-return
+         data-status-url="@Url.Action("Status", new { id = Model.Id })"
+         data-confirmed-text="@Localizer["Pronto! A situação acima já é a confirmada pela Stripe."]"
+         data-slow-text="@Localizer["Ainda não recebemos a confirmação. Ela pode demorar alguns minutos; acompanhe pela página do pedido."]">
+        <span class="thanks-key @(confirmed ? "is-confirmed" : null)" data-thanks-key aria-hidden="true">
+            <svg class="size-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        </span>
+        <h1 class="mb-0 text-4xl">@Localizer["Obrigado pela compra!"]</h1>
+        <p class="mb-0 text-muted">@Localizer["Pedido"] <strong class="text-fg">#@Model.Id.ToString()[..8]</strong></p>
+        <p class="mb-0">@Localizer["Situação:"] <strong id="order-status" class="@OrderStatusText.BadgeClass(Model.Status) px-3 py-1 text-sm">@SharedLocalizer[OrderStatusText.For(Model.Status)]</strong></p>
+        <p id="order-waiting" class="mb-0 max-w-sm text-sm text-muted" role="status">@Localizer["Confirmando seu pagamento com a Stripe. Isso costuma levar poucos segundos..."]</p>
+        <div class="mt-4 flex flex-wrap justify-center gap-3">
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary">@Localizer["Ver o pedido"]</a>
+            <a asp-controller="Catalog" asp-action="Index" class="btn btn-secondary">@Localizer["Continuar comprando"]</a>
+        </div>
+    </div>
+</section>
 
-<p>@Localizer["Pedido"] <strong>@Model.Id</strong></p>
-<p>@Localizer["Situação:"] <strong id="order-status">@SharedLocalizer[OrderStatusText.For(Model.Status)]</strong></p>
-<p id="order-waiting" class="text-muted">@Localizer["Confirmando seu pagamento com a Stripe. Isso costuma levar poucos segundos..."]</p>
-
-<a asp-action="Details" asp-route-id="@Model.Id">@Localizer["Ver o pedido"]</a>
-
-<script>
-    (function () {
-        const statusUrl = "@Url.Action("Status", new { id = Model.Id })";
-        const statusText = document.getElementById("order-status");
-        const waiting = document.getElementById("order-waiting");
-        const confirmedText = @Json.Serialize(Localizer["Pronto! A situação acima já é a confirmada pela Stripe."].Value);
-        const slowText = @Json.Serialize(Localizer["Ainda não recebemos a confirmação. Ela pode demorar alguns minutos; acompanhe pela página do pedido."].Value);
-        let attempts = 0;
-
-        async function check() {
-            attempts++;
-            const response = await fetch(statusUrl, { headers: { "Accept": "application/json" } });
-            if (response.ok) {
-                const order = await response.json();
-                statusText.textContent = order.text;
-                if (order.status !== "AwaitingPayment") {
-                    waiting.textContent = confirmedText;
-                    return;
-                }
-            }
-
-            if (attempts < 30) {
-                setTimeout(check, 2000);
-            } else {
-                waiting.textContent = slowText;
-            }
-        }
-
-        check();
-    })();
-</script>
+@section Scripts {
+    <script src="~/js/order-return.js" asp-append-version="true" defer></script>
+}

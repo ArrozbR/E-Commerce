@@ -1,9 +1,15 @@
-﻿@using KeycapStore.Web.Models
+﻿@using KeycapStore.Domain.Orders
+@using KeycapStore.Web.Models
 @model KeycapStore.Application.Orders.OrderView
 @{
     ViewData["Title"] = Localizer["Pedido"].Value;
     var status = SharedLocalizer[OrderStatusText.For(Model.Status)].Value;
     var address = Model.ShippingAddress;
+    var step = OrderStatusText.Step(Model.Status);
+    var explanation = OrderStatusText.Explanation(Model.Status);
+    var steps = new[] { Localizer["Pagamento"].Value, Localizer["Pago"].Value, Localizer["Em separação"].Value, Localizer["Enviado"].Value, Localizer["Entregue"].Value };
+    var awaitingPayment = Model.Status is OrderStatus.AwaitingPayment;
+    var canCancel = Model.Status is OrderStatus.Paid or OrderStatus.Picking;
 }
 
 @if (TempData["Message"] is string message)
@@ -11,108 +17,162 @@
     <div class="alert alert-info">@message</div>
 }
 
-<h1 class="mb-1">@Localizer["Pedido criado"]</h1>
-<p class="text-muted">
-    @Localizer["Número: {0}", Model.Id]<br />
-    @Localizer["Feito em {0}", Display.DateAndTime(Model.CreatedAt)]<br />
-    @Localizer["Situação:"] <strong>@status</strong>
-    @if (Model.PreOrderShipsAt is { } shipsAt)
-    {
-        var currentShipsAt = Model.PreOrderCurrentShipsAt ?? shipsAt;
-        <br />@SharedLocalizer["Pré-venda · envio previsto em {0}", Display.Date(currentShipsAt)]
-        @if (Display.Date(currentShipsAt) != Display.Date(shipsAt))
-        {
-            <small class="text-muted">@Localizer["(na compra: {0})", Display.Date(shipsAt)]</small>
-        }
-        @if (Model.PreOrderOutcome is KeycapStore.Domain.Catalog.PreOrderOutcome.Confirmed)
-        {
-            <br /><strong>@Localizer["Lote confirmado: o pedido será enviado perto da data prevista."]</strong>
-        }
-        else if (Model.PreOrderOutcome is KeycapStore.Domain.Catalog.PreOrderOutcome.Cancelled)
-        {
-            <br /><strong>@Localizer["Lote cancelado: o mínimo não foi atingido e o valor é devolvido automaticamente."]</strong>
-        }
-    }
-</p>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>@Localizer["Produto"]</th>
-            <th class="text-end">@Localizer["Preço"]</th>
-            <th class="text-end">@Localizer["Quantidade"]</th>
-            <th class="text-end">@Localizer["Subtotal"]</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var line in Model.Lines)
-        {
-            <tr>
-                <td>@line.ProductName</td>
-                <td class="text-end">@Display.Price(line.UnitPrice)</td>
-                <td class="text-end">@line.Quantity</td>
-                <td class="text-end">@Display.Price(line.LineTotal)</td>
-            </tr>
-        }
-    </tbody>
-    <tfoot>
-        <tr>
-            <td colspan="3" class="text-end">
-                @Localizer["Frete"]
-                @if (Model.ShippingService is not null)
-                {
-                    <span class="text-muted">(@Model.ShippingService, @(Model.ShippingDeliveryDays == 1 ? SharedLocalizer["até 1 dia"] : SharedLocalizer["até {0} dias", Model.ShippingDeliveryDays!]))</span>
-                }
-            </td>
-            <td class="text-end">@(Model.ShippingFee == 0 ? Localizer["Grátis"].Value : Display.Price(Model.ShippingFee))</td>
-        </tr>
-        <tr>
-            <th colspan="3" class="text-end">@Localizer["Total"]</th>
-            <th class="text-end">@Display.Price(Model.Total)</th>
-        </tr>
-    </tfoot>
-</table>
-
-<h2>@Localizer["Entrega"]</h2>
-<p>
-    @address.RecipientName<br />
-    @address.Street, @address.Number@(address.Complement is null ? "" : $" - {address.Complement}")<br />
-    @address.District, @address.City - @address.State<br />
-    @Localizer["CEP {0}", address.PostalCode.Insert(5, "-")]
-</p>
-
-@{
-    var awaitingPayment = Model.Status is KeycapStore.Domain.Orders.OrderStatus.AwaitingPayment;
-}
-@if (awaitingPayment)
-{
-    <div class="flex gap-2">
-        <a asp-controller="Checkout" asp-action="Pay" asp-route-id="@Model.Id" class="btn btn-primary">@Localizer["Continuar o pagamento"]</a>
-        <form asp-action="CancelPayment" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Cancelar o pagamento deste pedido? Os itens voltam para a loja."]');">
-            <button type="submit" class="btn btn-secondary">@Localizer["Cancelar o pagamento"]</button>
-        </form>
+<div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+    <div>
+        <p class="mb-2 text-sm text-muted">@Localizer["Pedido criado"] · @Display.DateAndTime(Model.CreatedAt)</p>
+        <h1 class="mb-1">@Localizer["Pedido {0}", Model.Id.ToString()[..8]]</h1>
+        <p class="mb-0 text-xs text-muted">@Localizer["Número: {0}", Model.Id]</p>
     </div>
-    <p class="text-muted text-sm mt-1">@Localizer["O pedido fica reservado por 30 minutos depois de criado. Depois disso, ele expira e o estoque volta à loja."]</p>
+    <span class="@OrderStatusText.BadgeClass(Model.Status) px-3 py-1 text-sm">@status</span>
+</div>
+
+@if (step is { } current)
+{
+    <nav aria-label="@Localizer["Andamento do pedido"]" class="card mb-8">
+        <ol class="steps">
+            @for (var i = 0; i < steps.Length; i++)
+            {
+                var number = i + 1;
+                var state = number < current || (number == current && current > 1) ? "done" : number == current ? "current" : "next";
+                <li class="steps-item" data-state="@state" aria-current="@(number == current ? "step" : null)">
+                    <span class="steps-key" aria-hidden="true">
+                        @if (state == "done")
+                        {
+                            <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                        }
+                        else
+                        {
+                            @number
+                        }
+                    </span>
+                    <span class="@(number == current ? null : "hidden sm:inline")">@steps[i]</span>
+                </li>
+            }
+        </ol>
+    </nav>
+}
+else if (explanation is not null)
+{
+    <p class="alert @(Model.Status is OrderStatus.Failed ? "alert-danger" : "alert-warning") mb-8">@Localizer[explanation]</p>
 }
 
-@if (Model.Status is KeycapStore.Domain.Orders.OrderStatus.Paid or KeycapStore.Domain.Orders.OrderStatus.Picking)
-{
-    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Cancelar este pedido? O valor pago será devolvido."]');">
-        <button type="submit" class="btn btn-danger-outline">@Localizer["Cancelar pedido"]</button>
-    </form>
-    <p class="text-muted text-sm mt-1">@Localizer["Você pode cancelar até o pedido ser enviado. O valor é devolvido automaticamente."]</p>
-}
+<div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+    <div class="flex flex-col gap-6">
+        @if (Model.PreOrderShipsAt is { } shipsAt)
+        {
+            var currentShipsAt = Model.PreOrderCurrentShipsAt ?? shipsAt;
+            <section class="card" aria-labelledby="pre-order-title">
+                <h2 id="pre-order-title" class="mt-0"><span class="badge badge-info">@Localizer["Pré-venda"]</span></h2>
+                <p class="mb-0">
+                    @SharedLocalizer["Pré-venda · envio previsto em {0}", Display.Date(currentShipsAt)]
+                    @if (Display.Date(currentShipsAt) != Display.Date(shipsAt))
+                    {
+                        <small class="text-muted">@Localizer["(na compra: {0})", Display.Date(shipsAt)]</small>
+                    }
+                </p>
+                @if (Model.PreOrderOutcome is KeycapStore.Domain.Catalog.PreOrderOutcome.Confirmed)
+                {
+                    <p class="mt-2 mb-0"><strong>@Localizer["Lote confirmado: o pedido será enviado perto da data prevista."]</strong></p>
+                }
+                else if (Model.PreOrderOutcome is KeycapStore.Domain.Catalog.PreOrderOutcome.Cancelled)
+                {
+                    <p class="mt-2 mb-0"><strong>@Localizer["Lote cancelado: o mínimo não foi atingido e o valor é devolvido automaticamente."]</strong></p>
+                }
+            </section>
+        }
 
-@if (Model.CanWithdraw)
-{
-    <form asp-action="Withdraw" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Desistir da compra? O valor pago será devolvido e você precisará devolver o produto."]');">
-        <button type="submit" class="btn btn-danger-outline">@Localizer["Desistir da compra"]</button>
-    </form>
-    <p class="text-muted text-sm mt-1">
-        @Localizer["Direito de arrependimento (CDC, art. 49):"]
-        @(Model.WithdrawalDeadline is { } deadline
-            ? Localizer["você pode desistir até {0}.", Display.DateAndTime(deadline)]
-            : Localizer["você pode desistir até 7 dias depois de receber o pedido."])
-        @Localizer["O valor é devolvido automaticamente em alguns minutos; depois, devolva o produto à loja."]
-    </p>
-}
+        <section class="card" aria-labelledby="items-title">
+            <h2 id="items-title" class="mt-0">@Localizer["Itens"]</h2>
+            <ul class="m-0 flex list-none flex-col divide-y divide-line p-0">
+                @foreach (var line in Model.Lines)
+                {
+                    <li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3 first:pt-0 last:pb-0">
+                        <span>
+                            <span class="font-medium">@line.ProductName</span>
+                            <span class="text-muted">&times; @line.Quantity</span>
+                            <span class="block text-sm text-muted">@Localizer["{0} cada", Display.Price(line.UnitPrice)]</span>
+                        </span>
+                        <span class="font-display font-semibold">@Display.Price(line.LineTotal)</span>
+                    </li>
+                }
+            </ul>
+        </section>
+
+        @if (awaitingPayment || canCancel || Model.CanWithdraw)
+        {
+            <section class="card" aria-labelledby="actions-title">
+                <h2 id="actions-title" class="mt-0">@Localizer["O que você pode fazer"]</h2>
+
+                @if (awaitingPayment)
+                {
+                    <div class="flex flex-wrap gap-3">
+                        <a asp-controller="Checkout" asp-action="Pay" asp-route-id="@Model.Id" class="btn btn-primary">@Localizer["Continuar o pagamento"]</a>
+                        <form asp-action="CancelPayment" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Cancelar o pagamento deste pedido? Os itens voltam para a loja."]');">
+                            <button type="submit" class="btn btn-secondary">@Localizer["Cancelar o pagamento"]</button>
+                        </form>
+                    </div>
+                    <p class="mt-3 mb-0 text-sm text-muted">@Localizer["O pedido fica reservado por 30 minutos depois de criado. Depois disso, ele expira e o estoque volta à loja."]</p>
+                }
+
+                @if (canCancel)
+                {
+                    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Cancelar este pedido? O valor pago será devolvido."]');">
+                        <button type="submit" class="btn btn-danger-outline">@Localizer["Cancelar pedido"]</button>
+                    </form>
+                    <p class="mt-3 mb-0 text-sm text-muted">@Localizer["Você pode cancelar até o pedido ser enviado. O valor é devolvido automaticamente."]</p>
+                }
+
+                @if (Model.CanWithdraw)
+                {
+                    <form asp-action="Withdraw" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Desistir da compra? O valor pago será devolvido e você precisará devolver o produto."]');">
+                        <button type="submit" class="btn btn-danger-outline">@Localizer["Desistir da compra"]</button>
+                    </form>
+                    <p class="mt-3 mb-0 text-sm text-muted">
+                        @Localizer["Direito de arrependimento (CDC, art. 49):"]
+                        @(Model.WithdrawalDeadline is { } deadline
+                            ? Localizer["você pode desistir até {0}.", Display.DateAndTime(deadline)]
+                            : Localizer["você pode desistir até 7 dias depois de receber o pedido."])
+                        @Localizer["O valor é devolvido automaticamente em alguns minutos; depois, devolva o produto à loja."]
+                    </p>
+                }
+            </section>
+        }
+    </div>
+
+    <aside class="card summary lg:sticky lg:top-24" aria-labelledby="summary-title">
+        <h2 id="summary-title" class="mt-0">@Localizer["Resumo"]</h2>
+        <dl class="summary-list">
+            <div>
+                <dt>@Localizer["Itens"]</dt>
+                <dd>@Display.Price(Model.Lines.Sum(l => l.LineTotal))</dd>
+            </div>
+            <div>
+                <dt>
+                    @Localizer["Frete"]
+                    @if (Model.ShippingService is not null)
+                    {
+                        <span class="block text-muted">(@Model.ShippingService, @(Model.ShippingDeliveryDays == 1 ? SharedLocalizer["até 1 dia"] : SharedLocalizer["até {0} dias", Model.ShippingDeliveryDays!]))</span>
+                    }
+                </dt>
+                <dd>@(Model.ShippingFee == 0 ? Localizer["Grátis"].Value : Display.Price(Model.ShippingFee))</dd>
+            </div>
+        </dl>
+        <div class="summary-total">
+            <span>@Localizer["Total"]</span>
+            <span>@Display.Price(Model.Total)</span>
+        </div>
+
+        <h3 class="mt-6 text-base">@Localizer["Entrega"]</h3>
+        <p class="mb-0 text-sm text-muted">
+            @address.RecipientName<br />
+            @address.Street, @address.Number@(address.Complement is null ? "" : $" - {address.Complement}")<br />
+            @address.District, @address.City - @address.State<br />
+            @Localizer["CEP {0}", address.PostalCode.Insert(5, "-")]
+        </p>
+        @if (Model.TrackingCode is { } tracking)
+        {
+            <p class="mt-4 mb-1 text-sm text-muted">@Localizer["Código de rastreio"]</p>
+            <p class="mb-0"><code class="tracking-code">@tracking</code></p>
+        }
+    </aside>
+</div>

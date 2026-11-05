@@ -22,6 +22,7 @@ public sealed record OrderView(
     int? ShippingDeliveryDays = null,
     DateTimeOffset? PreOrderShipsAt = null,
     PreOrderOutcome? PreOrderOutcome = null,
-    DateTimeOffset? PreOrderCurrentShipsAt = null);
+    DateTimeOffset? PreOrderCurrentShipsAt = null,
+    string? TrackingCode = null);
 
 public sealed record OrderSummaryView(Guid Id, OrderStatus Status, DateTimeOffset CreatedAt, decimal Total);

@@ -304,6 +304,10 @@
     @apply border-info/50 text-info;
   }
 
+  .badge-danger {
+    @apply border-danger/50 text-danger;
+  }
+
   .badge-neutral {
     @apply border-line text-muted;
   }
@@ -647,6 +651,41 @@
     @apply border-danger/60 text-danger;
   }
 
+  .steps-item[aria-current] {
+    @apply font-medium text-fg;
+  }
+
+  .thanks-key {
+    @apply grid size-20 place-items-center rounded-2xl border border-line bg-surface text-muted;
+    box-shadow: 0 5px 0 0 var(--edge);
+    transition: background-color 300ms ease-out, color 300ms ease-out, box-shadow 300ms ease-out, border-color 300ms ease-out;
+  }
+
+  .thanks-key.is-confirmed {
+    @apply border-transparent bg-brand text-on-brand;
+    box-shadow: 0 5px 0 0 var(--brand-edge), 0 0 44px -6px var(--glow);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .thanks-key:not(.is-confirmed) {
+      animation: thanks-wait 1.4s ease-in-out infinite;
+    }
+  }
+
+  .confetti {
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    margin: -4.5px 0 0 -4.5px;
+    border-radius: 2px;
+    pointer-events: none;
+    box-shadow: inset 0 -2px 0 0 rgb(0 0 0 / 0.25);
+  }
+
+  .tracking-code {
+    @apply inline-block rounded-md border border-line bg-surface px-2 py-1 font-mono text-sm text-fg select-all;
+  }
+
   .fly-cap {
     position: fixed;
     z-index: 60;
@@ -662,6 +701,12 @@
 @keyframes keycap-tap {
   45% {
     translate: 0 var(--press, 2px);
+  }
+}
+
+@keyframes thanks-wait {
+  50% {
+    box-shadow: 0 5px 0 0 var(--edge), 0 0 28px -6px var(--glow);
   }
 }
 
