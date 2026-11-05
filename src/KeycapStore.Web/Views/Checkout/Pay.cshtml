@@ -7,9 +7,9 @@
 
 <h1>@Localizer["Endereço de entrega e pagamento"]</h1>
 
-<div class="row">
-    <div class="col-md-6">
-        <h2 class="h5 mt-3">@Localizer["Entrega"]</h2>
+<div>
+    <div class="max-w-xl">
+        <h2 class="mt-3">@Localizer["Entrega"]</h2>
         <p>
             @address.RecipientName<br />
             @address.Street, @address.Number@(address.Complement is null ? "" : $" - {address.Complement}")<br />
@@ -26,8 +26,8 @@
             <strong>@Localizer["Total: {0}", Display.Price(Model.Order.Total)]</strong>
         </p>
 
-        <h2 class="h5 mt-4">@Localizer["Pagamento"]</h2>
-        <p class="text-muted small">@Localizer["O pedido fica reservado por 30 minutos. Depois disso, o estoque volta à loja e o pagamento não é mais aceito."]</p>
+        <h2 class="mt-4">@Localizer["Pagamento"]</h2>
+        <p class="text-muted text-sm">@Localizer["O pedido fica reservado por 30 minutos. Depois disso, o estoque volta à loja e o pagamento não é mais aceito."]</p>
 
         <div id="payment-element" class="mb-3"></div>
         <button id="pay-button" type="button" class="btn btn-primary" disabled>@Localizer["Pagar {0}", Display.Price(Model.Order.Total)]</button>

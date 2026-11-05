@@ -42,7 +42,7 @@ public class EnglishPagesTests(PostgresFixture postgres) : IClassFixture<Postgre
 
         var html = await PageAsync(client, "/Catalog");
 
-        Assert.Contains("<h1 class=\"mb-4\">Catalog</h1>", html);
+        Assert.Contains(">Catalog</h1>", html);
         Assert.Contains(">In stock<", html);
         Assert.Contains(">Sold out<", html);
         Assert.Contains(">Add to cart<", html);

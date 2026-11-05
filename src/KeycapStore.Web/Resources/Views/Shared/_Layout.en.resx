@@ -48,4 +48,16 @@
   <data name="Privacidade" xml:space="preserve">
     <value>Privacy</value>
   </data>
+  <data name="Menu" xml:space="preserve">
+    <value>Menu</value>
+  </data>
+  <data name="Tema: automático" xml:space="preserve">
+    <value>Theme: automatic</value>
+  </data>
+  <data name="Tema: claro" xml:space="preserve">
+    <value>Theme: light</value>
+  </data>
+  <data name="Tema: escuro" xml:space="preserve">
+    <value>Theme: dark</value>
+  </data>
 </root>

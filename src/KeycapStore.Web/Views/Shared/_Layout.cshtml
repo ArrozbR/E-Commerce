@@ -3,89 +3,73 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - KeycapStore.Web</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/KeycapStore.Web.styles.css" asp-append-version="true" />
+    <title>@ViewData["Title"] - KeycapStore</title>
+    <script>
+        try {
+            const theme = localStorage.getItem("theme");
+            document.documentElement.classList.toggle("dark", theme === "dark" || (theme === null && window.matchMedia("(prefers-color-scheme: dark)").matches));
+        } catch {
+            document.documentElement.classList.toggle("dark", window.matchMedia("(prefers-color-scheme: dark)").matches);
+        }
+    </script>
+    <link rel="preload" href="~/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">KeycapStore.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">@Localizer["Home"]</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Catalog" asp-action="Index">@Localizer["Catálogo"]</a>
-                        </li>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Cart" asp-action="Index">@Localizer["Carrinho"]</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">@Localizer["Meus pedidos"]</a>
-                            </li>
-                            @if (User.IsInRole(KeycapStore.Application.Identity.Roles.Admin))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" href="/admin/orders">@Localizer["Envio"]</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" href="/admin/products">@Localizer["Produtos"]</a>
-                                </li>
-                            }
-                            <li class="nav-item">
-                                <span class="nav-link text-dark">@Localizer["Olá, {0}", User.Identity.Name!]</span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Delete">@Localizer["Minha conta"]</a>
-                            </li>
-                            <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="nav-link btn btn-link text-dark">@Localizer["Sair"]</button>
-                                </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">@Localizer["Criar conta"]</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">@Localizer["Entrar"]</a>
-                            </li>
-                        }
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">@Localizer["Privacidade"]</a>
-                        </li>
-                    </ul>
-                    <partial name="_LanguagePartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+<body class="flex min-h-screen flex-col">
+    <header class="border-b border-line">
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+            <a asp-area="" asp-controller="Catalog" asp-action="Index" class="font-display text-lg font-bold tracking-tight text-fg hover:no-underline">KeycapStore</a>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - KeycapStore.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">@Localizer["Privacidade"]</a>
+            <input type="checkbox" id="menu-toggle" class="peer sr-only" />
+            <label for="menu-toggle" class="ml-auto cursor-pointer rounded-md border border-line px-3 py-1.5 text-sm peer-focus-visible:ring-2 peer-focus-visible:ring-brand md:hidden">@Localizer["Menu"]</label>
+
+            <nav class="hidden w-full flex-col gap-1 text-sm peer-checked:flex md:flex md:w-auto md:grow md:flex-row md:items-center md:gap-5">
+                <a class="py-1 text-fg" asp-area="" asp-controller="Catalog" asp-action="Index">@Localizer["Catálogo"]</a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a class="py-1 text-fg" asp-area="" asp-controller="Cart" asp-action="Index">@Localizer["Carrinho"]</a>
+                    <a class="py-1 text-fg" asp-area="" asp-controller="Orders" asp-action="Index">@Localizer["Meus pedidos"]</a>
+                    @if (User.IsInRole(KeycapStore.Application.Identity.Roles.Admin))
+                    {
+                        <a class="py-1 text-fg" href="/admin/orders">@Localizer["Envio"]</a>
+                        <a class="py-1 text-fg" href="/admin/products">@Localizer["Produtos"]</a>
+                    }
+                    <span class="py-1 text-muted md:ml-auto">@Localizer["Olá, {0}", User.Identity.Name!]</span>
+                    <a class="py-1 text-fg" asp-area="" asp-controller="Account" asp-action="Delete">@Localizer["Minha conta"]</a>
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        <button type="submit" class="cursor-pointer py-1 text-fg hover:underline">@Localizer["Sair"]</button>
+                    </form>
+                }
+                else
+                {
+                    <a class="py-1 text-fg md:ml-auto" asp-area="" asp-controller="Account" asp-action="Register">@Localizer["Criar conta"]</a>
+                    <a class="py-1 text-fg" asp-area="" asp-controller="Account" asp-action="Login">@Localizer["Entrar"]</a>
+                }
+                <div class="flex items-center gap-1">
+                    <partial name="_LanguagePartial" />
+                    <button type="button" id="theme-toggle" data-mode="system"
+                            data-label-system="@Localizer["Tema: automático"]" data-label-light="@Localizer["Tema: claro"]" data-label-dark="@Localizer["Tema: escuro"]"
+                            aria-label="@Localizer["Tema: automático"]" title="@Localizer["Tema: automático"]"
+                            class="group cursor-pointer rounded-md p-2 text-fg hover:bg-surface">
+                        <svg class="hidden size-4 group-data-[mode=system]:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" /></svg>
+                        <svg class="hidden size-4 group-data-[mode=light]:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>
+                        <svg class="hidden size-4 group-data-[mode=dark]:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main role="main" class="mx-auto w-full max-w-6xl grow px-4 py-8">
+        @RenderBody()
+    </main>
+
+    <footer class="border-t border-line">
+        <div class="mx-auto max-w-6xl px-4 py-6 text-sm text-muted">
+            &copy; 2026 KeycapStore · <a asp-area="" asp-controller="Home" asp-action="Privacy">@Localizer["Privacidade"]</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

@@ -1,6 +1,6 @@
 # 0045. V3: reformulação visual com Tailwind CSS, estilo minimalista técnico e ilustrações dos kits
 
-- **Status:** Proposto
+- **Status:** Aceito
 - **Data:** 2026-11-05
 - **Relacionado:** ADR 0025 (roadmap: a V3 é a reformulação visual em Razor), `docs/DEFINICOES.md` D18, ADR 0044 (CSP e cabeçalhos ficaram como notas de reforço)
 

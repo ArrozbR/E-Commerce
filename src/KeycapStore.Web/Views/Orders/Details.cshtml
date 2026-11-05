@@ -73,7 +73,7 @@
     </tfoot>
 </table>
 
-<h2 class="h5">@Localizer["Entrega"]</h2>
+<h2>@Localizer["Entrega"]</h2>
 <p>
     @address.RecipientName<br />
     @address.Street, @address.Number@(address.Complement is null ? "" : $" - {address.Complement}")<br />
@@ -86,29 +86,29 @@
 }
 @if (awaitingPayment)
 {
-    <div class="d-flex gap-2">
+    <div class="flex gap-2">
         <a asp-controller="Checkout" asp-action="Pay" asp-route-id="@Model.Id" class="btn btn-primary">@Localizer["Continuar o pagamento"]</a>
         <form asp-action="CancelPayment" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Cancelar o pagamento deste pedido? Os itens voltam para a loja."]');">
-            <button type="submit" class="btn btn-outline-secondary">@Localizer["Cancelar o pagamento"]</button>
+            <button type="submit" class="btn btn-secondary">@Localizer["Cancelar o pagamento"]</button>
         </form>
     </div>
-    <p class="text-muted small mt-1">@Localizer["O pedido fica reservado por 30 minutos depois de criado. Depois disso, ele expira e o estoque volta à loja."]</p>
+    <p class="text-muted text-sm mt-1">@Localizer["O pedido fica reservado por 30 minutos depois de criado. Depois disso, ele expira e o estoque volta à loja."]</p>
 }
 
 @if (Model.Status is KeycapStore.Domain.Orders.OrderStatus.Paid or KeycapStore.Domain.Orders.OrderStatus.Picking)
 {
     <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Cancelar este pedido? O valor pago será devolvido."]');">
-        <button type="submit" class="btn btn-outline-danger">@Localizer["Cancelar pedido"]</button>
+        <button type="submit" class="btn btn-danger-outline">@Localizer["Cancelar pedido"]</button>
     </form>
-    <p class="text-muted small mt-1">@Localizer["Você pode cancelar até o pedido ser enviado. O valor é devolvido automaticamente."]</p>
+    <p class="text-muted text-sm mt-1">@Localizer["Você pode cancelar até o pedido ser enviado. O valor é devolvido automaticamente."]</p>
 }
 
 @if (Model.CanWithdraw)
 {
     <form asp-action="Withdraw" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Desistir da compra? O valor pago será devolvido e você precisará devolver o produto."]');">
-        <button type="submit" class="btn btn-outline-danger">@Localizer["Desistir da compra"]</button>
+        <button type="submit" class="btn btn-danger-outline">@Localizer["Desistir da compra"]</button>
     </form>
-    <p class="text-muted small mt-1">
+    <p class="text-muted text-sm mt-1">
         @Localizer["Direito de arrependimento (CDC, art. 49):"]
         @(Model.WithdrawalDeadline is { } deadline
             ? Localizer["você pode desistir até {0}.", Display.DateAndTime(deadline)]

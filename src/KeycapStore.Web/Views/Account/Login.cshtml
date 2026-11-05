@@ -5,20 +5,20 @@
 
 <h1>@Localizer["Entrar"]</h1>
 
-<div class="row">
-    <div class="col-md-5">
+<div>
+    <div class="max-w-md">
         <form asp-action="Login" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="mb-3">
-                <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" autocomplete="email" />
+                <label asp-for="Email" class="label"></label>
+                <input asp-for="Email" class="input" autocomplete="email" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                <label asp-for="Password" class="label"></label>
+                <input asp-for="Password" class="input" autocomplete="current-password" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
@@ -27,10 +27,10 @@
     </div>
 </div>
 
-<div class="row mt-3">
-    <div class="col-md-5">
+<div class="mt-4">
+    <div class="max-w-md">
         <form asp-action="ExternalLogin" method="post">
-            <button type="submit" class="btn btn-outline-dark w-100">@Localizer["Entrar com o Google"]</button>
+            <button type="submit" class="btn btn-secondary w-full">@Localizer["Entrar com o Google"]</button>
         </form>
     </div>
 </div>

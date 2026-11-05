@@ -8,51 +8,51 @@
 }
 
 <div class="mb-3">
-    <label asp-for="RecipientName" class="form-label"></label>
-    <input asp-for="RecipientName" class="form-control" autocomplete="name" />
+    <label asp-for="RecipientName" class="label"></label>
+    <input asp-for="RecipientName" class="input" autocomplete="name" />
     <span asp-validation-for="RecipientName" class="text-danger"></span>
 </div>
 
 <div class="mb-3">
-    <label asp-for="PostalCode" class="form-label"></label>
-    <input asp-for="PostalCode" class="form-control" autocomplete="postal-code" />
+    <label asp-for="PostalCode" class="label"></label>
+    <input asp-for="PostalCode" class="input" autocomplete="postal-code" />
     <span asp-validation-for="PostalCode" class="text-danger"></span>
 </div>
 
 <div class="mb-3">
-    <label asp-for="Street" class="form-label"></label>
-    <input asp-for="Street" class="form-control" autocomplete="address-line1" />
+    <label asp-for="Street" class="label"></label>
+    <input asp-for="Street" class="input" autocomplete="address-line1" />
     <span asp-validation-for="Street" class="text-danger"></span>
 </div>
 
-<div class="row">
-    <div class="col-4 mb-3">
-        <label asp-for="Number" class="form-label"></label>
-        <input asp-for="Number" class="form-control" />
+<div class="grid grid-cols-12 gap-x-4">
+    <div class="col-span-4 mb-3">
+        <label asp-for="Number" class="label"></label>
+        <input asp-for="Number" class="input" />
         <span asp-validation-for="Number" class="text-danger"></span>
     </div>
-    <div class="col-8 mb-3">
-        <label asp-for="Complement" class="form-label"></label>
-        <input asp-for="Complement" class="form-control" autocomplete="address-line2" />
+    <div class="col-span-8 mb-3">
+        <label asp-for="Complement" class="label"></label>
+        <input asp-for="Complement" class="input" autocomplete="address-line2" />
         <span asp-validation-for="Complement" class="text-danger"></span>
     </div>
 </div>
 
 <div class="mb-3">
-    <label asp-for="District" class="form-label"></label>
-    <input asp-for="District" class="form-control" />
+    <label asp-for="District" class="label"></label>
+    <input asp-for="District" class="input" />
     <span asp-validation-for="District" class="text-danger"></span>
 </div>
 
-<div class="row">
-    <div class="col-8 mb-3">
-        <label asp-for="City" class="form-label"></label>
-        <input asp-for="City" class="form-control" autocomplete="address-level2" />
+<div class="grid grid-cols-12 gap-x-4">
+    <div class="col-span-8 mb-3">
+        <label asp-for="City" class="label"></label>
+        <input asp-for="City" class="input" autocomplete="address-level2" />
         <span asp-validation-for="City" class="text-danger"></span>
     </div>
-    <div class="col-4 mb-3">
-        <label asp-for="State" class="form-label"></label>
-        <select asp-for="State" asp-items="@(new SelectList(states))" class="form-select">
+    <div class="col-span-4 mb-3">
+        <label asp-for="State" class="label"></label>
+        <select asp-for="State" asp-items="@(new SelectList(states))" class="select">
             <option value="">UF</option>
         </select>
         <span asp-validation-for="State" class="text-danger"></span>

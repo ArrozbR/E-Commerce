@@ -15,56 +15,56 @@
     <div class="alert alert-danger">@error</div>
 }
 
-<h2 class="h5 mt-4">@Localizer["Novo produto"]</h2>
-<form asp-action="Create" method="post" class="row g-2 align-items-end mb-4">
-    <div class="col-md-4">
-        <label for="new-name" class="form-label">@Localizer["Nome"]</label>
-        <input id="new-name" name="Name" class="form-control" maxlength="@KeycapStore.Domain.Catalog.Product.MaxNameLength" required />
+<h2 class="mt-4">@Localizer["Novo produto"]</h2>
+<form asp-action="Create" method="post" class="mb-8 grid items-end gap-3 md:grid-cols-12">
+    <div class="md:col-span-4">
+        <label for="new-name" class="label">@Localizer["Nome"]</label>
+        <input id="new-name" name="Name" class="input" maxlength="@KeycapStore.Domain.Catalog.Product.MaxNameLength" required />
     </div>
-    <div class="col-md-2">
-        <label for="new-price" class="form-label">@Localizer["Preço (R$)"]</label>
-        <input id="new-price" name="Price" class="form-control" placeholder="@ProductFormViewModel.FormatPrice(199.90m)" inputmode="decimal" required />
+    <div class="md:col-span-2">
+        <label for="new-price" class="label">@Localizer["Preço (R$)"]</label>
+        <input id="new-price" name="Price" class="input" placeholder="@ProductFormViewModel.FormatPrice(199.90m)" inputmode="decimal" required />
     </div>
-    <div class="col-md-2">
-        <label for="new-stock" class="form-label">@Localizer["Estoque inicial"]</label>
-        <input id="new-stock" name="Stock" type="number" min="0" max="@AdminLimits.MaxStockChange" value="0" class="form-control" required />
+    <div class="md:col-span-2">
+        <label for="new-stock" class="label">@Localizer["Estoque inicial"]</label>
+        <input id="new-stock" name="Stock" type="number" min="0" max="@AdminLimits.MaxStockChange" value="0" class="input" required />
     </div>
-    <div class="col-md-2">
-        <label for="new-weight" class="form-label">@Localizer["Peso (kg)"]</label>
-        <input id="new-weight" name="Weight" class="form-control" placeholder="@ProductFormViewModel.FormatWeight(0.8m)" inputmode="decimal" required />
+    <div class="md:col-span-2">
+        <label for="new-weight" class="label">@Localizer["Peso (kg)"]</label>
+        <input id="new-weight" name="Weight" class="input" placeholder="@ProductFormViewModel.FormatWeight(0.8m)" inputmode="decimal" required />
     </div>
-    <div class="col-md-4">
-        <label class="form-label">@Localizer["Medidas da caixa (cm)"]</label>
-        <div class="d-flex gap-1">
-            <input name="WidthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control" placeholder="@Localizer["Largura"]" aria-label="@Localizer["Largura"]" required />
-            <input name="HeightCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control" placeholder="@Localizer["Altura"]" aria-label="@Localizer["Altura"]" required />
-            <input name="LengthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control" placeholder="@Localizer["Comprimento"]" aria-label="@Localizer["Comprimento"]" required />
+    <div class="md:col-span-4">
+        <label class="label">@Localizer["Medidas da caixa (cm)"]</label>
+        <div class="flex gap-1">
+            <input name="WidthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="input" placeholder="@Localizer["Largura"]" aria-label="@Localizer["Largura"]" required />
+            <input name="HeightCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="input" placeholder="@Localizer["Altura"]" aria-label="@Localizer["Altura"]" required />
+            <input name="LengthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="input" placeholder="@Localizer["Comprimento"]" aria-label="@Localizer["Comprimento"]" required />
         </div>
     </div>
-    <div class="col-12">
-        <div class="form-check">
-            <input id="new-preorder" name="IsPreOrder" type="checkbox" value="true" class="form-check-input" />
-            <label for="new-preorder" class="form-check-label">@Localizer["Pré-venda (as vagas são o estoque inicial; nada disso muda depois)"]</label>
+    <div class="md:col-span-12">
+        <div class="check">
+            <input id="new-preorder" name="IsPreOrder" type="checkbox" value="true" class="check-input" />
+            <label for="new-preorder" class="check-label">@Localizer["Pré-venda (as vagas são o estoque inicial; nada disso muda depois)"]</label>
         </div>
     </div>
-    <div class="col-md-3">
-        <label for="new-preorder-ends" class="form-label">@Localizer["Fim da campanha"]</label>
-        <input id="new-preorder-ends" name="PreOrderEndsAt" type="datetime-local" class="form-control" />
+    <div class="md:col-span-3">
+        <label for="new-preorder-ends" class="label">@Localizer["Fim da campanha"]</label>
+        <input id="new-preorder-ends" name="PreOrderEndsAt" type="datetime-local" class="input" />
     </div>
-    <div class="col-md-3">
-        <label for="new-preorder-ships" class="form-label">@Localizer["Envio previsto"]</label>
-        <input id="new-preorder-ships" name="PreOrderShipsOn" type="date" class="form-control" />
+    <div class="md:col-span-3">
+        <label for="new-preorder-ships" class="label">@Localizer["Envio previsto"]</label>
+        <input id="new-preorder-ships" name="PreOrderShipsOn" type="date" class="input" />
     </div>
-    <div class="col-md-3">
-        <label for="new-preorder-minimum" class="form-label">@Localizer["Mínimo para o lote sair"]</label>
-        <input id="new-preorder-minimum" name="PreOrderMinimum" type="number" min="1" class="form-control" />
+    <div class="md:col-span-3">
+        <label for="new-preorder-minimum" class="label">@Localizer["Mínimo para o lote sair"]</label>
+        <input id="new-preorder-minimum" name="PreOrderMinimum" type="number" min="1" class="input" />
     </div>
-    <div class="col-12">
+    <div class="md:col-span-12">
         <button type="submit" class="btn btn-primary">@Localizer["Criar produto"]</button>
     </div>
 </form>
 
-<table class="table align-middle">
+<table class="table">
     <thead>
         <tr>
             <th>@Localizer["Nome, preço, peso (kg) e medidas (L × A × C, cm)"]</th>
@@ -76,52 +76,52 @@
     <tbody>
         @foreach (var product in Model)
         {
-            <tr class="@(product.IsActive ? "" : "table-secondary")">
+            <tr class="@(product.IsActive ? "" : "opacity-60")">
                 <td>
-                    <form asp-action="Edit" asp-route-id="@product.Id" method="post" class="d-flex flex-wrap gap-1">
-                        <input name="Name" value="@product.Name" class="form-control form-control-sm" maxlength="@KeycapStore.Domain.Catalog.Product.MaxNameLength" required />
-                        <input name="Price" value="@ProductFormViewModel.FormatPrice(product.Price)" class="form-control form-control-sm" style="max-width: 7rem" inputmode="decimal" aria-label="@Localizer["Preço (R$)"]" required />
-                        <input name="Weight" value="@ProductFormViewModel.FormatWeight(product.WeightKg)" class="form-control form-control-sm" style="max-width: 5rem" inputmode="decimal" aria-label="@Localizer["Peso (kg)"]" required />
-                        <input name="WidthCm" value="@product.WidthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control form-control-sm" style="max-width: 4.5rem" aria-label="@Localizer["Largura"]" required />
-                        <input name="HeightCm" value="@product.HeightCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control form-control-sm" style="max-width: 4.5rem" aria-label="@Localizer["Altura"]" required />
-                        <input name="LengthCm" value="@product.LengthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="form-control form-control-sm" style="max-width: 4.5rem" aria-label="@Localizer["Comprimento"]" required />
-                        <button type="submit" class="btn btn-sm btn-outline-primary">@Localizer["Salvar"]</button>
+                    <form asp-action="Edit" asp-route-id="@product.Id" method="post" class="flex flex-wrap gap-1">
+                        <input name="Name" value="@product.Name" class="input input-sm" maxlength="@KeycapStore.Domain.Catalog.Product.MaxNameLength" required />
+                        <input name="Price" value="@ProductFormViewModel.FormatPrice(product.Price)" class="input input-sm" style="max-width: 7rem" inputmode="decimal" aria-label="@Localizer["Preço (R$)"]" required />
+                        <input name="Weight" value="@ProductFormViewModel.FormatWeight(product.WeightKg)" class="input input-sm" style="max-width: 5rem" inputmode="decimal" aria-label="@Localizer["Peso (kg)"]" required />
+                        <input name="WidthCm" value="@product.WidthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="input input-sm" style="max-width: 4.5rem" aria-label="@Localizer["Largura"]" required />
+                        <input name="HeightCm" value="@product.HeightCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="input input-sm" style="max-width: 4.5rem" aria-label="@Localizer["Altura"]" required />
+                        <input name="LengthCm" value="@product.LengthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="input input-sm" style="max-width: 4.5rem" aria-label="@Localizer["Comprimento"]" required />
+                        <button type="submit" class="btn btn-sm btn-secondary">@Localizer["Salvar"]</button>
                     </form>
                     @if (product.PreOrder is { } campaign)
                     {
                         <small class="text-muted">@Localizer["Pré-venda até {0} · envio previsto em {1} · mínimo {2}", Display.DateAndTime(campaign.EndsAt), Display.Date(campaign.ShipsAt), campaign.MinimumUnits]</small>
                         @if (product.CanReschedule)
                         {
-                            <form asp-action="Reschedule" asp-route-id="@product.Id" method="post" class="d-flex flex-wrap gap-1 mt-1">
-                                <input name="PreOrderEndsAt" type="datetime-local" value="@PreOrderScheduleViewModel.FormatEnd(campaign.EndsAt)" class="form-control form-control-sm" style="max-width: 13rem" aria-label="@Localizer["Fim da campanha"]" required />
-                                <input name="PreOrderShipsOn" type="date" value="@PreOrderScheduleViewModel.FormatShip(campaign.ShipsAt)" class="form-control form-control-sm" style="max-width: 10rem" aria-label="@Localizer["Envio previsto"]" required />
-                                <button type="submit" class="btn btn-sm btn-outline-secondary">@Localizer["Salvar datas"]</button>
+                            <form asp-action="Reschedule" asp-route-id="@product.Id" method="post" class="flex flex-wrap gap-1 mt-1">
+                                <input name="PreOrderEndsAt" type="datetime-local" value="@PreOrderScheduleViewModel.FormatEnd(campaign.EndsAt)" class="input input-sm" style="max-width: 13rem" aria-label="@Localizer["Fim da campanha"]" required />
+                                <input name="PreOrderShipsOn" type="date" value="@PreOrderScheduleViewModel.FormatShip(campaign.ShipsAt)" class="input input-sm" style="max-width: 10rem" aria-label="@Localizer["Envio previsto"]" required />
+                                <button type="submit" class="btn btn-sm btn-secondary">@Localizer["Salvar datas"]</button>
                             </form>
                         }
                     }
                 </td>
                 <td class="text-end"><strong>@product.Stock</strong></td>
                 <td>
-                    <form asp-action="AdjustStock" asp-route-id="@product.Id" method="post" class="d-flex gap-1">
-                        <input name="delta" type="number" min="-@AdminLimits.MaxStockChange" max="@AdminLimits.MaxStockChange" placeholder="@Localizer["+10 ou -2"]" class="form-control form-control-sm" style="max-width: 8rem" required />
-                        <button type="submit" class="btn btn-sm btn-outline-secondary">@Localizer["Ajustar"]</button>
+                    <form asp-action="AdjustStock" asp-route-id="@product.Id" method="post" class="flex gap-1">
+                        <input name="delta" type="number" min="-@AdminLimits.MaxStockChange" max="@AdminLimits.MaxStockChange" placeholder="@Localizer["+10 ou -2"]" class="input input-sm" style="max-width: 8rem" required />
+                        <button type="submit" class="btn btn-sm btn-secondary">@Localizer["Ajustar"]</button>
                     </form>
                 </td>
                 <td>
                     @if (product.IsActive)
                     {
-                        <span class="badge bg-success">@Localizer["À venda"]</span>
-                        <form asp-action="Deactivate" asp-route-id="@product.Id" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">@Localizer["Tirar de venda"]</button>
+                        <span class="badge badge-success">@Localizer["À venda"]</span>
+                        <form asp-action="Deactivate" asp-route-id="@product.Id" method="post" class="inline">
+                            <button type="submit" class="btn btn-sm btn-danger-outline">@Localizer["Tirar de venda"]</button>
                         </form>
                     }
                     else
                     {
-                        <span class="badge bg-secondary">@Localizer["Fora de venda"]</span>
+                        <span class="badge badge-neutral">@Localizer["Fora de venda"]</span>
                         @if (product.PreOrderOutcome is null)
                         {
-                            <form asp-action="Activate" asp-route-id="@product.Id" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-success">@Localizer["Voltar à venda"]</button>
+                            <form asp-action="Activate" asp-route-id="@product.Id" method="post" class="inline">
+                                <button type="submit" class="btn btn-sm btn-secondary">@Localizer["Voltar à venda"]</button>
                             </form>
                         }
                         else

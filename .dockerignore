@@ -5,4 +5,5 @@
 .git/
 
 .env
-**/*.user
+**/*.user**/node_modules/
+src/KeycapStore.Web/wwwroot/css/app.css

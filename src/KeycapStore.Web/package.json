@@ -1,0 +1,13 @@
+{
+  "name": "keycapstore-web-css",
+  "private": true,
+  "description": "Gera o CSS da loja com o Tailwind (ADR 0045).",
+  "scripts": {
+    "css:build": "tailwindcss -i ./Styles/app.css -o ./wwwroot/css/app.css --minify",
+    "css:watch": "tailwindcss -i ./Styles/app.css -o ./wwwroot/css/app.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.4",
+    "tailwindcss": "4.3.4"
+  }
+}
