@@ -44,6 +44,26 @@ public class KitPaletteTests
     }
 
     [Fact]
+    public void NewProduct_IsABaseKit_AndTheKindCanChange()
+    {
+        var product = new Product("Kit Tipo", 100m, 1, TestPackage.Standard);
+        Assert.Equal(KitKind.Base, product.KitKind);
+
+        product.ChangeKitKind(KitKind.FunctionKeys);
+
+        Assert.Equal(KitKind.FunctionKeys, product.KitKind);
+    }
+
+    [Fact]
+    public void ChangeKitKind_WithAnUnknownValue_Throws()
+    {
+        var product = new Product("Kit Tipo Inválido", 100m, 1, TestPackage.Standard);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => product.ChangeKitKind((KitKind)99));
+        Assert.Equal(KitKind.Base, product.KitKind);
+    }
+
+    [Fact]
     public void ChangePalette_ReplacesTheThreeColors()
     {
         var product = new Product("Kit Novas Cores", 100m, 1, TestPackage.Standard);

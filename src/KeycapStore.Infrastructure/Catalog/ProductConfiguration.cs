@@ -34,12 +34,16 @@ internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.PaletteLegends).HasMaxLength(7).IsRequired();
         builder.Property(p => p.PaletteAccent).HasMaxLength(7).IsRequired();
 
+        builder.Property(p => p.KitKind)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
         builder.HasData(
-            new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e01"), Name = "Kit Aurora (base)", Price = 349.90m, Stock = 40, IsActive = true, WeightKg = 0.8m, WidthCm = 30, HeightCm = 6, LengthCm = 20, PaletteKeys = "#1e1b4b", PaletteLegends = "#a5f3fc", PaletteAccent = "#22c55e" },
-            new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e02"), Name = "Kit Aurora (novelties)", Price = 129.90m, Stock = 3, IsActive = true, WeightKg = 0.3m, WidthCm = 20, HeightCm = 4, LengthCm = 12, PaletteKeys = "#a5f3fc", PaletteLegends = "#1e1b4b", PaletteAccent = "#22c55e" },
-            new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e03"), Name = "Kit Maré (base)", Price = 319.90m, Stock = 25, IsActive = true, WeightKg = 0.8m, WidthCm = 30, HeightCm = 6, LengthCm = 20, PaletteKeys = "#0e7490", PaletteLegends = "#ecfeff", PaletteAccent = "#fbbf24" },
-            new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e04"), Name = "Kit Maré (modificadores)", Price = 149.90m, Stock = 0, IsActive = true, WeightKg = 0.3m, WidthCm = 20, HeightCm = 4, LengthCm = 12, PaletteKeys = "#ecfeff", PaletteLegends = "#0e7490", PaletteAccent = "#fbbf24" },
-            new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e05"), Name = "Kit Zéfiro (base)", Price = 299.90m, Stock = 12, IsActive = true, WeightKg = 0.8m, WidthCm = 30, HeightCm = 6, LengthCm = 20, PaletteKeys = "#fef3c7", PaletteLegends = "#7c2d12", PaletteAccent = "#ef4444" },
-            new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e06"), Name = "Kit Zéfiro (teclas de função)", Price = 89.90m, Stock = 2, IsActive = true, WeightKg = 0.3m, WidthCm = 20, HeightCm = 4, LengthCm = 12, PaletteKeys = "#7c2d12", PaletteLegends = "#fef3c7", PaletteAccent = "#ef4444" });
+            new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e01"), Name = "Kit Aurora (base)", Price = 349.90m, Stock = 40, IsActive = true, WeightKg = 0.8m, WidthCm = 30, HeightCm = 6, LengthCm = 20, PaletteKeys = "#1e1b4b", PaletteLegends = "#a5f3fc", PaletteAccent = "#22c55e", KitKind = KitKind.Base },
+            new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e02"), Name = "Kit Aurora (novelties)", Price = 129.90m, Stock = 3, IsActive = true, WeightKg = 0.3m, WidthCm = 20, HeightCm = 4, LengthCm = 12, PaletteKeys = "#a5f3fc", PaletteLegends = "#1e1b4b", PaletteAccent = "#22c55e", KitKind = KitKind.Novelties },
+            new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e03"), Name = "Kit Maré (base)", Price = 319.90m, Stock = 25, IsActive = true, WeightKg = 0.8m, WidthCm = 30, HeightCm = 6, LengthCm = 20, PaletteKeys = "#0e7490", PaletteLegends = "#ecfeff", PaletteAccent = "#fbbf24", KitKind = KitKind.Base },
+            new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e04"), Name = "Kit Maré (modificadores)", Price = 149.90m, Stock = 0, IsActive = true, WeightKg = 0.3m, WidthCm = 20, HeightCm = 4, LengthCm = 12, PaletteKeys = "#ecfeff", PaletteLegends = "#0e7490", PaletteAccent = "#fbbf24", KitKind = KitKind.Modifiers },
+            new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e05"), Name = "Kit Zéfiro (base)", Price = 299.90m, Stock = 12, IsActive = true, WeightKg = 0.8m, WidthCm = 30, HeightCm = 6, LengthCm = 20, PaletteKeys = "#fef3c7", PaletteLegends = "#7c2d12", PaletteAccent = "#ef4444", KitKind = KitKind.Base },
+            new { Id = Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e06"), Name = "Kit Zéfiro (teclas de função)", Price = 89.90m, Stock = 2, IsActive = true, WeightKg = 0.3m, WidthCm = 20, HeightCm = 4, LengthCm = 12, PaletteKeys = "#7c2d12", PaletteLegends = "#fef3c7", PaletteAccent = "#ef4444", KitKind = KitKind.FunctionKeys });
     }
 }

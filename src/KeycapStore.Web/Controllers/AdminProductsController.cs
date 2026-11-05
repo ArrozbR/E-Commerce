@@ -146,14 +146,14 @@ public sealed class AdminProductsController(IProductAdminService products, IStri
     }
 
     [HttpPost("{id:guid}/palette")]
-    public async Task<IActionResult> Palette(Guid id, string? keys, string? legends, string? accent, CancellationToken cancellationToken)
+    public async Task<IActionResult> Palette(Guid id, string? keys, string? legends, string? accent, KitKind? kind, CancellationToken cancellationToken)
     {
         if (!KitPalette.IsHexColor(keys) || !KitPalette.IsHexColor(legends) || !KitPalette.IsHexColor(accent))
         {
             return BackWithError(text["Cores recusadas: use o formato #RRGGBB."].Value);
         }
 
-        await products.ChangePaletteAsync(id, new KitPalette(keys!, legends!, accent!), cancellationToken);
+        await products.ChangeLookAsync(id, new KitPalette(keys!, legends!, accent!), kind, cancellationToken);
 
         return BackWithMessage(text["Cores do kit atualizadas."].Value);
     }

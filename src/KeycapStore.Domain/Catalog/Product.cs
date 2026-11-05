@@ -23,6 +23,7 @@ public sealed class Product
     public string PaletteKeys { get; private set; }
     public string PaletteLegends { get; private set; }
     public string PaletteAccent { get; private set; }
+    public KitKind KitKind { get; private set; }
 
     public ProductPackage Package => new(WeightKg, WidthCm, HeightCm, LengthCm);
 
@@ -57,6 +58,16 @@ public sealed class Product
         PaletteKeys = KitPalette.Neutral.Keys;
         PaletteLegends = KitPalette.Neutral.Legends;
         PaletteAccent = KitPalette.Neutral.Accent;
+    }
+
+    public void ChangeKitKind(KitKind kind)
+    {
+        if (!Enum.IsDefined(kind))
+        {
+            throw new ArgumentOutOfRangeException(nameof(kind));
+        }
+
+        KitKind = kind;
     }
 
     public void ChangePalette(KitPalette palette)

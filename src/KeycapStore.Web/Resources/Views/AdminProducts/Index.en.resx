@@ -99,8 +99,23 @@
   <data name="Pré-venda fechada" xml:space="preserve">
     <value>Pre-order closed</value>
   </data>
-  <data name="Cores do kit:" xml:space="preserve">
-    <value>Kit colors:</value>
+  <data name="Visual do kit:" xml:space="preserve">
+    <value>Kit look:</value>
+  </data>
+  <data name="Tipo do kit" xml:space="preserve">
+    <value>Kit type</value>
+  </data>
+  <data name="Base" xml:space="preserve">
+    <value>Base</value>
+  </data>
+  <data name="Novelties" xml:space="preserve">
+    <value>Novelties</value>
+  </data>
+  <data name="Modificadores" xml:space="preserve">
+    <value>Modifiers</value>
+  </data>
+  <data name="Teclas de função" xml:space="preserve">
+    <value>Function keys</value>
   </data>
   <data name="Teclas" xml:space="preserve">
     <value>Keys</value>
