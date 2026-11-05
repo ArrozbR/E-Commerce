@@ -159,7 +159,7 @@ public class PaymentPageTests(PostgresFixture postgres) : IClassFixture<Postgres
         var html = WebUtility.HtmlDecode(await client.GetStringAsync($"/Checkout/Pay/{orderId}"));
 
         Assert.Contains("Pay R$364.90", html);
-        Assert.Contains("locale: \"en\"", html);
+        Assert.Contains("data-locale=\"en\"", html);
     }
 
     [Fact]
@@ -195,5 +195,24 @@ public class PaymentPageTests(PostgresFixture postgres) : IClassFixture<Postgres
 
         Assert.DoesNotContain("Continuar o pagamento", html);
         Assert.DoesNotContain($"/Checkout/Pay/{orderId}", html);
+    }
+
+    [Fact]
+    public async Task PaymentStep_ShowsTheSummary_AndCountsDownTheReservation()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync(new FakePaymentGateway());
+        var client = await PageClient.LoggedInAsync(factory, "paga-com-relogio@example.com");
+        var before = DateTimeOffset.UtcNow;
+        var orderId = await ContinueToPaymentAsync(client);
+
+        var html = WebUtility.HtmlDecode(await client.GetStringAsync($"/Checkout/Pay/{orderId}")).Replace('\u00A0', ' ');
+
+        var expires = DateTimeOffset.Parse(System.Text.RegularExpressions.Regex.Match(html, "data-expires=\"([^\"]+)\"").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.InRange(expires, before.AddMinutes(29), DateTimeOffset.UtcNow.AddMinutes(31));
+        Assert.Contains("Kit Aurora (base) <span class=\"text-muted\">× 1</span>", html);
+        Assert.Contains("<span>R$ 364,90</span>", html);
+        Assert.Contains("data-locale=\"pt-BR\"", html);
+        Assert.Contains("src=\"/js/pay.js", html);
+        Assert.Matches("data-state=\"current\" aria-current=\"step\">[\\s\\S]*?<span>Pagamento</span>", html);
     }
 }

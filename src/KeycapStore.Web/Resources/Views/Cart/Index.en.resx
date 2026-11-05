@@ -21,23 +21,11 @@
   <data name="Ver o catálogo" xml:space="preserve">
     <value>Browse the catalog</value>
   </data>
-  <data name="Produto" xml:space="preserve">
-    <value>Product</value>
-  </data>
-  <data name="Preço" xml:space="preserve">
-    <value>Price</value>
-  </data>
   <data name="Quantidade" xml:space="preserve">
     <value>Quantity</value>
   </data>
-  <data name="Subtotal" xml:space="preserve">
-    <value>Subtotal</value>
-  </data>
   <data name="Indisponível" xml:space="preserve">
     <value>Unavailable</value>
-  </data>
-  <data name="Atualizar" xml:space="preserve">
-    <value>Update</value>
   </data>
   <data name="Remover" xml:space="preserve">
     <value>Remove</value>
@@ -50,5 +38,32 @@
   </data>
   <data name="Finalizar compra" xml:space="preserve">
     <value>Check out</value>
+  </data>
+  <data name="{0} cada" xml:space="preserve">
+    <value>{0} each</value>
+  </data>
+  <data name="Diminuir a quantidade de {0}" xml:space="preserve">
+    <value>Decrease the quantity of {0}</value>
+  </data>
+  <data name="Aumentar a quantidade de {0}" xml:space="preserve">
+    <value>Increase the quantity of {0}</value>
+  </data>
+  <data name="Resumo" xml:space="preserve">
+    <value>Summary</value>
+  </data>
+  <data name="Itens" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="Frete" xml:space="preserve">
+    <value>Shipping</value>
+  </data>
+  <data name="no próximo passo" xml:space="preserve">
+    <value>next step</value>
+  </data>
+  <data name="Pagamento com cartão ou Pix, processado pela Stripe." xml:space="preserve">
+    <value>Pay by card or Pix, processed by Stripe.</value>
+  </data>
+  <data name="Continuar comprando" xml:space="preserve">
+    <value>Keep shopping</value>
   </data>
 </root>

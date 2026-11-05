@@ -173,8 +173,8 @@ public class CheckoutPageTests(PostgresFixture postgres) : IClassFixture<Postgre
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
-        Assert.Contains("Correios PAC: <strong>R$ 15,00</strong>", html);
-        Assert.Contains("Correios SEDEX: <strong>R$ 45,00</strong>", html);
+        Assert.Matches(@"Correios PAC</span>\s*<span[^>]*>até 7 dias</span>\s*</span>\s*<strong[^>]*>R\$ 15,00</strong>", html);
+        Assert.Matches(@"Correios SEDEX</span>\s*<span[^>]*>até 3 dias</span>\s*</span>\s*<strong[^>]*>R\$ 45,00</strong>", html);
         Assert.Contains("até 7 dias", html);
         Assert.Contains("name=\"ShippingServiceId\" id=\"shipping-1\" value=\"1\"", html);
         Assert.Contains("Continuar para o pagamento", html);
@@ -285,5 +285,22 @@ public class CheckoutPageTests(PostgresFixture postgres) : IClassFixture<Postgre
 
         Assert.Equal(HttpStatusCode.Redirect, back.StatusCode);
         Assert.Equal("/Checkout", back.Headers.Location!.OriginalString);
+    }
+
+    [Fact]
+    public async Task ShippingStep_ShowsTheOrderSummary_AndTheTotalOfEachOption()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync(new FakeShippingQuotes());
+        var client = await LoggedInClientAsync(factory, "frete-resumo@example.com");
+        await AddKitAuroraAsync(client);
+
+        var response = await PostCuritibaAsync(client, "/Checkout/Shipping", null);
+
+        var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync()).Replace('\u00A0', ' ');
+        Assert.Contains("Kit Aurora (base) <span class=\"text-muted\">× 1</span>", html);
+        Assert.Contains("data-shipping=\"R$ 15,00\" data-total=\"R$ 364,90\"", html);
+        Assert.Contains("data-shipping=\"R$ 45,00\" data-total=\"R$ 394,90\"", html);
+        Assert.Contains("<span data-summary-total>R$ 349,90</span>", html);
+        Assert.Matches("data-state=\"current\" aria-current=\"step\">[\\s\\S]*?<span>Frete</span>", html);
     }
 }

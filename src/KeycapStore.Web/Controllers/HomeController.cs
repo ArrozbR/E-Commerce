@@ -13,7 +13,7 @@ public class HomeController(ICatalogQueries catalog) : Controller
     {
         var products = await catalog.ListProductsAsync(cancellationToken);
 
-        return View(HomeViewModel.From(products));
+        return View(HomeViewModel.From(products, Random.Shared));
     }
 
     public IActionResult Privacy()

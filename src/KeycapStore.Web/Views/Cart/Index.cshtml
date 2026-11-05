@@ -3,7 +3,9 @@
     ViewData["Title"] = Localizer["Carrinho"].Value;
 }
 
-<h1 class="mb-4">@Localizer["Carrinho"]</h1>
+<partial name="_CheckoutSteps" model="1" />
+
+<h1 class="mb-6">@Localizer["Carrinho"]</h1>
 
 @if (TempData["Error"] is string error)
 {
@@ -12,70 +14,87 @@
 
 @if (Model.Lines.Count == 0)
 {
-    <p>@Localizer["Seu carrinho está vazio."] <a asp-controller="Catalog" asp-action="Index">@Localizer["Ver o catálogo"]</a></p>
+    <div class="card stage mx-auto flex max-w-xl flex-col items-center gap-4 py-12 text-center">
+        <span class="step-key size-14 text-2xl" aria-hidden="true">0</span>
+        <p class="mb-0 text-lg">@Localizer["Seu carrinho está vazio."]</p>
+        <a asp-controller="Catalog" asp-action="Index" class="btn btn-primary">@Localizer["Ver o catálogo"]</a>
+    </div>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>@Localizer["Produto"]</th>
-                <th class="text-end">@Localizer["Preço"]</th>
-                <th class="text-end">@Localizer["Quantidade"]</th>
-                <th class="text-end">@Localizer["Subtotal"]</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <ul class="m-0 flex list-none flex-col gap-4 p-0" data-cart-lines>
             @foreach (var line in Model.Lines)
             {
-                <tr>
-                    <td>
-                        @line.ProductName
-                        @if (line.PreOrderShipsAt is { } shipsAt)
-                        {
-                            <br /><small class="text-muted">@SharedLocalizer["Pré-venda · envio previsto em {0}", Display.Date(shipsAt)]</small>
-                        }
-                        @if (!line.IsAvailable)
-                        {
-                            <br /><span class="badge badge-neutral">@Localizer["Indisponível"]</span>
-                        }
-                    </td>
-                    <td class="text-end">@Display.Price(line.UnitPrice)</td>
-                    <td class="text-end">
-                        <form asp-action="ChangeQuantity" method="post" class="inline-flex gap-2">
-                            <input type="hidden" name="productId" value="@line.ProductId" />
-                            <input type="number" name="quantity" value="@line.Quantity" min="1" max="@Math.Min(KeycapStore.Domain.Carts.Cart.MaxQuantityPerItem, Math.Max(1, line.AvailableStock))" class="input input-sm" style="width: 5rem" />
-                            <button type="submit" class="btn btn-secondary btn-sm">@Localizer["Atualizar"]</button>
-                        </form>
-                    </td>
-                    <td class="text-end">@Display.Price(line.LineTotal)</td>
-                    <td class="text-end">
-                        <form asp-action="Remove" method="post">
-                            <input type="hidden" name="productId" value="@line.ProductId" />
-                            <button type="submit" class="btn btn-danger-outline btn-sm">@Localizer["Remover"]</button>
-                        </form>
-                    </td>
-                </tr>
+                var kitPage = Url.Action("Details", "Catalog", new { id = line.ProductId, slug = Slug.From(line.ProductName) });
+                <li class="card flex gap-4 p-4" data-cart-line="@line.ProductId">
+                    <a href="@kitPage" class="w-24 shrink-0 sm:w-36" tabindex="-1" aria-hidden="true">
+                        <partial name="_KitIllustration" model="new KitIllustration(line.Palette ?? KeycapStore.Domain.Catalog.KitPalette.Neutral, line.KitKind)" />
+                    </a>
+                    <div class="flex min-w-0 grow flex-col gap-3">
+                        <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+                            <div class="min-w-0">
+                                <a href="@kitPage" class="font-display text-lg font-semibold text-fg hover:text-brand hover:no-underline">@line.ProductName</a>
+                                <p class="mb-0 text-sm text-muted">@Localizer["{0} cada", Display.Price(line.UnitPrice)]</p>
+                                @if (line.PreOrderShipsAt is { } shipsAt)
+                                {
+                                    <p class="mb-0 text-sm text-muted">@SharedLocalizer["Pré-venda · envio previsto em {0}", Display.Date(shipsAt)]</p>
+                                }
+                                @if (!line.IsAvailable)
+                                {
+                                    <span class="badge badge-neutral mt-1">@Localizer["Indisponível"]</span>
+                                }
+                            </div>
+                            <p class="mb-0 font-display text-lg font-semibold" data-line-total>@Display.Price(line.LineTotal)</p>
+                        </div>
+                        <div class="mt-auto flex flex-wrap items-center justify-between gap-3">
+                            <form asp-action="ChangeQuantity" method="post" class="stepper" data-cart-quantity>
+                                <input type="hidden" name="productId" value="@line.ProductId" />
+                                <button type="submit" name="quantity" value="@(line.Quantity - 1)" class="stepper-button" data-step="-1" disabled="@(line.Quantity <= 1)" aria-label="@Localizer["Diminuir a quantidade de {0}", line.ProductName]">
+                                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14" /></svg>
+                                </button>
+                                <span class="stepper-value" data-quantity data-max="@line.MaxQuantity" aria-label="@Localizer["Quantidade"]">@line.Quantity</span>
+                                <button type="submit" name="quantity" value="@(line.Quantity + 1)" class="stepper-button" data-step="1" disabled="@(line.Quantity >= line.MaxQuantity)" aria-label="@Localizer["Aumentar a quantidade de {0}", line.ProductName]">
+                                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                                </button>
+                            </form>
+                            <form asp-action="Remove" method="post" data-cart-remove>
+                                <input type="hidden" name="productId" value="@line.ProductId" />
+                                <button type="submit" class="btn btn-link btn-sm text-danger">@Localizer["Remover"]</button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
             }
-        </tbody>
-        <tfoot>
-            <tr>
-                <th colspan="3" class="text-end">@Localizer["Total"]</th>
-                <th class="text-end">@Display.Price(Model.Total)</th>
-                <th></th>
-            </tr>
-        </tfoot>
-    </table>
+        </ul>
 
-    @if (Model.HasUnavailableItems)
-    {
-        <p class="text-danger text-end">@Localizer["Um item do carrinho não está mais à venda. Remova-o para finalizar a compra."]</p>
-    }
-    else
-    {
-        <div class="text-end">
-            <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary">@Localizer["Finalizar compra"]</a>
-        </div>
-    }
+        <aside class="card summary lg:sticky lg:top-24" aria-labelledby="summary-title">
+            <h2 id="summary-title" class="mt-0">@Localizer["Resumo"]</h2>
+            <dl class="summary-list">
+                <div>
+                    <dt>@Localizer["Itens"] (<span data-cart-units>@Model.Units</span>)</dt>
+                    <dd data-cart-total>@Display.Price(Model.Total)</dd>
+                </div>
+                <div>
+                    <dt>@Localizer["Frete"]</dt>
+                    <dd class="text-muted">@Localizer["no próximo passo"]</dd>
+                </div>
+            </dl>
+            <div class="summary-total">
+                <span>@Localizer["Total"]</span>
+                <span data-cart-total>@Display.Price(Model.Total)</span>
+            </div>
+
+            <p class="mb-4 text-sm text-danger" data-cart-unavailable hidden="@(!Model.HasUnavailableItems)">@Localizer["Um item do carrinho não está mais à venda. Remova-o para finalizar a compra."]</p>
+            @if (!Model.HasUnavailableItems)
+            {
+                <a asp-controller="Checkout" asp-action="Index" class="btn btn-primary w-full py-3 text-base">@Localizer["Finalizar compra"]</a>
+            }
+            <p class="mt-4 mb-0 flex items-center gap-2 text-xs text-muted">
+                <svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                @Localizer["Pagamento com cartão ou Pix, processado pela Stripe."]
+            </p>
+            <a asp-controller="Catalog" asp-action="Index" class="mt-3 inline-block text-sm">&larr; @Localizer["Continuar comprando"]</a>
+        </aside>
+    </div>
 }

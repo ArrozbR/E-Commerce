@@ -15,9 +15,6 @@
   <data name="Pagamento" xml:space="preserve">
     <value>Payment</value>
   </data>
-  <data name="Endereço de entrega e pagamento" xml:space="preserve">
-    <value>Shipping address and payment</value>
-  </data>
   <data name="Entrega" xml:space="preserve">
     <value>Delivery</value>
   </data>
@@ -30,9 +27,6 @@
   <data name="Grátis" xml:space="preserve">
     <value>Free</value>
   </data>
-  <data name="Total: {0}" xml:space="preserve">
-    <value>Total: {0}</value>
-  </data>
   <data name="O pedido fica reservado por 30 minutos. Depois disso, o estoque volta à loja e o pagamento não é mais aceito." xml:space="preserve">
     <value>Your order is reserved for 30 minutes. After that, the stock goes back to the store and the payment is no longer accepted.</value>
   </data>
@@ -44,5 +38,23 @@
   </data>
   <data name="Não foi possível carregar o formulário de pagamento. Recarregue a página para tentar de novo." xml:space="preserve">
     <value>Could not load the payment form. Reload the page to try again.</value>
+  </data>
+  <data name="Como você quer pagar?" xml:space="preserve">
+    <value>How would you like to pay?</value>
+  </data>
+  <data name="Tempo esgotado" xml:space="preserve">
+    <value>Time is up</value>
+  </data>
+  <data name="Reservado por" xml:space="preserve">
+    <value>Reserved for</value>
+  </data>
+  <data name="O pagamento é processado pela Stripe. Os dados do cartão não passam pela loja." xml:space="preserve">
+    <value>Payment is processed by Stripe. Your card details never pass through the store.</value>
+  </data>
+  <data name="Resumo do pedido" xml:space="preserve">
+    <value>Order summary</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
   </data>
 </root>
