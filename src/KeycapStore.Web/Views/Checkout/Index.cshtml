@@ -10,36 +10,36 @@
     <p class="alert alert-info">@Localizer["Preenchido com o endereço salvo na sua conta. Confira antes de finalizar."]</p>
 }
 
-<div class="row">
-    <div class="col-md-6">
+<div>
+    <div class="max-w-xl">
         <form asp-action="Index" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <partial name="_AddressFields" model="Model" />
 
-            <div class="form-check mb-3">
-                <input asp-for="SaveAddress" class="form-check-input" />
-                <label asp-for="SaveAddress" class="form-check-label"></label>
+            <div class="check mb-3">
+                <input asp-for="SaveAddress" class="check-input" />
+                <label asp-for="SaveAddress" class="check-label"></label>
             </div>
 
-            <button type="submit" formaction="@Url.Action("Shipping", "Checkout")" class="btn @(Model.ShippingOptions.Count == 0 ? "btn-primary" : "btn-outline-secondary")">@Localizer["Ver opções de frete"]</button>
+            <button type="submit" formaction="@Url.Action("Shipping", "Checkout")" class="btn @(Model.ShippingOptions.Count == 0 ? "btn-primary" : "btn-secondary")">@Localizer["Ver opções de frete"]</button>
 
             @if (Model.ShippingOptions.Count > 0)
             {
                 <fieldset class="mt-4">
-                    <legend class="h5">@Localizer["Frete"]</legend>
-                    <span asp-validation-for="ShippingServiceId" class="text-danger d-block mb-2"></span>
+                    <legend>@Localizer["Frete"]</legend>
+                    <span asp-validation-for="ShippingServiceId" class="text-danger block mb-2"></span>
                     @foreach (var option in Model.ShippingOptions)
                     {
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="ShippingServiceId" id="shipping-@option.ServiceId" value="@option.ServiceId" checked="@(Model.ShippingServiceId == option.ServiceId)" required data-val="true" data-val-required="@SharedLocalizer["Escolha uma opção de frete."]" />
-                            <label class="form-check-label" for="shipping-@option.ServiceId">
+                        <div class="check">
+                            <input class="check-input" type="radio" name="ShippingServiceId" id="shipping-@option.ServiceId" value="@option.ServiceId" checked="@(Model.ShippingServiceId == option.ServiceId)" required data-val="true" data-val-required="@SharedLocalizer["Escolha uma opção de frete."]" />
+                            <label class="check-label" for="shipping-@option.ServiceId">
                                 @option.Carrier @option.Service: <strong>@Display.Price(option.Price)</strong>,
                                 @(option.DeliveryDays == 1 ? SharedLocalizer["até 1 dia"] : SharedLocalizer["até {0} dias", option.DeliveryDays])
                             </label>
                         </div>
                     }
-                    <p class="text-muted small mt-2">@Localizer["O valor do frete é conferido de novo quando você continua; o total final aparece antes de pagar."]</p>
+                    <p class="text-muted text-sm mt-2">@Localizer["O valor do frete é conferido de novo quando você continua; o total final aparece antes de pagar."]</p>
                 </fieldset>
 
                 <button type="submit" class="btn btn-primary">@Localizer["Continuar para o pagamento"]</button>

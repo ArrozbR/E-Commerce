@@ -1,0 +1,277 @@
+@import "tailwindcss" source(none);
+
+@source "../Views";
+@source "../wwwroot/js";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url("../fonts/space-grotesk-latin-ext-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url("../fonts/space-grotesk-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 1000;
+  src: url("../fonts/dm-sans-latin-ext-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 1000;
+  src: url("../fonts/dm-sans-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --bg: #ffffff;
+  --fg: #0a0a0a;
+  --surface: #fafafa;
+  --muted: #52525b;
+  --line: #e4e4e7;
+  --brand: #c2410c;
+  --brand-hover: #9a3412;
+  --on-brand: #ffffff;
+  --danger: #b91c1c;
+  --on-danger: #ffffff;
+  --success: #15803d;
+  --warning: #a16207;
+  --info: #1d4ed8;
+}
+
+.dark {
+  --bg: #0a0a0a;
+  --fg: #fafafa;
+  --surface: #18181b;
+  --muted: #a1a1aa;
+  --line: #27272a;
+  --brand: #f97316;
+  --brand-hover: #fb923c;
+  --on-brand: #0a0a0a;
+  --danger: #f87171;
+  --on-danger: #0a0a0a;
+  --success: #4ade80;
+  --warning: #facc15;
+  --info: #60a5fa;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-on-brand: var(--on-brand);
+  --color-danger: var(--danger);
+  --color-on-danger: var(--on-danger);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-line);
+  }
+
+  body {
+    @apply bg-bg font-sans text-fg antialiased;
+  }
+
+  h1 {
+    @apply mb-6 font-display text-3xl font-semibold tracking-tight;
+  }
+
+  h2 {
+    @apply mt-8 mb-3 font-display text-xl font-semibold tracking-tight;
+  }
+
+  h3,
+  legend {
+    @apply mb-2 font-display text-lg font-semibold;
+  }
+
+  p {
+    @apply mb-3 leading-relaxed;
+  }
+
+  a {
+    @apply text-brand underline-offset-4 hover:underline;
+  }
+
+  code {
+    @apply font-mono text-xs;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+
+  .field-validation-error,
+  .validation-summary-errors {
+    @apply text-sm text-danger;
+  }
+
+  .input-validation-error {
+    @apply border-danger;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-transparent px-4 py-2 text-sm font-medium no-underline transition-colors duration-200 hover:no-underline disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-brand text-on-brand hover:bg-brand-hover;
+  }
+
+  .btn-secondary {
+    @apply border-line bg-bg text-fg hover:bg-surface;
+  }
+
+  .btn-danger {
+    @apply bg-danger text-on-danger hover:opacity-90;
+  }
+
+  .btn-danger-outline {
+    @apply border-danger bg-transparent text-danger hover:bg-surface;
+  }
+
+  .btn-link {
+    @apply bg-transparent px-0 text-brand hover:underline;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .label {
+    @apply mb-1 block text-sm font-medium;
+  }
+
+  .input,
+  .select {
+    @apply block w-full rounded-md border border-line bg-bg px-3 py-2 text-sm text-fg placeholder:text-muted focus:border-brand focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-brand/30;
+  }
+
+  .input-sm {
+    @apply px-2 py-1;
+  }
+
+  .check {
+    @apply flex items-start gap-2;
+  }
+
+  .check-input {
+    @apply mt-0.5 size-4 shrink-0 accent-brand;
+  }
+
+  .check-label {
+    @apply text-sm;
+  }
+
+  .table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .table th {
+    @apply border-b border-line px-3 py-2 text-left font-semibold;
+  }
+
+  .table td {
+    @apply border-b border-line px-3 py-3 align-top;
+  }
+
+  .table tfoot th,
+  .table tfoot td {
+    @apply border-b-0;
+  }
+
+  .alert {
+    @apply mb-4 rounded-md border px-4 py-3 text-sm;
+  }
+
+  .alert-success {
+    @apply border-success/40 bg-success/10;
+  }
+
+  .alert-info {
+    @apply border-info/40 bg-info/10;
+  }
+
+  .alert-warning {
+    @apply border-warning/40 bg-warning/10;
+  }
+
+  .alert-danger {
+    @apply border-danger/40 bg-danger/10;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply border-success/50 text-success;
+  }
+
+  .badge-warning {
+    @apply border-warning/50 text-warning;
+  }
+
+  .badge-info {
+    @apply border-info/50 text-info;
+  }
+
+  .badge-neutral {
+    @apply border-line text-muted;
+  }
+
+  .card {
+    @apply rounded-lg border border-line bg-bg p-5;
+  }
+}

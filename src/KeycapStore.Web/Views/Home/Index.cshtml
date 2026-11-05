@@ -1,8 +1,10 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = Localizer["Início"].Value;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="py-12 md:py-20">
+    <p class="mb-3 text-sm font-medium tracking-widest text-brand uppercase">@Localizer["Lotes limitados · pré-venda"]</p>
+    <h1 class="max-w-3xl text-4xl md:text-5xl">@Localizer["Kits de keycaps feitos em lotes pequenos."]</h1>
+    <p class="max-w-2xl text-lg text-muted">@Localizer["Cada kit sai em quantidade limitada. Quando acaba, acabou; alguns lotes só são produzidos se a pré-venda atingir o mínimo."]</p>
+    <a asp-controller="Catalog" asp-action="Index" class="btn btn-primary mt-4">@Localizer["Ver o catálogo"]</a>
+</section>

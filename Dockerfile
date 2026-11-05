@@ -1,3 +1,14 @@
+FROM node:24-alpine AS css
+WORKDIR /web
+
+COPY src/KeycapStore.Web/package.json src/KeycapStore.Web/package-lock.json ./
+RUN npm ci
+
+COPY src/KeycapStore.Web/Styles Styles/
+COPY src/KeycapStore.Web/Views Views/
+COPY src/KeycapStore.Web/wwwroot/js wwwroot/js/
+RUN npm run css:build
+
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
@@ -9,6 +20,7 @@ COPY src/KeycapStore.Web/KeycapStore.Web.csproj                       src/Keycap
 RUN dotnet restore src/KeycapStore.Web/KeycapStore.Web.csproj
 
 COPY src/ src/
+COPY --from=css /web/wwwroot/css/app.css src/KeycapStore.Web/wwwroot/css/app.css
 RUN dotnet publish src/KeycapStore.Web/KeycapStore.Web.csproj \
     --configuration Release --no-restore --output /app/publish
 

@@ -16,7 +16,7 @@
     <div class="alert alert-danger">@error</div>
 }
 
-<h2 class="h4 mt-4">@Localizer["Endereço salvo"]</h2>
+<h2 class="mt-4">@Localizer["Endereço salvo"]</h2>
 @if (ViewData["SavedAddress"] is KeycapStore.Domain.Orders.ShippingAddress saved)
 {
     <p>
@@ -27,17 +27,17 @@
     </p>
     <p class="text-muted">@Localizer["Ele só preenche o formulário do checkout. Os pedidos já feitos guardam o próprio endereço e não mudam."]</p>
     <form asp-action="RemoveSavedAddress" method="post">
-        <a asp-action="Address" class="btn btn-outline-primary">@Localizer["Alterar endereço"]</a>
-        <button type="submit" class="btn btn-outline-secondary">@Localizer["Remover endereço salvo"]</button>
+        <a asp-action="Address" class="btn btn-secondary">@Localizer["Alterar endereço"]</a>
+        <button type="submit" class="btn btn-secondary">@Localizer["Remover endereço salvo"]</button>
     </form>
 }
 else
 {
     <p class="text-muted">@Localizer["Nenhum endereço salvo. Você pode cadastrar um agora ou marcar a caixa no checkout ao finalizar uma compra."]</p>
-    <a asp-action="Address" class="btn btn-outline-primary">@Localizer["Cadastrar endereço"]</a>
+    <a asp-action="Address" class="btn btn-secondary">@Localizer["Cadastrar endereço"]</a>
 }
 
-<h2 class="h4 mt-4">@Localizer["Entrar com o Google"]</h2>
+<h2 class="mt-4">@Localizer["Entrar com o Google"]</h2>
 @if (account.IsAdmin)
 {
     <p class="text-muted">@Localizer["Contas de administrador entram só com a senha."]</p>
@@ -50,13 +50,13 @@ else
 {
     <p class="text-muted">@Localizer["Conecte a sua conta Google para entrar sem digitar a senha. O e-mail do Google precisa ser o mesmo desta conta."]</p>
     <form asp-action="LinkGoogle" method="post">
-        <button type="submit" class="btn btn-outline-dark">@Localizer["Conectar o Google"]</button>
+        <button type="submit" class="btn btn-secondary">@Localizer["Conectar o Google"]</button>
     </form>
 }
 
-<h2 class="h4 mt-4">@Localizer["Excluir minha conta"]</h2>
-<div class="row">
-    <div class="col-md-7">
+<h2 class="mt-4">@Localizer["Excluir minha conta"]</h2>
+<div>
+    <div class="max-w-2xl">
         <p>
             @(account.HasPassword
                 ? Localizer["Ao excluir a conta, o seu e-mail, a sua senha e o endereço salvo são apagados e você não consegue mais entrar."]
@@ -73,13 +73,13 @@ else
             <div class="mb-3">
                 @if (account.HasPassword)
                 {
-                    <label for="Confirmation" class="form-label">@Localizer["Senha atual"]</label>
-                    <input asp-for="Confirmation" type="password" class="form-control" autocomplete="current-password" />
+                    <label for="Confirmation" class="label">@Localizer["Senha atual"]</label>
+                    <input asp-for="Confirmation" type="password" class="input" autocomplete="current-password" />
                 }
                 else
                 {
-                    <label for="Confirmation" class="form-label">@Localizer["Para confirmar, digite o e-mail desta conta"]</label>
-                    <input asp-for="Confirmation" type="email" class="form-control" autocomplete="off" />
+                    <label for="Confirmation" class="label">@Localizer["Para confirmar, digite o e-mail desta conta"]</label>
+                    <input asp-for="Confirmation" type="email" class="input" autocomplete="off" />
                 }
                 <span asp-validation-for="Confirmation" class="text-danger"></span>
             </div>

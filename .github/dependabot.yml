@@ -9,6 +9,15 @@ updates:
         patterns:
           - "*"
 
+  - package-ecosystem: npm
+    directory: /src/KeycapStore.Web
+    schedule:
+      interval: weekly
+    groups:
+      tailwind:
+        patterns:
+          - "*"
+
   - package-ecosystem: docker
     directory: /
     schedule:

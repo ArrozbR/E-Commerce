@@ -3,65 +3,63 @@
     ViewData["Title"] = Localizer["Catálogo"].Value;
 }
 
-<h1 class="mb-4">@Localizer["Catálogo"]</h1>
+<h1>@Localizer["Catálogo"]</h1>
 
-<div class="row">
+<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
     @foreach (var product in Model)
     {
-        <div class="col-md-4 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">@product.Name</h5>
-                    <p class="card-text fs-4">@Display.Price(product.Price)</p>
+        <article class="card flex flex-col">
+            <h2 class="mt-0 mb-1 text-lg">@product.Name</h2>
+            <p class="mb-3 font-display text-2xl font-semibold">@Display.Price(product.Price)</p>
 
-                    @if (product.PreOrder is { } campaign)
+            <div class="flex grow flex-col items-start gap-2 text-sm">
+                @if (product.PreOrder is { } campaign)
+                {
+                    <span class="badge badge-info">@Localizer["Pré-venda"]</span>
+                    <p class="mb-0 text-muted">@Localizer["Até {0} · envio previsto em {1}", Display.DateAndTime(campaign.EndsAt), Display.Date(campaign.ShipsAt)]</p>
+                    <p class="mb-0 text-muted">
+                        @(campaign.MinimumReached
+                            ? (campaign.SoldUnits == 1 ? Localizer["Mínimo atingido: 1 vendida"] : Localizer["Mínimo atingido: {0} vendidas", campaign.SoldUnits])
+                            : Localizer["{0} de {1} para o lote sair", campaign.SoldUnits, campaign.MinimumUnits])
+                    </p>
+                    @if (!campaign.IsOpen)
                     {
-                        <span class="badge bg-info text-dark">@Localizer["Pré-venda"]</span>
-                        <p class="small mt-2 mb-1">@Localizer["Até {0} · envio previsto em {1}", Display.DateAndTime(campaign.EndsAt), Display.Date(campaign.ShipsAt)]</p>
-                        <p class="small mb-1">
-                            @(campaign.MinimumReached
-                                ? (campaign.SoldUnits == 1 ? Localizer["Mínimo atingido: 1 vendida"] : Localizer["Mínimo atingido: {0} vendidas", campaign.SoldUnits])
-                                : Localizer["{0} de {1} para o lote sair", campaign.SoldUnits, campaign.MinimumUnits])
-                        </p>
-                        @if (!campaign.IsOpen)
-                        {
-                            <span class="badge bg-secondary">@Localizer["Pré-venda encerrada"]</span>
-                        }
-                        else if (product.Stock == 0)
-                        {
-                            <span class="badge bg-secondary">@Localizer["Vagas esgotadas"]</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-success">@(product.Stock == 1 ? Localizer["1 vaga"] : Localizer["{0} vagas", product.Stock])</span>
-                        }
+                        <span class="badge badge-neutral">@Localizer["Pré-venda encerrada"]</span>
                     }
                     else if (product.Stock == 0)
                     {
-                        <span class="badge bg-secondary">@Localizer["Esgotado"]</span>
-                    }
-                    else if (product.Stock == 1)
-                    {
-                        <span class="badge bg-warning text-dark">@Localizer["Última unidade"]</span>
-                    }
-                    else if (product.Stock <= 3)
-                    {
-                        <span class="badge bg-warning text-dark">@Localizer["Últimas {0} unidades", product.Stock]</span>
+                        <span class="badge badge-neutral">@Localizer["Vagas esgotadas"]</span>
                     }
                     else
                     {
-                        <span class="badge bg-success">@Localizer["Em estoque"]</span>
+                        <span class="badge badge-success">@(product.Stock == 1 ? Localizer["1 vaga"] : Localizer["{0} vagas", product.Stock])</span>
                     }
-
-                    @if (product.CanBeBought)
-                    {
-                        <form asp-controller="Cart" asp-action="Add" method="post" class="mt-3">
-                            <input type="hidden" name="productId" value="@product.Id" />
-                            <button type="submit" class="btn btn-primary btn-sm">@(product.PreOrder is null ? Localizer["Adicionar ao carrinho"] : Localizer["Reservar na pré-venda"])</button>
-                        </form>
-                    }
-                </div>
+                }
+                else if (product.Stock == 0)
+                {
+                    <span class="badge badge-neutral">@Localizer["Esgotado"]</span>
+                }
+                else if (product.Stock == 1)
+                {
+                    <span class="badge badge-warning">@Localizer["Última unidade"]</span>
+                }
+                else if (product.Stock <= 3)
+                {
+                    <span class="badge badge-warning">@Localizer["Últimas {0} unidades", product.Stock]</span>
+                }
+                else
+                {
+                    <span class="badge badge-success">@Localizer["Em estoque"]</span>
+                }
             </div>
-        </div>
+
+            @if (product.CanBeBought)
+            {
+                <form asp-controller="Cart" asp-action="Add" method="post" class="mt-5">
+                    <input type="hidden" name="productId" value="@product.Id" />
+                    <button type="submit" class="btn btn-primary w-full">@(product.PreOrder is null ? Localizer["Adicionar ao carrinho"] : Localizer["Reservar na pré-venda"])</button>
+                </form>
+            }
+        </article>
     }
 </div>

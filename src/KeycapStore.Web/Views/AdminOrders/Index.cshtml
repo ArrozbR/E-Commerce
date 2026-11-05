@@ -12,7 +12,7 @@
 }
 else
 {
-    <table class="table align-top">
+    <table class="table">
         <thead>
             <tr>
                 <th>@Localizer["Pedido"]</th>
@@ -78,14 +78,14 @@ else
                         else if (order.Status == KeycapStore.Domain.Orders.OrderStatus.Picking)
                         {
                             <form asp-action="Ship" asp-route-id="@order.Id" method="post">
-                                <input name="trackingCode" class="form-control form-control-sm mb-1" placeholder="@Localizer["Código de rastreio"]" maxlength="@KeycapStore.Domain.Orders.Order.MaxTrackingCodeLength" required />
+                                <input name="trackingCode" class="input input-sm mb-1" placeholder="@Localizer["Código de rastreio"]" maxlength="@KeycapStore.Domain.Orders.Order.MaxTrackingCodeLength" required />
                                 <button type="submit" class="btn btn-sm btn-primary">@Localizer["Marcar como enviado"]</button>
                             </form>
                         }
                         else if (order.Status == KeycapStore.Domain.Orders.OrderStatus.Shipped)
                         {
                             <form asp-action="Deliver" asp-route-id="@order.Id" method="post">
-                                <button type="submit" class="btn btn-sm btn-success">@Localizer["Marcar como entregue"]</button>
+                                <button type="submit" class="btn btn-sm btn-secondary">@Localizer["Marcar como entregue"]</button>
                             </form>
                         }
                         else if (order.Status == KeycapStore.Domain.Orders.OrderStatus.Withdrawn)
@@ -95,11 +95,11 @@ else
                         else if (order.Status == KeycapStore.Domain.Orders.OrderStatus.AwaitingReturn)
                         {
                             <form asp-action="ConfirmReturn" asp-route-id="@order.Id" method="post">
-                                <div class="form-check mb-1">
-                                    <input type="checkbox" name="restock" value="true" class="form-check-input" id="restock-@order.Id" />
-                                    <label class="form-check-label" for="restock-@order.Id">@Localizer["Volta ao estoque"]</label>
+                                <div class="check mb-1">
+                                    <input type="checkbox" name="restock" value="true" class="check-input" id="restock-@order.Id" />
+                                    <label class="check-label" for="restock-@order.Id">@Localizer["Volta ao estoque"]</label>
                                 </div>
-                                <button type="submit" class="btn btn-sm btn-warning">@Localizer["Devolução recebida"]</button>
+                                <button type="submit" class="btn btn-sm btn-secondary">@Localizer["Devolução recebida"]</button>
                             </form>
                         }
                     </td>
