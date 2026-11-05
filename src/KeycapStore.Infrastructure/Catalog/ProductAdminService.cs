@@ -15,7 +15,7 @@ internal sealed class ProductAdminService(AppDbContext db, TimeProvider clock) :
             .OrderBy(p => p.Name)
             .ToListAsync(cancellationToken);
 
-        return [.. products.Select(p => new AdminProductView(p.Id, p.Name, p.Price, p.Stock, p.IsActive, p.WeightKg, p.WidthCm, p.HeightCm, p.LengthCm, p.PreOrder, p.PreOrderOutcome))];
+        return [.. products.Select(p => new AdminProductView(p.Id, p.Name, p.Price, p.Stock, p.IsActive, p.WeightKg, p.WidthCm, p.HeightCm, p.LengthCm, p.PreOrder, p.PreOrderOutcome, p.Palette))];
     }
 
     public async Task<Guid> CreateAsync(string name, decimal price, int stock, ProductPackage package, CancellationToken cancellationToken = default)
@@ -63,6 +63,9 @@ internal sealed class ProductAdminService(AppDbContext db, TimeProvider clock) :
             product.Update(name, price);
             product.ChangePackage(package);
         }, cancellationToken);
+
+    public Task ChangePaletteAsync(Guid productId, KitPalette palette, CancellationToken cancellationToken = default) =>
+        ApplyAsync(productId, product => product.ChangePalette(palette), cancellationToken);
 
     public Task ActivateAsync(Guid productId, CancellationToken cancellationToken = default) =>
         ApplyAsync(productId, product => product.Activate(), cancellationToken);

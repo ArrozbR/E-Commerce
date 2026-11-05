@@ -20,7 +20,13 @@ public sealed class Product
     public PreOrderOutcome? PreOrderOutcome { get; private set; }
     public DateTimeOffset? PreOrderOpenedAt { get; private set; }
 
+    public string PaletteKeys { get; private set; }
+    public string PaletteLegends { get; private set; }
+    public string PaletteAccent { get; private set; }
+
     public ProductPackage Package => new(WeightKg, WidthCm, HeightCm, LengthCm);
+
+    public KitPalette Palette => new(PaletteKeys, PaletteLegends, PaletteAccent);
 
     public PreOrder? PreOrder => PreOrderEndsAt is { } endsAt
         ? new PreOrder(endsAt, PreOrderShipsAt!.Value, PreOrderMinimumUnits!.Value)
@@ -29,6 +35,9 @@ public sealed class Product
     private Product()
     {
         Name = null!;
+        PaletteKeys = null!;
+        PaletteLegends = null!;
+        PaletteAccent = null!;
     }
 
     public Product(string name, decimal price, int stock, ProductPackage package)
@@ -44,6 +53,19 @@ public sealed class Product
         Stock = stock;
         IsActive = true;
         ChangePackage(package);
+
+        PaletteKeys = KitPalette.Neutral.Keys;
+        PaletteLegends = KitPalette.Neutral.Legends;
+        PaletteAccent = KitPalette.Neutral.Accent;
+    }
+
+    public void ChangePalette(KitPalette palette)
+    {
+        ArgumentNullException.ThrowIfNull(palette);
+
+        PaletteKeys = palette.Keys;
+        PaletteLegends = palette.Legends;
+        PaletteAccent = palette.Accent;
     }
 
     public static Product ForPreOrder(string name, decimal price, int slots, ProductPackage package, PreOrder preOrder, DateTimeOffset now)

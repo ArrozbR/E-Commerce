@@ -1,0 +1,44 @@
+@model KeycapStore.Domain.Catalog.KitPalette
+@{
+    const int unit = 26;
+    const int gap = 4;
+    const int margin = 14;
+    const int rowWidth = 296;
+
+    (string Label, double? Units, bool Accent)[][] rows =
+    [
+        [("Esc", 1, true), ("1", 1, false), ("2", 1, false), ("3", 1, false), ("4", 1, false), ("5", 1, false), ("6", 1, false), ("7", 1, false), ("8", 1, false), ("9", 1, false)],
+        [("Tab", 1.5, false), ("Q", 1, false), ("W", 1, false), ("E", 1, false), ("R", 1, false), ("T", 1, false), ("Y", 1, false), ("U", 1, false), ("I", null, false)],
+        [("Caps", 1.75, false), ("A", 1, false), ("S", 1, false), ("D", 1, false), ("F", 1, false), ("G", 1, false), ("H", 1, false), ("Enter", null, true)],
+        [("Shift", 2.25, false), ("Z", 1, false), ("X", 1, false), ("C", 1, false), ("V", 1, false), ("B", 1, false), ("N", null, false)],
+        [("Ctrl", 1.5, false), ("Alt", 1.25, false), ("", null, false), ("Alt", 1.25, false), ("Fn", 1.5, false)],
+    ];
+
+    static double Width(double units) => (units * unit) + ((units - 1) * gap);
+    static string N(double value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+}
+
+<svg viewBox="0 0 324 174" class="block h-auto w-full" aria-hidden="true" focusable="false">
+    <rect width="324" height="174" rx="12" fill="#18181b" />
+    @for (var r = 0; r < rows.Length; r++)
+    {
+        var row = rows[r];
+        var fixedWidth = row.Where(k => k.Units is not null).Sum(k => Width(k.Units!.Value));
+        var fill = rowWidth - fixedWidth - ((row.Length - 1) * gap);
+        var x = (double)margin;
+        var y = margin + (r * (unit + gap));
+
+        foreach (var key in row)
+        {
+            var width = key.Units is { } units ? Width(units) : fill;
+            var color = key.Accent ? Model.Accent : Model.Keys;
+            <rect x="@N(x)" y="@N(y)" width="@N(width)" height="@unit" rx="4" fill="@color" />
+            <rect x="@N(x + 3)" y="@N(y + 2)" width="@N(width - 6)" height="@(unit - 7)" rx="3" fill="#ffffff" fill-opacity="0.12" />
+            @if (key.Label.Length > 0)
+            {
+                <g><text x="@N(x + (width / 2))" y="@N(y + 16)" text-anchor="middle" font-size="8" font-family="ui-monospace, monospace" fill="@Model.Legends">@key.Label</text></g>
+            }
+            x += width + gap;
+        }
+    }
+</svg>

@@ -99,4 +99,19 @@
   <data name="Pré-venda fechada" xml:space="preserve">
     <value>Pre-order closed</value>
   </data>
+  <data name="Cores do kit:" xml:space="preserve">
+    <value>Kit colors:</value>
+  </data>
+  <data name="Teclas" xml:space="preserve">
+    <value>Keys</value>
+  </data>
+  <data name="Legendas" xml:space="preserve">
+    <value>Legends</value>
+  </data>
+  <data name="Destaque" xml:space="preserve">
+    <value>Accent</value>
+  </data>
+  <data name="Salvar cores" xml:space="preserve">
+    <value>Save colors</value>
+  </data>
 </root>

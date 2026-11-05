@@ -208,6 +208,59 @@ public class AdminProductsPageTests(PostgresFixture postgres) : IClassFixture<Po
     }
 
     [Fact]
+    public async Task Admin_ChangesTheKitPalette()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var admin = await AdminClientAsync(factory, "admin-cores@example.com");
+        var kit = await SaveProductAsync(factory, "Kit Cores Novas", stock: 5);
+
+        await PostAsync(admin, $"/admin/products/{kit}/palette", new() { ["Keys"] = "#E0F2FE", ["Legends"] = "#0c4a6e", ["Accent"] = "#0ea5e9" });
+
+        Assert.Equal(new KitPalette("#e0f2fe", "#0c4a6e", "#0ea5e9"), (await ProductAsync(factory, "Kit Cores Novas"))!.Palette);
+        Assert.Contains("Cores do kit atualizadas.", await PageAsync(admin, "/admin/products"));
+    }
+
+    [Fact]
+    public async Task Admin_PaletteWithAnInvalidColor_IsRefused_AndKeepsTheColors()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var admin = await AdminClientAsync(factory, "admin-cor-errada@example.com");
+        var kit = await SaveProductAsync(factory, "Kit Cor Errada", stock: 5);
+
+        await PostAsync(admin, $"/admin/products/{kit}/palette", new() { ["Keys"] = "vermelho", ["Legends"] = "#0c4a6e", ["Accent"] = "#0ea5e9" });
+
+        Assert.Equal(KitPalette.Neutral, (await ProductAsync(factory, "Kit Cor Errada"))!.Palette);
+        Assert.Contains("Cores recusadas: use o formato #RRGGBB.", await PageAsync(admin, "/admin/products"));
+    }
+
+    [Fact]
+    public async Task Customer_CannotChangeAPalette()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var customer = await PageClient.LoggedInAsync(factory, "cliente-cores@example.com");
+        var kit = await SaveProductAsync(factory, "Kit Cores Do Cliente", stock: 5);
+
+        var response = await PostAsync(customer, $"/admin/products/{kit}/palette", new() { ["Keys"] = "#000000", ["Legends"] = "#000000", ["Accent"] = "#000000" });
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(KitPalette.Neutral, (await ProductAsync(factory, "Kit Cores Do Cliente"))!.Palette);
+    }
+
+    [Fact]
+    public async Task Catalog_DrawsEachKitWithItsPalette_WithDotDecimalsInPortuguese()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+
+        var html = await PageAsync(PageClient.Anonymous(factory), "/Catalog");
+
+        Assert.Contains("fill=\"#1e293b\"", html);
+        Assert.Contains("fill=\"#8b5cf6\"", html);
+        Assert.Contains("fill=\"#f5f0e6\"", html);
+        Assert.Contains("width=\"48.5\"", html);
+        Assert.DoesNotContain("width=\"48,5\"", html);
+    }
+
+    [Fact]
     public async Task Admin_SeesTheWeightAndTheMeasures()
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();

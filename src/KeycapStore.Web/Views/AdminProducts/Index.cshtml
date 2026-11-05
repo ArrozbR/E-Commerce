@@ -87,6 +87,16 @@
                         <input name="LengthCm" value="@product.LengthCm" type="number" min="1" max="@KeycapStore.Domain.Catalog.ProductPackage.MaxSideCm" class="input input-sm" style="max-width: 4.5rem" aria-label="@Localizer["Comprimento"]" required />
                         <button type="submit" class="btn btn-sm btn-secondary">@Localizer["Salvar"]</button>
                     </form>
+                    @{
+                        var palette = product.Palette ?? KeycapStore.Domain.Catalog.KitPalette.Neutral;
+                    }
+                    <form asp-action="Palette" asp-route-id="@product.Id" method="post" class="mt-1 flex flex-wrap items-center gap-2">
+                        <span class="text-xs text-muted">@Localizer["Cores do kit:"]</span>
+                        <label class="flex items-center gap-1 text-xs">@Localizer["Teclas"] <input name="Keys" type="color" value="@palette.Keys" class="h-7 w-9 cursor-pointer rounded border border-line bg-bg" /></label>
+                        <label class="flex items-center gap-1 text-xs">@Localizer["Legendas"] <input name="Legends" type="color" value="@palette.Legends" class="h-7 w-9 cursor-pointer rounded border border-line bg-bg" /></label>
+                        <label class="flex items-center gap-1 text-xs">@Localizer["Destaque"] <input name="Accent" type="color" value="@palette.Accent" class="h-7 w-9 cursor-pointer rounded border border-line bg-bg" /></label>
+                        <button type="submit" class="btn btn-sm btn-secondary">@Localizer["Salvar cores"]</button>
+                    </form>
                     @if (product.PreOrder is { } campaign)
                     {
                         <small class="text-muted">@Localizer["Pré-venda até {0} · envio previsto em {1} · mínimo {2}", Display.DateAndTime(campaign.EndsAt), Display.Date(campaign.ShipsAt), campaign.MinimumUnits]</small>

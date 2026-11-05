@@ -60,6 +60,21 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<string>("PaletteAccent")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<string>("PaletteKeys")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
+                    b.Property<string>("PaletteLegends")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
                     b.Property<DateTimeOffset?>("PreOrderEndsAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -102,6 +117,9 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                             IsActive = true,
                             LengthCm = 20,
                             Name = "Kit Aurora (base)",
+                            PaletteAccent = "#8b5cf6",
+                            PaletteKeys = "#1e293b",
+                            PaletteLegends = "#a7f3d0",
                             Price = 349.90m,
                             Stock = 40,
                             WeightKg = 0.8m,
@@ -114,6 +132,9 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                             IsActive = true,
                             LengthCm = 12,
                             Name = "Kit Aurora (novelties)",
+                            PaletteAccent = "#22d3ee",
+                            PaletteKeys = "#1e293b",
+                            PaletteLegends = "#a7f3d0",
                             Price = 129.90m,
                             Stock = 3,
                             WeightKg = 0.3m,
@@ -126,6 +147,9 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                             IsActive = true,
                             LengthCm = 20,
                             Name = "Kit Maré (base)",
+                            PaletteAccent = "#0ea5e9",
+                            PaletteKeys = "#e0f2fe",
+                            PaletteLegends = "#0c4a6e",
                             Price = 319.90m,
                             Stock = 25,
                             WeightKg = 0.8m,
@@ -138,6 +162,9 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                             IsActive = true,
                             LengthCm = 12,
                             Name = "Kit Maré (modificadores)",
+                            PaletteAccent = "#0ea5e9",
+                            PaletteKeys = "#0c4a6e",
+                            PaletteLegends = "#e0f2fe",
                             Price = 149.90m,
                             Stock = 0,
                             WeightKg = 0.3m,
@@ -150,6 +177,9 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                             IsActive = true,
                             LengthCm = 20,
                             Name = "Kit Zéfiro (base)",
+                            PaletteAccent = "#f97316",
+                            PaletteKeys = "#f5f0e6",
+                            PaletteLegends = "#3f3f46",
                             Price = 299.90m,
                             Stock = 12,
                             WeightKg = 0.8m,
@@ -162,6 +192,9 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                             IsActive = true,
                             LengthCm = 12,
                             Name = "Kit Zéfiro (teclas de função)",
+                            PaletteAccent = "#f97316",
+                            PaletteKeys = "#3f3f46",
+                            PaletteLegends = "#f5f0e6",
                             Price = 89.90m,
                             Stock = 2,
                             WeightKg = 0.3m,

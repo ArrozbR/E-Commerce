@@ -145,6 +145,19 @@ public sealed class AdminProductsController(IProductAdminService products, IStri
         return BackWithMessage(text["Datas da pré-venda atualizadas."].Value);
     }
 
+    [HttpPost("{id:guid}/palette")]
+    public async Task<IActionResult> Palette(Guid id, string? keys, string? legends, string? accent, CancellationToken cancellationToken)
+    {
+        if (!KitPalette.IsHexColor(keys) || !KitPalette.IsHexColor(legends) || !KitPalette.IsHexColor(accent))
+        {
+            return BackWithError(text["Cores recusadas: use o formato #RRGGBB."].Value);
+        }
+
+        await products.ChangePaletteAsync(id, new KitPalette(keys!, legends!, accent!), cancellationToken);
+
+        return BackWithMessage(text["Cores do kit atualizadas."].Value);
+    }
+
     [HttpPost("{id:guid}/deactivate")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken cancellationToken)
     {

@@ -366,4 +366,10 @@
   <data name="Este kit está esgotado." xml:space="preserve">
     <value>This kit is sold out.</value>
   </data>
+  <data name="Cores recusadas: use o formato #RRGGBB." xml:space="preserve">
+    <value>Colors refused: use the #RRGGBB format.</value>
+  </data>
+  <data name="Cores do kit atualizadas." xml:space="preserve">
+    <value>Kit colors updated.</value>
+  </data>
 </root>
