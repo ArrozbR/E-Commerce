@@ -8,62 +8,6 @@
 <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
     @foreach (var product in Model)
     {
-        <article class="card card-interactive flex flex-col" data-reveal>
-            <div class="mb-4">
-                <partial name="_KitIllustration" model="new KitIllustration(product.Palette ?? KeycapStore.Domain.Catalog.KitPalette.Neutral, product.KitKind)" />
-            </div>
-            <h2 class="mt-0 mb-1 text-lg">@product.Name</h2>
-            <p class="mb-3 font-display text-2xl font-semibold">@Display.Price(product.Price)</p>
-
-            <div class="flex grow flex-col items-start gap-2 text-sm">
-                @if (product.PreOrder is { } campaign)
-                {
-                    <span class="badge badge-info">@Localizer["Pré-venda"]</span>
-                    <p class="mb-0 text-muted">@Localizer["Até {0} · envio previsto em {1}", Display.DateAndTime(campaign.EndsAt), Display.Date(campaign.ShipsAt)]</p>
-                    <p class="mb-0 text-muted">
-                        @(campaign.MinimumReached
-                            ? (campaign.SoldUnits == 1 ? Localizer["Mínimo atingido: 1 vendida"] : Localizer["Mínimo atingido: {0} vendidas", campaign.SoldUnits])
-                            : Localizer["{0} de {1} para o lote sair", campaign.SoldUnits, campaign.MinimumUnits])
-                    </p>
-                    @if (!campaign.IsOpen)
-                    {
-                        <span class="badge badge-neutral">@Localizer["Pré-venda encerrada"]</span>
-                    }
-                    else if (product.Stock == 0)
-                    {
-                        <span class="badge badge-neutral">@Localizer["Vagas esgotadas"]</span>
-                    }
-                    else
-                    {
-                        <span class="badge badge-success">@(product.Stock == 1 ? Localizer["1 vaga"] : Localizer["{0} vagas", product.Stock])</span>
-                    }
-                }
-                else if (product.Stock == 0)
-                {
-                    <span class="badge badge-neutral">@Localizer["Esgotado"]</span>
-                }
-                else if (product.Stock == 1)
-                {
-                    <span class="badge badge-warning">@Localizer["Última unidade"]</span>
-                }
-                else if (product.Stock <= 3)
-                {
-                    <span class="badge badge-warning">@Localizer["Últimas {0} unidades", product.Stock]</span>
-                }
-                else
-                {
-                    <span class="badge badge-success">@Localizer["Em estoque"]</span>
-                }
-            </div>
-
-            @if (product.CanBeBought)
-            {
-                <form asp-controller="Cart" asp-action="Add" method="post" class="mt-5">
-                    <input type="hidden" name="productId" value="@product.Id" />
-                    <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
-                    <button type="submit" class="btn btn-primary w-full">@(product.PreOrder is null ? Localizer["Adicionar ao carrinho"] : Localizer["Reservar na pré-venda"])</button>
-                </form>
-            }
-        </article>
+        <partial name="_KitCard" model="new KitCard(product)" />
     }
 </div>

@@ -6,6 +6,7 @@ using KeycapStore.Web.Filters;
 using KeycapStore.Web.Localization;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 
@@ -19,6 +20,9 @@ public sealed class CartController(ICartService carts, IStringLocalizer<SharedRe
 
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
+    private bool WantsJson => Request.GetTypedHeaders().Accept
+        .Any(a => a.MediaType.Equals("application/json", StringComparison.OrdinalIgnoreCase));
+
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
@@ -30,23 +34,34 @@ public sealed class CartController(ICartService carts, IStringLocalizer<SharedRe
     [HttpPost]
     public async Task<IActionResult> Add(Guid productId, string? returnUrl, CancellationToken cancellationToken)
     {
+        string? refusal = null;
         try
         {
             await carts.AddItemAsync(CustomerId, productId, 1, cancellationToken);
         }
         catch (PreOrderMustBeAloneException)
         {
-            TempData["Error"] = text["Kits de pré-venda são comprados sozinhos. Finalize ou esvazie o carrinho antes de adicionar este."].Value;
-            return RedirectToAction(nameof(Index));
+            refusal = text["Kits de pré-venda são comprados sozinhos. Finalize ou esvazie o carrinho antes de adicionar este."].Value;
         }
         catch (CartItemLimitException)
         {
-            TempData["Error"] = LimitMessage();
-            return RedirectToAction(nameof(Index));
+            refusal = LimitMessage();
         }
         catch (CartStockLimitException ex)
         {
-            TempData["Error"] = StockMessage(ex.Available);
+            refusal = StockMessage(ex.Available);
+        }
+
+        if (WantsJson)
+        {
+            return refusal is null
+                ? Ok(new { count = await carts.CountItemsAsync(CustomerId, cancellationToken) })
+                : Conflict(new { message = refusal });
+        }
+
+        if (refusal is not null)
+        {
+            TempData["Error"] = refusal;
             return RedirectToAction(nameof(Index));
         }
 

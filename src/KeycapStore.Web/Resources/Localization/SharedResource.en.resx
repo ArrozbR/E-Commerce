@@ -372,4 +372,28 @@
   <data name="Cores do kit atualizadas." xml:space="preserve">
     <value>Kit colors updated.</value>
   </data>
+  <data name="Base" xml:space="preserve">
+    <value>Base</value>
+  </data>
+  <data name="Novelties" xml:space="preserve">
+    <value>Novelties</value>
+  </data>
+  <data name="Modificadores" xml:space="preserve">
+    <value>Modifiers</value>
+  </data>
+  <data name="Teclas de função" xml:space="preserve">
+    <value>Function keys</value>
+  </data>
+  <data name="Letras, números e os modificadores principais (Esc, Tab, Shift, Ctrl e Enter) para montar o teclado inteiro nas cores do conjunto." xml:space="preserve">
+    <value>Letters, numbers and the main modifiers (Esc, Tab, Shift, Ctrl and Enter) to build the whole keyboard in the colorway.</value>
+  </data>
+  <data name="Teclas decorativas com ícones, para trocar no lugar de teclas comuns e dar um toque próprio ao teclado." xml:space="preserve">
+    <value>Decorative keys with icons, to swap in for regular keys and give the keyboard a touch of its own.</value>
+  </data>
+  <data name="Os modificadores (Tab, Caps, Shift, Ctrl, Alt, Enter e Backspace) nas cores invertidas do conjunto, para combinar com o kit base." xml:space="preserve">
+    <value>The modifiers (Tab, Caps, Shift, Ctrl, Alt, Enter and Backspace) in the colorway's inverted colors, to match the base kit.</value>
+  </data>
+  <data name="A fileira de funções (F1 a F12) e as teclas de navegação, como PrtSc, Home e End." xml:space="preserve">
+    <value>The function row (F1 to F12) and the navigation keys, such as PrtSc, Home and End.</value>
+  </data>
 </root>

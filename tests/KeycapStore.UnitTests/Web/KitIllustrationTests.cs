@@ -45,6 +45,18 @@ public class KitIllustrationTests
     }
 
     [Fact]
+    public void KeyName_MatchesThePhysicalKey_AndIsEmptyForDecorativeIcons()
+    {
+        var keyboard = For(KitKind.Base).Keys;
+        var novelties = For(KitKind.Novelties).Keys;
+
+        Assert.Contains(keyboard, k => k.KeyName == "Q");
+        Assert.Contains(keyboard, k => k.KeyName == "Space" && k.Legend == "");
+        Assert.Contains(novelties, k => k.Icon == KeyIcon.Return && k.KeyName == "Enter");
+        Assert.All(novelties.Where(k => k.Icon != KeyIcon.Return), k => Assert.Null(k.KeyName));
+    }
+
+    [Fact]
     public void Modifiers_UseTheInvertedColors_AndAccentsTheAccentColor()
     {
         var illustration = new KitIllustration(Aurora, KitKind.Base);

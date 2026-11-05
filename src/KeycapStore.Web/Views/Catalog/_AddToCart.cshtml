@@ -1,0 +1,13 @@
+@model KeycapStore.Application.Catalog.ProductSummary
+@{
+    var palette = Model.Palette ?? KeycapStore.Domain.Catalog.KitPalette.Neutral;
+}
+
+@if (Model.CanBeBought)
+{
+    <form asp-controller="Cart" asp-action="Add" method="post" data-cart-add data-cap="@palette.Keys">
+        <input type="hidden" name="productId" value="@Model.Id" />
+        <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+        <button type="submit" class="btn btn-primary w-full" data-added-label="@Localizer["Adicionado!"]">@(Model.PreOrder is null ? Localizer["Adicionar ao carrinho"] : Localizer["Reservar na pré-venda"])</button>
+    </form>
+}

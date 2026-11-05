@@ -1,0 +1,40 @@
+@model KeycapStore.Application.Catalog.ProductSummary
+
+@if (Model.PreOrder is { } campaign)
+{
+    <span class="badge badge-info">@Localizer["Pré-venda"]</span>
+    <p class="mb-0 text-muted">@Localizer["Até {0} · envio previsto em {1}", Display.DateAndTime(campaign.EndsAt), Display.Date(campaign.ShipsAt)]</p>
+    <p class="mb-0 text-muted">
+        @(campaign.MinimumReached
+            ? (campaign.SoldUnits == 1 ? Localizer["Mínimo atingido: 1 vendida"] : Localizer["Mínimo atingido: {0} vendidas", campaign.SoldUnits])
+            : Localizer["{0} de {1} para o lote sair", campaign.SoldUnits, campaign.MinimumUnits])
+    </p>
+    @if (!campaign.IsOpen)
+    {
+        <span class="badge badge-neutral">@Localizer["Pré-venda encerrada"]</span>
+    }
+    else if (Model.Stock == 0)
+    {
+        <span class="badge badge-neutral">@Localizer["Vagas esgotadas"]</span>
+    }
+    else
+    {
+        <span class="badge badge-success">@(Model.Stock == 1 ? Localizer["1 vaga"] : Localizer["{0} vagas", Model.Stock])</span>
+    }
+}
+else if (Model.Stock == 0)
+{
+    <span class="badge badge-neutral">@Localizer["Esgotado"]</span>
+}
+else if (Model.Stock == 1)
+{
+    <span class="badge badge-warning">@Localizer["Última unidade"]</span>
+}
+else if (Model.Stock <= 3)
+{
+    <span class="badge badge-warning">@Localizer["Últimas {0} unidades", Model.Stock]</span>
+}
+else
+{
+    <span class="badge badge-success">@Localizer["Em estoque"]</span>
+}

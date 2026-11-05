@@ -60,10 +60,7 @@
   <data name="Kit adicionado ao carrinho." xml:space="preserve">
     <value>Kit added to your cart.</value>
   </data>
-  <data name="Ver carrinho" xml:space="preserve">
-    <value>View cart</value>
-  </data>
-  <data name="Fechar aviso" xml:space="preserve">
-    <value>Close notice</value>
+  <data name="Não foi possível adicionar o kit. Tente de novo." xml:space="preserve">
+    <value>Couldn't add the kit. Please try again.</value>
   </data>
 </root>
