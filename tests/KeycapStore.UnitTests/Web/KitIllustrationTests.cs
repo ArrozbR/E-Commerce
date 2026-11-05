@@ -5,19 +5,55 @@ namespace KeycapStore.UnitTests.Web;
 
 public class KitIllustrationTests
 {
-    private static KitIllustration For(string name, string accent = "#22c55e") =>
-        new(new KitPalette("#1e1b4b", "#a5f3fc", accent), name);
+    private static readonly KitPalette Aurora = new("#1e1b4b", "#a5f3fc", "#22c55e");
+
+    private static KitIllustration For(KitKind kind, string accent = "#22c55e") =>
+        new(new KitPalette("#1e1b4b", "#a5f3fc", accent), kind);
 
     [Theory]
-    [InlineData("Kit Aurora (base)", "A")]
-    [InlineData("Kit Maré (modificadores)", "M")]
-    [InlineData("kit zéfiro", "Z")]
-    [InlineData("Ébano", "É")]
-    [InlineData("Kit (sem nome)", "S")]
-    [InlineData("", "K")]
-    public void Initial_IsTheFirstLetterAfterKit(string name, string initial)
+    [InlineData(KitKind.Base)]
+    [InlineData(KitKind.Novelties)]
+    [InlineData(KitKind.Modifiers)]
+    [InlineData(KitKind.FunctionKeys)]
+    public void EveryRow_EndsAtTheSameRightEdge_WithoutOverlappingKeys(KitKind kind)
     {
-        Assert.Equal(initial, For(name).Initial);
+        var illustration = For(kind);
+        var right = illustration.Left + illustration.RowWidth;
+
+        foreach (var row in illustration.Keys.GroupBy(k => k.Y))
+        {
+            var keys = row.OrderBy(k => k.X).ToList();
+            Assert.Equal(illustration.Left, keys[0].X, precision: 6);
+            Assert.Equal(right, keys[^1].X + keys[^1].Width, precision: 6);
+            for (var i = 1; i < keys.Count; i++)
+            {
+                Assert.True(keys[i].X > keys[i - 1].X + keys[i - 1].Width, "teclas sobrepostas");
+            }
+        }
+
+        Assert.All(illustration.Keys, k => Assert.True(k.Y + k.Height <= KitIllustration.ViewHeight));
+    }
+
+    [Fact]
+    public void EachKind_ShowsItsOwnKeys()
+    {
+        Assert.Contains(For(KitKind.Base).Keys, k => k.Legend == "Q");
+        Assert.All(For(KitKind.Novelties).Keys, k => Assert.NotEqual(KeyIcon.None, k.Icon));
+        Assert.Contains(For(KitKind.Modifiers).Keys, k => k.Legend == "Backspace");
+        Assert.DoesNotContain(For(KitKind.Modifiers).Keys, k => k.Legend == "Q");
+        Assert.Contains(For(KitKind.FunctionKeys).Keys, k => k.Legend == "F12");
+    }
+
+    [Fact]
+    public void Modifiers_UseTheInvertedColors_AndAccentsTheAccentColor()
+    {
+        var illustration = new KitIllustration(Aurora, KitKind.Base);
+
+        Assert.Equal(Aurora.Keys, illustration.CapColor(KeyRole.Alpha));
+        Assert.Equal(Aurora.Legends, illustration.LegendColor(KeyRole.Alpha));
+        Assert.Equal(Aurora.Legends, illustration.CapColor(KeyRole.Modifier));
+        Assert.Equal(Aurora.Keys, illustration.LegendColor(KeyRole.Modifier));
+        Assert.Equal(Aurora.Accent, illustration.CapColor(KeyRole.Accent));
     }
 
     [Theory]
@@ -27,6 +63,6 @@ public class KitIllustrationTests
     [InlineData("#7c2d12", "#ffffff")]
     public void AccentLegend_IsBlackOrWhite_WhicheverReadsBetterOnTheAccent(string accent, string legend)
     {
-        Assert.Equal(legend, For("Kit Teste", accent).AccentLegend);
+        Assert.Equal(legend, For(KitKind.Base, accent).AccentLegend);
     }
 }

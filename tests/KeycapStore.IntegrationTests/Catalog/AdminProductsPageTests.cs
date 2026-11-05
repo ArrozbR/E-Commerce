@@ -214,9 +214,11 @@ public class AdminProductsPageTests(PostgresFixture postgres) : IClassFixture<Po
         var admin = await AdminClientAsync(factory, "admin-cores@example.com");
         var kit = await SaveProductAsync(factory, "Kit Cores Novas", stock: 5);
 
-        await PostAsync(admin, $"/admin/products/{kit}/palette", new() { ["Keys"] = "#E0F2FE", ["Legends"] = "#0c4a6e", ["Accent"] = "#0ea5e9" });
+        await PostAsync(admin, $"/admin/products/{kit}/palette", new() { ["Keys"] = "#E0F2FE", ["Legends"] = "#0c4a6e", ["Accent"] = "#0ea5e9", ["Kind"] = "Modifiers" });
 
-        Assert.Equal(new KitPalette("#e0f2fe", "#0c4a6e", "#0ea5e9"), (await ProductAsync(factory, "Kit Cores Novas"))!.Palette);
+        var saved = (await ProductAsync(factory, "Kit Cores Novas"))!;
+        Assert.Equal(new KitPalette("#e0f2fe", "#0c4a6e", "#0ea5e9"), saved.Palette);
+        Assert.Equal(KitKind.Modifiers, saved.KitKind);
         Assert.Contains("Cores do kit atualizadas.", await PageAsync(admin, "/admin/products"));
     }
 
@@ -247,7 +249,7 @@ public class AdminProductsPageTests(PostgresFixture postgres) : IClassFixture<Po
     }
 
     [Fact]
-    public async Task Catalog_DrawsEachKitWithItsPalette_AndTheInitialOfItsLine()
+    public async Task Catalog_DrawsEachKitWithItsPalette_AndTheKeysOfItsKind()
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
 
@@ -256,9 +258,11 @@ public class AdminProductsPageTests(PostgresFixture postgres) : IClassFixture<Po
         Assert.Contains("fill=\"#1e1b4b\"", html);
         Assert.Contains("fill=\"#22c55e\"", html);
         Assert.Contains("fill=\"#fef3c7\"", html);
-        Assert.Contains(">A</text>", html);
-        Assert.Contains(">M</text>", html);
-        Assert.Contains(">Z</text>", html);
+        Assert.Contains(">Q</text>", html);
+        Assert.Contains(">Backspace</text>", html);
+        Assert.Contains(">F12</text>", html);
+        Assert.Contains("<polygon points=\"12 2 15.09", html);
+        Assert.DoesNotContain("width=\"62,5\"", html);
     }
 
     [Fact]

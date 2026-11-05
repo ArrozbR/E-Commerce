@@ -7,7 +7,7 @@ public sealed record PreOrderSummary(DateTimeOffset EndsAt, DateTimeOffset Ships
     public bool MinimumReached => SoldUnits >= MinimumUnits;
 }
 
-public sealed record ProductSummary(Guid Id, string Name, decimal Price, int Stock, PreOrderSummary? PreOrder = null, KitPalette? Palette = null)
+public sealed record ProductSummary(Guid Id, string Name, decimal Price, int Stock, PreOrderSummary? PreOrder = null, KitPalette? Palette = null, KitKind KitKind = KitKind.Base)
 {
     public bool CanBeBought => Stock > 0 && (PreOrder is null || PreOrder.IsOpen);
 }

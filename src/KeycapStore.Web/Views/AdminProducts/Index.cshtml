@@ -91,7 +91,13 @@
                         var palette = product.Palette ?? KeycapStore.Domain.Catalog.KitPalette.Neutral;
                     }
                     <form asp-action="Palette" asp-route-id="@product.Id" method="post" class="mt-1 flex flex-wrap items-center gap-2">
-                        <span class="text-xs text-muted">@Localizer["Cores do kit:"]</span>
+                        <span class="text-xs text-muted">@Localizer["Visual do kit:"]</span>
+                        <select name="Kind" class="select input-sm w-auto" aria-label="@Localizer["Tipo do kit"]">
+                            @foreach (var kind in Enum.GetValues<KeycapStore.Domain.Catalog.KitKind>())
+                            {
+                                <option value="@kind" selected="@(kind == product.KitKind)">@Localizer[KitKindText.For(kind)]</option>
+                            }
+                        </select>
                         <label class="flex items-center gap-1 text-xs">@Localizer["Teclas"] <input name="Keys" type="color" value="@palette.Keys" class="h-7 w-9 cursor-pointer rounded border border-line bg-bg" /></label>
                         <label class="flex items-center gap-1 text-xs">@Localizer["Legendas"] <input name="Legends" type="color" value="@palette.Legends" class="h-7 w-9 cursor-pointer rounded border border-line bg-bg" /></label>
                         <label class="flex items-center gap-1 text-xs">@Localizer["Destaque"] <input name="Accent" type="color" value="@palette.Accent" class="h-7 w-9 cursor-pointer rounded border border-line bg-bg" /></label>

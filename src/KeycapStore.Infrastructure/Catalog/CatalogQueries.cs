@@ -27,6 +27,7 @@ public sealed class CatalogQueries(AppDbContext db, TimeProvider clock) : ICatal
             p.PreOrder is { } campaign
                 ? new PreOrderSummary(campaign.EndsAt, campaign.ShipsAt, campaign.MinimumUnits, sold.GetValueOrDefault(p.Id), campaign.IsOpenAt(now))
                 : null,
-            p.Palette))];
+            p.Palette,
+            p.KitKind))];
     }
 }

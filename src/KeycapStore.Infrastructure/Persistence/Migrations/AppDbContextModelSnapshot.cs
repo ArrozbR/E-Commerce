@@ -52,6 +52,11 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("KitKind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<int>("LengthCm")
                         .HasColumnType("integer");
 
@@ -115,6 +120,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e01"),
                             HeightCm = 6,
                             IsActive = true,
+                            KitKind = "Base",
                             LengthCm = 20,
                             Name = "Kit Aurora (base)",
                             PaletteAccent = "#22c55e",
@@ -130,6 +136,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e02"),
                             HeightCm = 4,
                             IsActive = true,
+                            KitKind = "Novelties",
                             LengthCm = 12,
                             Name = "Kit Aurora (novelties)",
                             PaletteAccent = "#22c55e",
@@ -145,6 +152,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e03"),
                             HeightCm = 6,
                             IsActive = true,
+                            KitKind = "Base",
                             LengthCm = 20,
                             Name = "Kit Maré (base)",
                             PaletteAccent = "#fbbf24",
@@ -160,6 +168,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e04"),
                             HeightCm = 4,
                             IsActive = true,
+                            KitKind = "Modifiers",
                             LengthCm = 12,
                             Name = "Kit Maré (modificadores)",
                             PaletteAccent = "#fbbf24",
@@ -175,6 +184,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e05"),
                             HeightCm = 6,
                             IsActive = true,
+                            KitKind = "Base",
                             LengthCm = 20,
                             Name = "Kit Zéfiro (base)",
                             PaletteAccent = "#ef4444",
@@ -190,6 +200,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                             Id = new Guid("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e06"),
                             HeightCm = 4,
                             IsActive = true,
+                            KitKind = "FunctionKeys",
                             LengthCm = 12,
                             Name = "Kit Zéfiro (teclas de função)",
                             PaletteAccent = "#ef4444",

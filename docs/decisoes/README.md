@@ -53,3 +53,4 @@ Cada arquivo registra **uma** decisão importante: contexto, decisão, alternati
 | [0043](0043-pre-venda-com-datas-editaveis.md) | Pré-venda: fim da campanha e envio previsto editáveis até o fechamento |
 | [0044](0044-correcoes-da-auditoria-de-seguranca.md) | Correções da auditoria de segurança: 1 pedido aberto por cliente, 10 por kit, limite de cotações, fechamento da pré-venda com tranca, sessões reconferidas |
 | [0045](0045-v3-visual-tailwind-minimalista.md) | V3: Tailwind CSS pelo npm, estilo minimalista técnico, claro e escuro, ilustrações SVG com a paleta escolhida pelo admin |
+| [0046](0046-ilustracao-por-tipo-de-kit.md) | Ilustração pelo tipo do kit (base, novelties, modificadores, funções), nas três cores de um conjunto de keycaps |
