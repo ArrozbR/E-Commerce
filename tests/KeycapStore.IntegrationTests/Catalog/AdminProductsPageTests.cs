@@ -247,17 +247,18 @@ public class AdminProductsPageTests(PostgresFixture postgres) : IClassFixture<Po
     }
 
     [Fact]
-    public async Task Catalog_DrawsEachKitWithItsPalette_WithDotDecimalsInPortuguese()
+    public async Task Catalog_DrawsEachKitWithItsPalette_AndTheInitialOfItsLine()
     {
         await using var factory = await postgres.CreateMigratedFactoryAsync();
 
         var html = await PageAsync(PageClient.Anonymous(factory), "/Catalog");
 
-        Assert.Contains("fill=\"#1e293b\"", html);
-        Assert.Contains("fill=\"#8b5cf6\"", html);
-        Assert.Contains("fill=\"#f5f0e6\"", html);
-        Assert.Contains("width=\"48.5\"", html);
-        Assert.DoesNotContain("width=\"48,5\"", html);
+        Assert.Contains("fill=\"#1e1b4b\"", html);
+        Assert.Contains("fill=\"#22c55e\"", html);
+        Assert.Contains("fill=\"#fef3c7\"", html);
+        Assert.Contains(">A</text>", html);
+        Assert.Contains(">M</text>", html);
+        Assert.Contains(">Z</text>", html);
     }
 
     [Fact]
