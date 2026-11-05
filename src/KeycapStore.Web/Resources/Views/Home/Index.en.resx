@@ -18,13 +18,52 @@
   <data name="Lotes limitados · pré-venda" xml:space="preserve">
     <value>Limited batches · pre-order</value>
   </data>
-  <data name="Kits de keycaps feitos em lotes pequenos." xml:space="preserve">
-    <value>Keycap kits made in small batches.</value>
+  <data name="Teclas que você" xml:space="preserve">
+    <value>Keys you can</value>
   </data>
-  <data name="Cada kit sai em quantidade limitada. Quando acaba, acabou; alguns lotes só são produzidos se a pré-venda atingir o mínimo." xml:space="preserve">
-    <value>Each kit comes in a limited quantity. When it is gone, it is gone; some batches are only made if the pre-order reaches the minimum.</value>
+  <data name="sente" xml:space="preserve">
+    <value>feel</value>
+  </data>
+  <data name="Kits de keycaps em lotes pequenos, com cores pensadas como um conjunto. Clique nas teclas, digite no seu teclado e escolha o seu." xml:space="preserve">
+    <value>Keycap kits in small batches, with colors designed as a set. Click the keys, type on your keyboard and pick yours.</value>
   </data>
   <data name="Ver o catálogo" xml:space="preserve">
     <value>See the catalog</value>
+  </data>
+  <data name="Como funciona a pré-venda" xml:space="preserve">
+    <value>How pre-orders work</value>
+  </data>
+  <data name="Escolha o seu conjunto" xml:space="preserve">
+    <value>Pick your set</value>
+  </data>
+  <data name="Ver todos os kits" xml:space="preserve">
+    <value>See all kits</value>
+  </data>
+  <data name="Como funciona" xml:space="preserve">
+    <value>How it works</value>
+  </data>
+  <data name="Escolha o kit" xml:space="preserve">
+    <value>Pick a kit</value>
+  </data>
+  <data name="Kits em estoque saem na hora. Kits em pré-venda têm uma data para fechar o lote e um mínimo de vagas para ele sair." xml:space="preserve">
+    <value>In-stock kits ship right away. Pre-order kits have a closing date for the batch and a minimum number of slots for it to go ahead.</value>
+  </data>
+  <data name="Pague com cartão ou Pix" xml:space="preserve">
+    <value>Pay by card or Pix</value>
+  </data>
+  <data name="Na pré-venda, você paga ao reservar. Se o lote não atingir o mínimo, a loja cancela o pedido e devolve o valor." xml:space="preserve">
+    <value>On pre-orders, you pay when you reserve. If the batch does not reach the minimum, the store cancels the order and refunds you.</value>
+  </data>
+  <data name="Receba em casa" xml:space="preserve">
+    <value>Get it at home</value>
+  </data>
+  <data name="Quando o kit está pronto, a loja separa e envia com código de rastreio. Você acompanha tudo em “Meus pedidos”." xml:space="preserve">
+    <value>When the kit is ready, the store packs it and ships it with a tracking code. You can follow everything in “My orders”.</value>
+  </data>
+  <data name="Os lotes são pequenos." xml:space="preserve">
+    <value>Batches are small.</value>
+  </data>
+  <data name="Quando um kit acaba, acabou. Veja o que ainda está disponível." xml:space="preserve">
+    <value>When a kit is gone, it is gone. See what is still available.</value>
   </data>
 </root>

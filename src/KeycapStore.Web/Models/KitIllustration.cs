@@ -33,10 +33,13 @@ public sealed record KeyShape(double X, double Y, double Width, double Height, K
     };
 }
 
-public sealed record KitIllustration(KitPalette Palette, KitKind Kind)
+public sealed record KitIllustration(KitPalette Palette, KitKind Kind, bool FullKeyboard = false)
 {
-    public const double ViewWidth = 324;
-    public const double ViewHeight = 174;
+    public static KitIllustration Showcase(KitPalette palette) => new(palette, KitKind.Base, FullKeyboard: true);
+
+    public double ViewWidth => FullKeyboard ? 476 : 324;
+
+    public double ViewHeight => FullKeyboard ? 176 : 174;
 
     private const double KeyboardUnit = 26;
     private const double KeyboardGap = 4;
@@ -47,13 +50,13 @@ public sealed record KitIllustration(KitPalette Palette, KitKind Kind)
     private const KeyRole M = KeyRole.Modifier;
     private const KeyRole X = KeyRole.Accent;
 
-    public double Unit => Kind == KitKind.Base ? KeyboardUnit : KitUnit;
+    public double Unit => FullKeyboard || Kind == KitKind.Base ? KeyboardUnit : KitUnit;
 
-    public double RowWidth => Kind == KitKind.Base ? 296 : 304;
+    public double RowWidth => FullKeyboard ? 446 : Kind == KitKind.Base ? 296 : 304;
 
     public double Left => (ViewWidth - RowWidth) / 2;
 
-    public IReadOnlyList<KeyShape> Keys => Kind switch
+    public IReadOnlyList<KeyShape> Keys => FullKeyboard ? Layout(Full, KeyboardUnit, KeyboardGap, top: 15) : Kind switch
     {
         KitKind.Novelties => Layout(Novelties, KitUnit, KitGap, top: 13),
         KitKind.Modifiers => Layout(Modifiers, KitUnit, KitGap, top: 13),
@@ -84,6 +87,15 @@ public sealed record KitIllustration(KitPalette Palette, KitKind Kind)
         [K("Caps", 1.75, M), K("A"), K("S"), K("D"), K("F"), K("G"), K("H"), K("Enter", null, X)],
         [K("Shift", 2.25, M), K("Z"), K("X"), K("C"), K("V"), K("B"), K("Shift", null, M)],
         [K("Ctrl", 1.5, M), K("Alt", 1.25, M), K("", null, M), K("Alt", 1.25, M), K("Fn", 1.5, M)],
+    ];
+
+    private static readonly KeySpec[][] Full =
+    [
+        [K("Esc", 1, X), K("1"), K("2"), K("3"), K("4"), K("5"), K("6"), K("7"), K("8"), K("9"), K("0"), K("-"), K("="), K("Backspace", null, M)],
+        [K("Tab", 1.5, M), K("Q"), K("W"), K("E"), K("R"), K("T"), K("Y"), K("U"), K("I"), K("O"), K("P"), K("["), K("]"), K("\\", null, M)],
+        [K("Caps", 1.75, M), K("A"), K("S"), K("D"), K("F"), K("G"), K("H"), K("J"), K("K"), K("L"), K(";"), K("'"), K("Enter", null, X)],
+        [K("Shift", 2.25, M), K("Z"), K("X"), K("C"), K("V"), K("B"), K("N"), K("M"), K(","), K("."), K("/"), K("Shift", null, M)],
+        [K("Ctrl", 1.25, M), K("Win", 1.25, M), K("Alt", 1.25, M), K("", null, M), K("Alt", 1.25, M), K("Win", 1.25, M), K("Menu", 1.25, M), K("Ctrl", 1.25, M)],
     ];
 
     private static readonly KeySpec[][] Novelties =

@@ -4,13 +4,22 @@
     const gsap = window.gsap;
     const animate = Boolean(gsap) && !reduced;
 
+    function fallbackStarted(items) {
+        if (!document.getAnimations) {
+            return performance.now() > 1000;
+        }
+
+        return [...items].some((item) => item.getAnimations().some((animation) =>
+            animation.animationName === "reveal-fallback" && (animation.currentTime ?? 0) > 1100));
+    }
+
     function revealItems() {
         if (!root.classList.contains("motion")) {
             return;
         }
 
         const items = document.querySelectorAll("[data-reveal]");
-        if (!animate || performance.now() > 1000) {
+        if (!animate || fallbackStarted(items)) {
             root.classList.remove("motion");
             return;
         }
@@ -107,18 +116,167 @@
             keysFor(event).forEach(releaseKey);
         });
 
-        if (animate) {
-            const tops = stage.querySelectorAll(".keycap-top");
-            gsap.to(tops, {
-                y: (index, top) => parseFloat(getComputedStyle(top.parentElement).getPropertyValue("--press")) || 2,
-                duration: 0.09,
-                yoyo: true,
-                repeat: 1,
-                ease: "power1.out",
-                delay: 0.5,
-                stagger: (index, top) => parseFloat(getComputedStyle(top.parentElement).getPropertyValue("--d")) * 0.6,
+        if (!reduced && !stage.hasAttribute("data-showcase")) {
+            stage.querySelectorAll(".keycap").forEach((key) => {
+                const delay = 500 + ((parseFloat(getComputedStyle(key).getPropertyValue("--d")) || 0) * 600);
+                setTimeout(() => {
+                    pressKey(key);
+                    releaseKey(key);
+                }, delay);
             });
         }
+    }
+
+    function readableOn(hex) {
+        const channel = (start) => {
+            const value = parseInt(hex.slice(start, start + 2), 16) / 255;
+            return value <= 0.03928 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+        };
+        const luminance = (0.2126 * channel(1)) + (0.7152 * channel(3)) + (0.0722 * channel(5));
+        const contrast = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+
+        return contrast(luminance, 0.0030) >= contrast(luminance, 1) ? "#0a0a0a" : "#ffffff";
+    }
+
+    function setupShowcase() {
+        const showcase = document.querySelector("[data-showcase]");
+        if (!showcase || reduced) {
+            return;
+        }
+
+        const screen = showcase.querySelector("[data-screen]");
+        const kits = [...showcase.querySelectorAll("[data-showcase-kit]")];
+        const words = (showcase.dataset.words || "").split("|").filter(Boolean);
+        let kitIndex = 0;
+        let inView = true;
+        let userUntil = 0;
+
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        const userTyping = () => performance.now() < userUntil;
+        const keyName = (char) => (char === " " ? "Space" : char.toUpperCase());
+
+        function tap(name) {
+            const key = showcase.querySelector(`.keycap[data-key="${CSS.escape(name)}"]`);
+            if (key) {
+                pressKey(key);
+                releaseKey(key);
+            }
+        }
+
+        function recolor(kit) {
+            const caps = { Alpha: kit.dataset.keys, Modifier: kit.dataset.legends, Accent: kit.dataset.accent };
+            const legends = { Alpha: kit.dataset.legends, Modifier: kit.dataset.keys, Accent: readableOn(kit.dataset.accent) };
+
+            showcase.querySelectorAll(".keycap").forEach((key) => {
+                const role = key.dataset.role;
+                const parts = [[key.querySelectorAll(".keycap-cap"), caps[role]], [key.querySelectorAll(".keycap-legend"), legends[role]]];
+                parts.forEach(([elements, color]) => {
+                    if (animate) {
+                        gsap.to(elements, { fill: color, duration: 0.7, ease: "power2.out" });
+                    } else {
+                        elements.forEach((element) => element.style.setProperty("fill", color));
+                    }
+                });
+            });
+        }
+
+        function nextKit() {
+            if (kits.length < 2) {
+                return;
+            }
+
+            kitIndex = (kitIndex + 1) % kits.length;
+            kits.forEach((kit, index) => {
+                kit.hidden = index !== kitIndex;
+            });
+            recolor(kits[kitIndex]);
+        }
+
+        async function typeWord(word) {
+            for (const char of word) {
+                if (userTyping()) {
+                    return false;
+                }
+
+                tap(keyName(char));
+                screen.textContent += char;
+                await sleep(110 + (Math.random() * 110));
+            }
+
+            await sleep(1500);
+            while (screen.textContent.length > 0) {
+                if (userTyping()) {
+                    return false;
+                }
+
+                tap("Backspace");
+                screen.textContent = screen.textContent.slice(0, -1);
+                await sleep(55);
+            }
+
+            return true;
+        }
+
+        async function loop() {
+            let index = 0;
+            await sleep(900);
+            screen.textContent = "";
+            for (;;) {
+                while (userTyping() || !inView || document.hidden) {
+                    await sleep(300);
+                }
+
+                if (userUntil !== 0) {
+                    userUntil = 0;
+                    screen.textContent = "";
+                }
+
+                if (await typeWord(words[index % words.length])) {
+                    index++;
+                    nextKit();
+                    await sleep(600);
+                }
+            }
+        }
+
+        new IntersectionObserver(([entry]) => {
+            inView = entry.isIntersecting;
+        }).observe(showcase);
+
+        document.addEventListener("keydown", (event) => {
+            if (!inView || event.ctrlKey || event.metaKey || event.altKey || (event.target instanceof Element && event.target.closest("input, textarea, select, [contenteditable]"))) {
+                return;
+            }
+
+            if (event.key.length === 1 || event.key === "Backspace") {
+                if (!userTyping()) {
+                    screen.textContent = "";
+                }
+
+                userUntil = performance.now() + 3500;
+                screen.textContent = event.key === "Backspace" ? screen.textContent.slice(0, -1) : (screen.textContent + event.key).slice(-20);
+            }
+        });
+
+        if (words.length > 0) {
+            loop();
+        }
+    }
+
+    function setupSteps() {
+        const steps = document.querySelector("[data-steps]");
+        const line = steps?.querySelector("[data-steps-line]");
+        if (!line || !animate || !window.ScrollTrigger) {
+            return;
+        }
+
+        gsap.registerPlugin(window.ScrollTrigger);
+        gsap.fromTo(line, { scaleX: 0 }, {
+            scaleX: 1,
+            duration: 1.4,
+            ease: "power2.inOut",
+            scrollTrigger: { trigger: steps, start: "top 80%", once: true },
+        });
     }
 
     const region = document.getElementById("toast-region");
@@ -272,6 +430,8 @@
         setupSpotlight();
         setupKeycaps();
         setupTyping();
+        setupShowcase();
+        setupSteps();
         document.addEventListener("keydown", (event) => {
             if (event.key === "Escape" && activeToast) {
                 closeToast(activeToast);

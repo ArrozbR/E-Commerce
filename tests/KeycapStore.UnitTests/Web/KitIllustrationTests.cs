@@ -17,7 +17,23 @@ public class KitIllustrationTests
     [InlineData(KitKind.FunctionKeys)]
     public void EveryRow_EndsAtTheSameRightEdge_WithoutOverlappingKeys(KitKind kind)
     {
-        var illustration = For(kind);
+        AssertRowsFit(For(kind));
+    }
+
+    [Fact]
+    public void Showcase_IsAFullKeyboard_WithEveryLetterAndDigit_ThatFitsItsView()
+    {
+        var showcase = KitIllustration.Showcase(Aurora);
+
+        AssertRowsFit(showcase);
+        var names = showcase.Keys.Select(k => k.KeyName).ToHashSet();
+        Assert.All("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", c => Assert.Contains(c.ToString(), names));
+        Assert.Contains("Space", names);
+        Assert.Contains("Backspace", names);
+    }
+
+    private static void AssertRowsFit(KitIllustration illustration)
+    {
         var right = illustration.Left + illustration.RowWidth;
 
         foreach (var row in illustration.Keys.GroupBy(k => k.Y))
@@ -31,7 +47,8 @@ public class KitIllustrationTests
             }
         }
 
-        Assert.All(illustration.Keys, k => Assert.True(k.Y + k.Height <= KitIllustration.ViewHeight));
+        Assert.All(illustration.Keys, k => Assert.True(k.Y + k.Height <= illustration.ViewHeight));
+        Assert.True(illustration.Left + illustration.RowWidth <= illustration.ViewWidth);
     }
 
     [Fact]

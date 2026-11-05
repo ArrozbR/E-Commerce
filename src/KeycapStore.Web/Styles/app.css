@@ -428,6 +428,33 @@
     translate: 0 var(--press, 2px);
   }
 
+  .keycap-glow,
+  .keycap-outline {
+    fill: none;
+    stroke: var(--brand);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 360ms ease-out;
+  }
+
+  .keycap-glow {
+    stroke-width: 6;
+  }
+
+  .keycap-outline {
+    stroke-width: 1.4;
+  }
+
+  .stage .keycap.is-pressed .keycap-glow {
+    opacity: 0.28;
+    transition-duration: 40ms;
+  }
+
+  .stage .keycap.is-pressed .keycap-outline {
+    opacity: 1;
+    transition-duration: 40ms;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     .card-interactive:hover .keycap-top {
       animation: keycap-tap 260ms ease-out calc(var(--d, 0) * 380ms);
@@ -441,6 +468,44 @@
   .swatch {
     @apply inline-block size-6 shrink-0 rounded-md border border-line;
     box-shadow: 0 2px 0 0 var(--edge);
+  }
+
+  .glow-text {
+    text-shadow: 0 0 28px var(--glow);
+  }
+
+  .screen {
+    @apply flex min-h-11 items-center gap-2 rounded-lg border border-line bg-bg/80 px-4 py-2 font-mono text-base text-fg;
+  }
+
+  .caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1.1em;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    background: var(--brand);
+    box-shadow: 0 0 10px var(--glow);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .caret {
+      animation: caret-blink 1s steps(1) infinite;
+    }
+  }
+
+  .step-key {
+    @apply relative z-20 inline-grid size-10 place-items-center rounded-lg bg-brand font-display text-lg font-bold text-on-brand;
+    box-shadow: 0 3px 0 0 var(--brand-edge), 0 0 20px -4px var(--glow);
+  }
+
+  .steps-line {
+    @apply absolute z-10 hidden h-0.5 origin-left md:block;
+    top: 2.5rem;
+    left: 2.5rem;
+    right: calc((100% - 2.5rem) / 3 - 2.5rem);
+    background: linear-gradient(90deg, var(--brand), color-mix(in srgb, var(--brand) 35%, transparent));
+    box-shadow: 0 0 12px var(--glow);
   }
 
   .fly-cap {
@@ -458,6 +523,12 @@
 @keyframes keycap-tap {
   45% {
     translate: 0 var(--press, 2px);
+  }
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
   }
 }
 

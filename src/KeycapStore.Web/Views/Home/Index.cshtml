@@ -1,10 +1,100 @@
-﻿@{
+﻿@model HomeViewModel
+@{
     ViewData["Title"] = Localizer["Início"].Value;
+    var firstWord = HomeViewModel.Words.Split('|')[0];
 }
 
-<section class="py-12 md:py-20">
-    <p class="mb-3 text-sm font-medium tracking-widest text-brand uppercase">@Localizer["Lotes limitados · pré-venda"]</p>
-    <h1 class="max-w-3xl text-4xl md:text-5xl">@Localizer["Kits de keycaps feitos em lotes pequenos."]</h1>
-    <p class="max-w-2xl text-lg text-muted">@Localizer["Cada kit sai em quantidade limitada. Quando acaba, acabou; alguns lotes só são produzidos se a pré-venda atingir o mínimo."]</p>
-    <a asp-controller="Catalog" asp-action="Index" class="btn btn-primary mt-4">@Localizer["Ver o catálogo"]</a>
+<section class="grid items-center gap-10 pt-4 pb-12 md:pt-10 md:pb-20 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+    <div data-reveal>
+        <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-brand/40 px-3 py-1 text-xs font-medium tracking-widest text-brand uppercase">
+            <span class="size-1.5 rounded-full bg-brand"></span>
+            @Localizer["Lotes limitados · pré-venda"]
+        </p>
+        <h1 class="mb-5 text-5xl leading-[1.05] sm:text-6xl">@Localizer["Teclas que você"] <span class="glow-text text-brand">@Localizer["sente"]</span>.</h1>
+        <p class="mb-8 max-w-xl text-lg text-muted">@Localizer["Kits de keycaps em lotes pequenos, com cores pensadas como um conjunto. Clique nas teclas, digite no seu teclado e escolha o seu."]</p>
+        <div class="flex flex-wrap gap-3">
+            <a asp-controller="Catalog" asp-action="Index" class="btn btn-primary px-6 py-3 text-base">@Localizer["Ver o catálogo"]</a>
+            <a href="#como-funciona" class="btn btn-secondary px-6 py-3 text-base">@Localizer["Como funciona a pré-venda"]</a>
+        </div>
+    </div>
+
+    <div class="card stage p-4 sm:p-6" data-showcase data-typeable data-words="@HomeViewModel.Words" data-reveal>
+        <div class="screen mb-4" aria-hidden="true">
+            <span class="text-brand">&gt;</span>
+            <span><span data-screen>@firstWord</span><span class="caret"></span></span>
+        </div>
+        <partial name="_KitIllustration" model="KitIllustration.Showcase(Model.FirstPalette)" />
+        @if (Model.Showcase.Count > 0)
+        {
+            <ul class="mt-4 mb-0 text-sm">
+                @for (var i = 0; i < Model.Showcase.Count; i++)
+                {
+                    var kit = Model.Showcase[i];
+                    var palette = kit.Palette!;
+                    <li data-showcase-kit data-keys="@palette.Keys" data-legends="@palette.Legends" data-accent="@palette.Accent" hidden="@(i > 0)">
+                        <a class="group flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-fg hover:no-underline" href="@Url.Action("Details", "Catalog", new { id = kit.Id, slug = Slug.From(kit.Name) })">
+                            <span class="flex gap-1" aria-hidden="true">
+                                <span class="swatch size-4" style="background-color: @palette.Keys"></span>
+                                <span class="swatch size-4" style="background-color: @palette.Legends"></span>
+                                <span class="swatch size-4" style="background-color: @palette.Accent"></span>
+                            </span>
+                            <span class="font-medium group-hover:text-brand">@kit.Name</span>
+                            <span class="text-muted">@Display.Price(kit.Price)</span>
+                            <svg class="size-4 transition-transform duration-200 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>
+
+@if (Model.Featured.Count > 0)
+{
+    <section class="py-12" aria-labelledby="featured-title">
+        <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+            <h2 id="featured-title" class="m-0 text-3xl" data-reveal>@Localizer["Escolha o seu conjunto"]</h2>
+            <a asp-controller="Catalog" asp-action="Index" class="font-medium">@Localizer["Ver todos os kits"] &rarr;</a>
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach (var kit in Model.Featured)
+            {
+                <partial name="_KitCard" model="new KitCard(kit, 3)" />
+            }
+        </div>
+    </section>
+}
+
+<section id="como-funciona" class="scroll-mt-24 py-12" aria-labelledby="how-title">
+    <h2 id="how-title" class="mb-8 text-3xl" data-reveal>@Localizer["Como funciona"]</h2>
+    <div class="relative" data-steps>
+        <div class="steps-line" data-steps-line aria-hidden="true"></div>
+        <ol class="relative m-0 grid list-none gap-5 p-0 md:grid-cols-3">
+            <li class="card" data-reveal>
+                <span class="step-key" aria-hidden="true">1</span>
+                <h3 class="mt-4">@Localizer["Escolha o kit"]</h3>
+                <p class="mb-0 text-muted">@Localizer["Kits em estoque saem na hora. Kits em pré-venda têm uma data para fechar o lote e um mínimo de vagas para ele sair."]</p>
+            </li>
+            <li class="card" data-reveal>
+                <span class="step-key" aria-hidden="true">2</span>
+                <h3 class="mt-4">@Localizer["Pague com cartão ou Pix"]</h3>
+                <p class="mb-0 text-muted">@Localizer["Na pré-venda, você paga ao reservar. Se o lote não atingir o mínimo, a loja cancela o pedido e devolve o valor."]</p>
+            </li>
+            <li class="card" data-reveal>
+                <span class="step-key" aria-hidden="true">3</span>
+                <h3 class="mt-4">@Localizer["Receba em casa"]</h3>
+                <p class="mb-0 text-muted">@Localizer["Quando o kit está pronto, a loja separa e envia com código de rastreio. Você acompanha tudo em “Meus pedidos”."]</p>
+            </li>
+        </ol>
+    </div>
+</section>
+
+<section class="py-12">
+    <div class="card stage flex flex-col items-start gap-5 p-8 sm:flex-row sm:items-center sm:justify-between" data-reveal>
+        <div>
+            <h2 class="mt-0 mb-2 text-2xl">@Localizer["Os lotes são pequenos."]</h2>
+            <p class="mb-0 text-muted">@Localizer["Quando um kit acaba, acabou. Veja o que ainda está disponível."]</p>
+        </div>
+        <a asp-controller="Catalog" asp-action="Index" class="btn btn-primary shrink-0 px-6 py-3 text-base">@Localizer["Ver o catálogo"]</a>
+    </div>
 </section>
