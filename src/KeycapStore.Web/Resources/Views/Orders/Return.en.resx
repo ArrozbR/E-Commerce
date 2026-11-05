@@ -36,4 +36,7 @@
   <data name="Ainda não recebemos a confirmação. Ela pode demorar alguns minutos; acompanhe pela página do pedido." xml:space="preserve">
     <value>We have not received the confirmation yet. It may take a few minutes; follow it on the order page.</value>
   </data>
+  <data name="Continuar comprando" xml:space="preserve">
+    <value>Keep shopping</value>
+  </data>
 </root>

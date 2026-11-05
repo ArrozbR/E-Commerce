@@ -62,7 +62,7 @@ public sealed class OrdersController(
             return NotFound();
         }
 
-        return Json(new { status = order.Status.ToString(), text = text[OrderStatusText.For(order.Status)].Value });
+        return Json(new { status = order.Status.ToString(), text = text[OrderStatusText.For(order.Status)].Value, tone = OrderStatusText.Tone(order.Status) });
     }
 
     [HttpPost("orders/{id:guid}/cancel")]

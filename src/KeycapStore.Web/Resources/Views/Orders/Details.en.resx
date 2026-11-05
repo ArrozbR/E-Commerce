@@ -21,24 +21,6 @@
   <data name="Número: {0}" xml:space="preserve">
     <value>Number: {0}</value>
   </data>
-  <data name="Feito em {0}" xml:space="preserve">
-    <value>Placed on {0}</value>
-  </data>
-  <data name="Situação:" xml:space="preserve">
-    <value>Status:</value>
-  </data>
-  <data name="Produto" xml:space="preserve">
-    <value>Product</value>
-  </data>
-  <data name="Preço" xml:space="preserve">
-    <value>Price</value>
-  </data>
-  <data name="Quantidade" xml:space="preserve">
-    <value>Quantity</value>
-  </data>
-  <data name="Subtotal" xml:space="preserve">
-    <value>Subtotal</value>
-  </data>
   <data name="Frete" xml:space="preserve">
     <value>Shipping</value>
   </data>
@@ -101,5 +83,68 @@
   </data>
   <data name="Cancelar o pagamento deste pedido? Os itens voltam para a loja." xml:space="preserve">
     <value>Cancel the payment for this order? The items go back to the store.</value>
+  </data>
+  <data name="Pedido {0}" xml:space="preserve">
+    <value>Order {0}</value>
+  </data>
+  <data name="Andamento do pedido" xml:space="preserve">
+    <value>Order progress</value>
+  </data>
+  <data name="Pagamento" xml:space="preserve">
+    <value>Payment</value>
+  </data>
+  <data name="Pago" xml:space="preserve">
+    <value>Paid</value>
+  </data>
+  <data name="Em separação" xml:space="preserve">
+    <value>Picking</value>
+  </data>
+  <data name="Enviado" xml:space="preserve">
+    <value>Shipped</value>
+  </data>
+  <data name="Entregue" xml:space="preserve">
+    <value>Delivered</value>
+  </data>
+  <data name="Itens" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="{0} cada" xml:space="preserve">
+    <value>{0} each</value>
+  </data>
+  <data name="Resumo" xml:space="preserve">
+    <value>Summary</value>
+  </data>
+  <data name="Código de rastreio" xml:space="preserve">
+    <value>Tracking code</value>
+  </data>
+  <data name="O que você pode fazer" xml:space="preserve">
+    <value>What you can do</value>
+  </data>
+  <data name="Pré-venda" xml:space="preserve">
+    <value>Pre-order</value>
+  </data>
+  <data name="O tempo para pagar acabou e os itens voltaram para a loja. Nada foi cobrado." xml:space="preserve">
+    <value>The time to pay ran out and the items went back to the store. Nothing was charged.</value>
+  </data>
+  <data name="O pagamento não foi aprovado e os itens voltaram para a loja." xml:space="preserve">
+    <value>The payment was not approved and the items went back to the store.</value>
+  </data>
+  <data name="O pagamento chegou depois que a reserva acabou e o kit já tinha sido vendido. O valor é devolvido automaticamente." xml:space="preserve">
+    <value>The payment arrived after the reservation ended and the kit had already been sold. The amount is refunded automatically.</value>
+  </data>
+  <data name="O valor pago foi devolvido." xml:space="preserve">
+    <value>The amount paid was refunded.</value>
+  </data>
+  <data name="Pedido cancelado. O reembolso é feito automaticamente." xml:space="preserve">
+    <value>Order cancelled. The refund is made automatically.</value>
+  </data>
+  <data name="Desistência registrada. O reembolso é feito automaticamente; depois, devolva o produto à loja." xml:space="preserve">
+    <value>Withdrawal registered. The refund is made automatically; then return the product to the store.</value>
+  </data>
+  <data name="O valor já foi devolvido. Agora falta devolver o produto à loja." xml:space="preserve">
+    <value>The amount has already been refunded. Now the product needs to go back to the store.</value>
+  </data>
+  <data name="A loja recebeu o produto de volta. Pedido encerrado." xml:space="preserve">
+    <value>The store received the product back. Order closed.</value>
   </data>
 </root>
