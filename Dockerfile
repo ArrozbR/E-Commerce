@@ -1,4 +1,4 @@
-FROM node:24-alpine AS css
+FROM node:26-alpine AS css
 WORKDIR /web
 
 COPY src/KeycapStore.Web/package.json src/KeycapStore.Web/package-lock.json ./
