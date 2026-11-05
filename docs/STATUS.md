@@ -165,8 +165,8 @@
 
 ## Próximos passos
 
-1. **E-mails transacionais:** conferir na documentação oficial os planos gratuitos dos candidatos, escolher com o autor e escrever o ADR (o que enviar, de onde, e o que acontece se o serviço cair) antes de qualquer código.
-2. **Juntar o PR do `feat/v3-pedido-e-agradecimento`** (se ainda não foi), conferir em produção e fazer "Meus pedidos" no estilo novo.
+1. **Fechar a V3:** revisar com o autor o que ainda falta (ex.: "Meus pedidos" no estilo novo, páginas de erro amigáveis, fonte do formulário da Stripe, neon na home) e juntar o PR do `feat/v3-pedido-e-agradecimento`, se ainda não foi.
+2. **Planejar a V4:** escolher as metas com o autor (candidata principal: e-mails transacionais, com os planos gratuitos e a questão do domínio próprio conferidos na documentação oficial antes) e escrever o ADR.
 3. **Próximo teste de restauração até 05/12/2026** (runbook `docs/runbooks/backup.md`); limpeza em produção pendente (Kit Aurora inativo? pedido de teste `33f8f489`).
 
 ## Bloqueios
