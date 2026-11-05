@@ -8,7 +8,7 @@
 <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
     @foreach (var product in Model)
     {
-        <article class="card flex flex-col">
+        <article class="card card-interactive flex flex-col" data-reveal>
             <div class="mb-4">
                 <partial name="_KitIllustration" model="new KitIllustration(product.Palette ?? KeycapStore.Domain.Catalog.KitPalette.Neutral, product.KitKind)" />
             </div>
@@ -60,6 +60,7 @@
             {
                 <form asp-controller="Cart" asp-action="Add" method="post" class="mt-5">
                     <input type="hidden" name="productId" value="@product.Id" />
+                    <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
                     <button type="submit" class="btn btn-primary w-full">@(product.PreOrder is null ? Localizer["Adicionar ao carrinho"] : Localizer["Reservar na pré-venda"])</button>
                 </form>
             }

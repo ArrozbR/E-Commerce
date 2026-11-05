@@ -15,6 +15,8 @@ namespace KeycapStore.Web.Controllers;
 [DomainExceptionFilter]
 public sealed class CartController(ICartService carts, IStringLocalizer<SharedResource> text) : Controller
 {
+    public const string CartAddedKey = "CartAdded";
+
     private string CustomerId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     [HttpGet]
@@ -26,7 +28,7 @@ public sealed class CartController(ICartService carts, IStringLocalizer<SharedRe
     }
 
     [HttpPost]
-    public async Task<IActionResult> Add(Guid productId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Add(Guid productId, string? returnUrl, CancellationToken cancellationToken)
     {
         try
         {
@@ -35,19 +37,27 @@ public sealed class CartController(ICartService carts, IStringLocalizer<SharedRe
         catch (PreOrderMustBeAloneException)
         {
             TempData["Error"] = text["Kits de pré-venda são comprados sozinhos. Finalize ou esvazie o carrinho antes de adicionar este."].Value;
+            return RedirectToAction(nameof(Index));
         }
         catch (CartItemLimitException)
         {
             TempData["Error"] = LimitMessage();
+            return RedirectToAction(nameof(Index));
         }
         catch (CartStockLimitException ex)
         {
             TempData["Error"] = StockMessage(ex.Available);
+            return RedirectToAction(nameof(Index));
         }
 
-        return RedirectToAction(nameof(Index));
-    }
+        if (!Url.IsLocalUrl(returnUrl))
+        {
+            return RedirectToAction(nameof(Index));
+        }
 
+        TempData[CartAddedKey] = true;
+        return LocalRedirect(returnUrl);
+    }
 
     [HttpPost]
     public async Task<IActionResult> ChangeQuantity(Guid productId, int quantity, CancellationToken cancellationToken)

@@ -5,5 +5,7 @@
 .git/
 
 .env
-**/*.user**/node_modules/
+**/*.user
+**/node_modules/
 src/KeycapStore.Web/wwwroot/css/app.css
+src/KeycapStore.Web/wwwroot/lib/gsap/

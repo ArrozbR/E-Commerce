@@ -49,12 +49,17 @@
   --line: #e4e4e7;
   --brand: #c2410c;
   --brand-hover: #9a3412;
+  --brand-edge: #7c2d12;
   --on-brand: #ffffff;
   --danger: #b91c1c;
+  --danger-edge: #7f1d1d;
   --on-danger: #ffffff;
   --success: #15803d;
   --warning: #a16207;
   --info: #1d4ed8;
+  --edge: #d4d4d8;
+  --glow: color-mix(in srgb, var(--brand) 40%, transparent);
+  --halo: color-mix(in srgb, var(--brand) 12%, transparent);
 }
 
 .dark {
@@ -65,12 +70,17 @@
   --line: #27272a;
   --brand: #f97316;
   --brand-hover: #fb923c;
+  --brand-edge: #c2410c;
   --on-brand: #0a0a0a;
   --danger: #f87171;
+  --danger-edge: #b91c1c;
   --on-danger: #0a0a0a;
   --success: #4ade80;
   --warning: #facc15;
   --info: #60a5fa;
+  --edge: #3f3f46;
+  --glow: color-mix(in srgb, var(--brand) 55%, transparent);
+  --halo: color-mix(in srgb, var(--brand) 18%, transparent);
 }
 
 @theme inline {
@@ -109,6 +119,8 @@
 
   body {
     @apply bg-bg font-sans text-fg antialiased;
+    background-image: radial-gradient(ellipse 70% 32rem at 50% -8rem, var(--halo), transparent 70%);
+    background-repeat: no-repeat;
   }
 
   h1 {
@@ -162,30 +174,55 @@
 
 @layer components {
   .btn {
-    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-transparent px-4 py-2 text-sm font-medium no-underline transition-colors duration-200 hover:no-underline disabled:cursor-not-allowed disabled:opacity-50;
+    --press: 3px;
+    --edge-color: transparent;
+    --btn-glow: 0 0 0 0 transparent;
+    @apply relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-transparent px-4 py-2 text-sm font-medium no-underline select-none hover:no-underline disabled:cursor-not-allowed disabled:opacity-50;
+    box-shadow: 0 var(--press) 0 0 var(--edge-color), var(--btn-glow);
+    transition: translate 80ms ease-out, box-shadow 160ms ease-out, background-color 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out;
+  }
+
+  .btn:hover:not(:disabled),
+  .btn:focus-visible {
+    --btn-glow: 0 0 22px -4px var(--glow);
+  }
+
+  .btn:active:not(:disabled) {
+    translate: 0 var(--press);
+    box-shadow: 0 0 0 0 var(--edge-color), var(--btn-glow);
   }
 
   .btn-primary {
+    --edge-color: var(--brand-edge);
     @apply bg-brand text-on-brand hover:bg-brand-hover;
   }
 
   .btn-secondary {
-    @apply border-line bg-bg text-fg hover:bg-surface;
+    --edge-color: var(--edge);
+    @apply border-line bg-bg text-fg hover:border-brand/50 hover:bg-surface;
   }
 
   .btn-danger {
+    --edge-color: var(--danger-edge);
     @apply bg-danger text-on-danger hover:opacity-90;
   }
 
   .btn-danger-outline {
+    --edge-color: color-mix(in srgb, var(--danger) 45%, transparent);
     @apply border-danger bg-transparent text-danger hover:bg-surface;
   }
 
   .btn-link {
+    --press: 0px;
     @apply bg-transparent px-0 text-brand hover:underline;
   }
 
+  .btn-link:hover:not(:disabled) {
+    --btn-glow: 0 0 0 0 transparent;
+  }
+
   .btn-sm {
+    --press: 2px;
     @apply px-3 py-1.5 text-xs;
   }
 
@@ -272,6 +309,110 @@
   }
 
   .card {
-    @apply rounded-lg border border-line bg-bg p-5;
+    @apply rounded-xl border border-line bg-bg p-5;
+    box-shadow: 0 4px 0 0 var(--edge);
+  }
+
+  .card-interactive {
+    @apply relative isolate;
+    transition: translate 220ms ease-out, box-shadow 220ms ease-out, border-color 220ms ease-out;
+  }
+
+  .card-interactive::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(18rem circle at var(--spot-x, 50%) var(--spot-y, 0%), var(--halo), transparent 70%);
+    opacity: 0;
+    transition: opacity 250ms ease-out;
+    pointer-events: none;
+  }
+
+  .card-interactive:hover,
+  .card-interactive:focus-within {
+    translate: 0 -3px;
+    border-color: color-mix(in srgb, var(--brand) 45%, var(--line));
+    box-shadow: 0 7px 0 0 var(--edge), 0 22px 44px -22px var(--glow);
+  }
+
+  .card-interactive:hover::before,
+  .card-interactive:focus-within::before {
+    opacity: 1;
+  }
+
+  .logo-cap {
+    @apply inline-grid size-7 place-items-center rounded-md bg-brand font-display text-sm font-bold text-on-brand;
+    box-shadow: 0 2px 0 0 var(--brand-edge), 0 0 18px -4px var(--glow);
+    transition: translate 80ms ease-out, box-shadow 160ms ease-out;
+  }
+
+  .logo:hover .logo-cap {
+    box-shadow: 0 2px 0 0 var(--brand-edge), 0 0 26px -2px var(--glow);
+  }
+
+  .logo:active .logo-cap {
+    translate: 0 2px;
+    box-shadow: 0 0 0 0 var(--brand-edge), 0 0 26px -2px var(--glow);
+  }
+
+  .bg-dots {
+    background-image: radial-gradient(var(--line) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(ellipse 60% 70% at 50% 0%, #000 20%, transparent 75%);
+  }
+
+  .cart-count {
+    @apply inline-grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1.5 text-xs leading-none font-bold text-on-brand;
+    box-shadow: 0 0 14px -2px var(--glow);
+  }
+
+  .toast {
+    @apply fixed inset-x-4 bottom-4 z-50 flex items-center gap-3 rounded-xl border border-brand/40 bg-bg/90 px-4 py-3 text-sm backdrop-blur-md sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-sm;
+    box-shadow: 0 4px 0 0 var(--edge), 0 18px 40px -16px var(--glow);
+    animation: toast-fallback-hide 300ms ease-in 6s forwards;
+  }
+
+  .toast-icon {
+    @apply grid size-7 shrink-0 place-items-center rounded-full bg-brand text-on-brand;
+  }
+
+  .toast-close {
+    @apply ml-auto grid size-8 shrink-0 cursor-pointer place-items-center rounded-md text-muted hover:bg-surface hover:text-fg;
+  }
+
+  .motion [data-reveal] {
+    opacity: 0;
+    animation: reveal-fallback 400ms ease-out 1.2s forwards;
+  }
+
+  .motion-ready [data-reveal] {
+    animation: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .card-interactive:hover .keycap {
+      animation: keycap-tap 260ms ease-out calc(var(--d, 0) * 380ms) both;
+    }
+  }
+}
+
+@keyframes keycap-tap {
+  45% {
+    translate: 0 2.5px;
+  }
+}
+
+@keyframes reveal-fallback {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes toast-fallback-hide {
+  to {
+    opacity: 0;
+    visibility: hidden;
   }
 }

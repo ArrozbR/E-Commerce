@@ -247,4 +247,19 @@ public class CartServiceTests(PostgresFixture postgres) : IClassFixture<Postgres
 
         await Assert.ThrowsAsync<ProductNotFoundException>(() => carts.AddItemAsync("customer-ended", preOrder, 1));
     }
+
+    [Fact]
+    public async Task CountItems_SumsTheUnitsOfEveryKit_AndIsZeroWithoutACart()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        await using var scope = factory.Services.CreateAsyncScope();
+        var carts = scope.ServiceProvider.GetRequiredService<ICartService>();
+        Assert.Equal(0, await carts.CountItemsAsync("customer-count"));
+
+        await carts.AddItemAsync("customer-count", KitAurora, 2);
+        await carts.AddItemAsync("customer-count", Guid.Parse("6f1c2a7e-3b4d-4c8a-9e21-0a1b2c3d4e03"), 1);
+        await carts.AddItemAsync("another-customer", KitAurora, 4);
+
+        Assert.Equal(3, await carts.CountItemsAsync("customer-count"));
+    }
 }
