@@ -25,6 +25,10 @@
     function apply(mode) {
         root.classList.toggle("dark", mode === "dark" || (mode === "system" && systemDark.matches));
 
+        document.querySelectorAll("[data-theme-choice]").forEach((choice) => {
+            choice.setAttribute("aria-pressed", String(choice.dataset.themeChoice === mode));
+        });
+
         const button = document.getElementById("theme-toggle");
         if (!button) {
             return;
@@ -38,6 +42,13 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         apply(stored());
+
+        document.querySelectorAll("[data-theme-choice]").forEach((choice) => {
+            choice.addEventListener("click", function () {
+                remember(choice.dataset.themeChoice);
+                apply(choice.dataset.themeChoice);
+            });
+        });
 
         const button = document.getElementById("theme-toggle");
         if (button) {

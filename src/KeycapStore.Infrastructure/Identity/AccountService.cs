@@ -122,5 +122,36 @@ internal sealed class AccountService(UserManager<IdentityUser> userManager, Sign
             await userManager.IsInRoleAsync(user, Roles.Admin));
     }
 
+    public async Task<ChangePasswordResult> ChangePasswordAsync(string customerId, string currentPassword, string newPassword, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByIdAsync(customerId)
+            ?? throw new InvalidOperationException("Conta não encontrada.");
+
+        if (!await userManager.HasPasswordAsync(user))
+        {
+            return ChangePasswordResult.Of(ChangePasswordStatus.NoPassword);
+        }
+
+        var check = await signInManager.CheckPasswordSignInAsync(user, currentPassword, lockoutOnFailure: true);
+        if (check.IsLockedOut)
+        {
+            return ChangePasswordResult.Of(ChangePasswordStatus.LockedOut);
+        }
+
+        if (!check.Succeeded)
+        {
+            return ChangePasswordResult.Of(ChangePasswordStatus.WrongPassword);
+        }
+
+        var changed = await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        if (!changed.Succeeded)
+        {
+            return new ChangePasswordResult(ChangePasswordStatus.Rejected, [.. changed.Errors.Select(e => e.Description)]);
+        }
+
+        await signInManager.RefreshSignInAsync(user);
+        return ChangePasswordResult.Of(ChangePasswordStatus.Changed);
+    }
+
     public Task SignOutAsync(CancellationToken cancellationToken = default) => signInManager.SignOutAsync();
 }
