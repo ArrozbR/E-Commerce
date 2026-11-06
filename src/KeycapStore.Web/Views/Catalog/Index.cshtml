@@ -1,13 +1,102 @@
-@model IReadOnlyList<KeycapStore.Application.Catalog.ProductSummary>
+@using KeycapStore.Domain.Catalog
+@model CatalogPageViewModel
 @{
     ViewData["Title"] = Localizer["Catálogo"].Value;
+    var filter = Model.Filter;
+    var sort = filter.Sort is CatalogFilter.LowestPrice or CatalogFilter.HighestPrice ? filter.Sort : CatalogFilter.ByName;
 }
 
-<h1>@Localizer["Catálogo"]</h1>
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <h1 class="m-0">@Localizer["Catálogo"]</h1>
+</div>
 
-<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-    @foreach (var product in Model)
+<form method="get" asp-action="Index" class="card mb-8 flex flex-col gap-5" role="search" aria-label="@Localizer["Filtros do catálogo"]" data-catalog-filter>
+    <div class="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
+        <div>
+            <label for="q" class="label">@Localizer["Buscar"]</label>
+            <input id="q" name="q" type="search" value="@filter.Q" class="input" placeholder="@Localizer["Ex.: Aurora"]" maxlength="@CatalogFilter.MaxSearchLength" autocomplete="off" />
+        </div>
+        <div>
+            <label for="kind" class="label">@Localizer["Tipo"]</label>
+            <select id="kind" name="kind" class="select">
+                <option value="">@Localizer["Todos"]</option>
+                @foreach (var kind in Enum.GetValues<KitKind>())
+                {
+                    <option value="@kind" selected="@(filter.Kind == kind)">@SharedLocalizer[KitKindText.For(kind)]</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label for="sort" class="label">@Localizer["Ordenar"]</label>
+            <select id="sort" name="sort" class="select">
+                <option value="@CatalogFilter.ByName" selected="@(sort == CatalogFilter.ByName)">@Localizer["Nome"]</option>
+                <option value="@CatalogFilter.LowestPrice" selected="@(sort == CatalogFilter.LowestPrice)">@Localizer["Menor preço"]</option>
+                <option value="@CatalogFilter.HighestPrice" selected="@(sort == CatalogFilter.HighestPrice)">@Localizer["Maior preço"]</option>
+            </select>
+        </div>
+    </div>
+
+    @if (Model.Colorways.Count > 1)
     {
-        <partial name="_KitCard" model="new KitCard(product)" />
+        <fieldset class="m-0 border-0 p-0">
+            <legend class="label">@Localizer["Conjunto de cores"]</legend>
+            <div class="flex flex-wrap gap-2">
+                <div class="relative">
+                    <input class="option-input" type="radio" name="colorway" id="colorway-all" value="" checked="@string.IsNullOrEmpty(filter.Colorway)" />
+                    <label class="choice" for="colorway-all">@Localizer["Todos"]</label>
+                </div>
+                @foreach (var colorway in Model.Colorways)
+                {
+                    <div class="relative">
+                        <input class="option-input" type="radio" name="colorway" id="colorway-@colorway.Key" value="@colorway.Key" checked="@(filter.Colorway == colorway.Key)" />
+                        <label class="choice inline-flex items-center gap-2" for="colorway-@colorway.Key">
+                            <span class="flex gap-0.5" aria-hidden="true">
+                                <span class="swatch size-3.5 rounded" style="background-color: @colorway.Palette.Keys"></span>
+                                <span class="swatch size-3.5 rounded" style="background-color: @colorway.Palette.Legends"></span>
+                                <span class="swatch size-3.5 rounded" style="background-color: @colorway.Palette.Accent"></span>
+                            </span>
+                            <span>@colorway.Label</span>
+                        </label>
+                    </div>
+                }
+            </div>
+        </fieldset>
+    }
+
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="check">
+            <input id="inStock" name="inStock" type="checkbox" value="true" class="check-input" checked="@filter.InStock" />
+            <label for="inStock" class="check-label">@Localizer["Só os disponíveis"]</label>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <a asp-action="Index" class="btn btn-link btn-sm">@Localizer["Limpar filtros"]</a>
+            <button type="submit" class="btn btn-primary btn-sm" data-catalog-submit>@Localizer["Filtrar"]</button>
+        </div>
+    </div>
+</form>
+
+<div id="catalog-results">
+    <p class="mb-4 text-sm text-muted" role="status" data-catalog-count>@(Model.Products.Count == 1 ? Localizer["1 kit"] : Localizer["{0} kits", Model.Products.Count])</p>
+
+    @if (Model.Products.Count == 0)
+    {
+        <div class="card stage mx-auto flex max-w-xl flex-col items-center gap-4 py-12 text-center">
+            <span class="step-key size-14 text-2xl" aria-hidden="true">?</span>
+            <p class="mb-0 text-lg">@Localizer["Nenhum kit encontrado com esses filtros."]</p>
+            <a asp-action="Index" class="btn btn-primary">@Localizer["Limpar filtros"]</a>
+        </div>
+    }
+    else
+    {
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            @foreach (var product in Model.Products)
+            {
+                <partial name="_KitCard" model="new KitCard(product)" />
+            }
+        </div>
     }
 </div>
+
+@section Scripts {
+    <script src="~/js/catalog.js" asp-append-version="true" defer></script>
+}
