@@ -23,10 +23,13 @@ public class MyOrdersPageTests(PostgresFixture postgres) : IClassFixture<Postgre
         return (await scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>().FindByEmailAsync(email))!.Id;
     }
 
-    private static async Task<Guid> SaveOrderAsync(WebApplicationFactory<Program> factory, string customerId, DateTimeOffset createdAt)
+    private static async Task<Guid> SaveOrderAsync(WebApplicationFactory<Program> factory, string customerId, DateTimeOffset createdAt, bool paid = true)
     {
         var order = new Order(customerId, createdAt, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Curitiba, TestShipping.Pac);
-        order.ConfirmPayment();
+        if (paid)
+        {
+            order.ConfirmPayment();
+        }
 
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -75,5 +78,35 @@ public class MyOrdersPageTests(PostgresFixture postgres) : IClassFixture<Postgre
         var html = WebUtility.HtmlDecode(await client.GetStringAsync("/orders"));
 
         Assert.Contains("Você ainda não fez nenhum pedido.", html);
+    }
+
+    [Fact]
+    public async Task EachOrder_ShowsItsStatusBadge_ItsItems_AndTheTotal()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var client = await PageClient.LoggedInAsync(factory, "lista-cartao@example.com");
+        var orderId = await SaveOrderAsync(factory, await UserIdAsync(factory, "lista-cartao@example.com"), DateTimeOffset.UtcNow);
+
+        var html = WebUtility.HtmlDecode(await client.GetStringAsync("/orders")).Replace('\u00A0', ' ');
+
+        Assert.Contains($"<h2 class=\"m-0 text-lg\">Pedido {orderId.ToString()[..8]}</h2>", html);
+        Assert.Contains("<span class=\"badge badge-success\">Pago</span>", html);
+        Assert.Contains("Kit Aurora (base) × 1", html);
+        Assert.Contains("R$ 364,90", html);
+        Assert.Contains($"href=\"/Orders/Details/{orderId}\"", html);
+        Assert.DoesNotContain("Continuar o pagamento", html);
+    }
+
+    [Fact]
+    public async Task OrderAwaitingPayment_OffersToContinueThePayment_RightFromTheList()
+    {
+        await using var factory = await postgres.CreateMigratedFactoryAsync();
+        var client = await PageClient.LoggedInAsync(factory, "lista-aguardando@example.com");
+        var orderId = await SaveOrderAsync(factory, await UserIdAsync(factory, "lista-aguardando@example.com"), DateTimeOffset.UtcNow, paid: false);
+
+        var html = WebUtility.HtmlDecode(await client.GetStringAsync("/orders"));
+
+        Assert.Contains("<span class=\"badge badge-warning\">Aguardando pagamento</span>", html);
+        Assert.Contains($"class=\"btn btn-primary btn-sm\" href=\"/Checkout/Pay/{orderId}\">Continuar o pagamento</a>", html);
     }
 }
