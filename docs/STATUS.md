@@ -17,6 +17,19 @@
 - [x] **Carrinho e checkout** (PR #114): etapas, resumo ao lado, − e + sem recarregar, frete em cartões, contagem regressiva da reserva, Stripe nas cores da loja (`appearance` + `changeAppearance`, documentação conferida); home sorteia 3 kits
 - [x] **Pedido e agradecimento** (branch `feat/v3-pedido-e-agradecimento`, commit `d77ecea`): trilha de andamento, selo colorido, explicação das situações fora do caminho, **código de rastreio visível ao cliente**, confete quando a Stripe confirma. **272 + 422 testes.** PR a confirmar
 - [ ] "Meus pedidos" (lista) no estilo novo
+- [ ] Páginas de erro amigáveis (404, 403, 409)
+- [ ] "Minha conta" repaginada e com mais opções (ex.: trocar a senha, pedidos recentes, baixar meus dados)
+- [ ] Busca e filtros no catálogo (nome, tipo, conjunto de cores, "em estoque"; filtros no endereço)
+
+## V4: contas, e-mails e operação (planejada em 06/11, ADR a escrever)
+
+- [ ] Serviço de e-mail + e-mails da loja (pago, enviado com rastreio, lote, reembolso, desistência); plano gratuito e domínio próprio a conferir na documentação oficial
+- [ ] "Esqueci minha senha" (depende do e-mail)
+- [ ] "Avise-me quando voltar" (depende do e-mail)
+- [ ] Reforços da auditoria: CSP (exige tirar os scripts das páginas) e limite de tentativas no login e no cadastro
+- [ ] Painel do admin: vendas do dia, mais vendidos, estoque baixo, e o admin no visual novo
+- [ ] Reposição automática de estoque (ideia do autor: a cada 2 semanas, voltar ao nível combinado ou repor pelo consumo); decidir no ADR
+- [ ] Cupom de desconto (mexe no total e na Stripe; ADR cuidadoso, por último)
 
 ## v2 (ADR 0025)
 
