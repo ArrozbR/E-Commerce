@@ -396,4 +396,28 @@
   <data name="A fileira de funções (F1 a F12) e as teclas de navegação, como PrtSc, Home e End." xml:space="preserve">
     <value>The function row (F1 to F12) and the navigation keys, such as PrtSc, Home and End.</value>
   </data>
+  <data name="Informe a senha atual." xml:space="preserve">
+    <value>Enter your current password.</value>
+  </data>
+  <data name="Nova senha" xml:space="preserve">
+    <value>New password</value>
+  </data>
+  <data name="Informe a nova senha." xml:space="preserve">
+    <value>Enter the new password.</value>
+  </data>
+  <data name="Confirme a nova senha." xml:space="preserve">
+    <value>Confirm the new password.</value>
+  </data>
+  <data name="Confirmar a nova senha" xml:space="preserve">
+    <value>Confirm new password</value>
+  </data>
+  <data name="Senha atual incorreta." xml:space="preserve">
+    <value>The current password is incorrect.</value>
+  </data>
+  <data name="Senha alterada. As outras sessões abertas foram encerradas." xml:space="preserve">
+    <value>Password changed. Other open sessions were signed out.</value>
+  </data>
+  <data name="Esta conta entra pelo Google e não tem senha para trocar." xml:space="preserve">
+    <value>This account signs in with Google and has no password to change.</value>
+  </data>
 </root>

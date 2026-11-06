@@ -710,6 +710,25 @@
     }
   }
 
+  .choice {
+    @apply cursor-pointer rounded-lg border border-line bg-bg px-3 py-1.5 text-sm text-fg hover:border-brand/50;
+    box-shadow: 0 2px 0 0 var(--edge);
+    transition: border-color 160ms ease-out, box-shadow 160ms ease-out, translate 80ms ease-out;
+  }
+
+  .choice:active {
+    translate: 0 2px;
+  }
+
+  .choice[aria-pressed="true"] {
+    @apply border-brand font-medium text-brand;
+    box-shadow: 0 2px 0 0 var(--brand-edge), 0 0 16px -6px var(--glow);
+  }
+
+  .card-danger {
+    border-color: color-mix(in srgb, var(--danger) 45%, var(--line));
+  }
+
   .fly-cap {
     position: fixed;
     z-index: 60;

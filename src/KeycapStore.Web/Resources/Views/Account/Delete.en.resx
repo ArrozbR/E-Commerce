@@ -78,4 +78,67 @@
   <data name="Ao excluir a conta, o seu e-mail, a ligação com o Google e o endereço salvo são apagados e você não consegue mais entrar." xml:space="preserve">
     <value>When you delete your account, your e-mail, the link to Google and your saved address are erased and you can no longer sign in.</value>
   </data>
+  <data name="Pedidos recentes" xml:space="preserve">
+    <value>Recent orders</value>
+  </data>
+  <data name="Ver todos os pedidos" xml:space="preserve">
+    <value>See all orders</value>
+  </data>
+  <data name="Você ainda não fez nenhum pedido." xml:space="preserve">
+    <value>You have not placed any orders yet.</value>
+  </data>
+  <data name="Pedido {0}" xml:space="preserve">
+    <value>Order {0}</value>
+  </data>
+  <data name="Acesso e segurança" xml:space="preserve">
+    <value>Sign-in and security</value>
+  </data>
+  <data name="Senha" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Ao trocar a senha, as outras sessões abertas em outros aparelhos são encerradas." xml:space="preserve">
+    <value>When you change your password, other open sessions on other devices are signed out.</value>
+  </data>
+  <data name="Trocar a senha" xml:space="preserve">
+    <value>Change password</value>
+  </data>
+  <data name="Esta conta entra pelo Google e não tem senha para trocar." xml:space="preserve">
+    <value>This account signs in with Google and has no password to change.</value>
+  </data>
+  <data name="Conectado" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="Preferências" xml:space="preserve">
+    <value>Preferences</value>
+  </data>
+  <data name="Idioma" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Tema" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Automático" xml:space="preserve">
+    <value>Automatic</value>
+  </data>
+  <data name="Claro" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Escuro" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="O idioma e o tema ficam guardados neste navegador." xml:space="preserve">
+    <value>Language and theme are saved in this browser.</value>
+  </data>
+  <data name="Seus dados" xml:space="preserve">
+    <value>Your data</value>
+  </data>
+  <data name="Baixe um arquivo com tudo o que a loja guarda sobre você: a conta, o endereço salvo e os pedidos, com itens, valores e endereços de entrega." xml:space="preserve">
+    <value>Download a file with everything the store keeps about you: your account, saved address and orders, with items, amounts and shipping addresses.</value>
+  </data>
+  <data name="Baixar meus dados" xml:space="preserve">
+    <value>Download my data</value>
+  </data>
+  <data name="Zona de perigo" xml:space="preserve">
+    <value>Danger zone</value>
+  </data>
 </root>

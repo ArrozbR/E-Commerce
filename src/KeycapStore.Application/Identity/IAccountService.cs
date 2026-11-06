@@ -12,5 +12,7 @@ public interface IAccountService
 
     Task<AccountSummary> GetSummaryAsync(string customerId, CancellationToken cancellationToken = default);
 
+    Task<ChangePasswordResult> ChangePasswordAsync(string customerId, string currentPassword, string newPassword, CancellationToken cancellationToken = default);
+
     Task SignOutAsync(CancellationToken cancellationToken = default);
 }

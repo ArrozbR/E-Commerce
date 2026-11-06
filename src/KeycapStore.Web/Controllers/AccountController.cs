@@ -1,4 +1,6 @@
 ﻿using System.Security.Claims;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 
 using KeycapStore.Application.Identity;
 using KeycapStore.Application.Orders;
@@ -16,8 +18,16 @@ public sealed class AccountController(
     IAccountService accounts,
     IAccountDeletionService deletions,
     ISavedAddressService savedAddresses,
+    IOrderQueries orders,
+    IPersonalDataExport personalData,
     IStringLocalizer<SharedResource> text) : Controller
 {
+    private static readonly JsonSerializerOptions ExportOptions = new(JsonSerializerDefaults.Web)
+    {
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+
     [HttpGet]
     public IActionResult Register() => View();
 
@@ -230,6 +240,64 @@ public sealed class AccountController(
         return RedirectToAction(nameof(Delete));
     }
 
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Password(CancellationToken cancellationToken)
+    {
+        ViewData["Account"] = await accounts.GetSummaryAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!, cancellationToken);
+        return View(new ChangePasswordViewModel());
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> Password(ChangePasswordViewModel model, CancellationToken cancellationToken)
+    {
+        var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        if (ModelState.IsValid)
+        {
+            var result = await accounts.ChangePasswordAsync(customerId, model.CurrentPassword, model.NewPassword, cancellationToken);
+            if (result.Status == ChangePasswordStatus.Changed)
+            {
+                TempData["Message"] = text["Senha alterada. As outras sessões abertas foram encerradas."].Value;
+                return RedirectToAction(nameof(Delete));
+            }
+
+            switch (result.Status)
+            {
+                case ChangePasswordStatus.WrongPassword:
+                    ModelState.AddModelError(nameof(model.CurrentPassword), text["Senha atual incorreta."].Value);
+                    break;
+                case ChangePasswordStatus.LockedOut:
+                    ModelState.AddModelError(string.Empty, text["Muitas tentativas erradas. Tente de novo em alguns minutos."].Value);
+                    break;
+                case ChangePasswordStatus.NoPassword:
+                    ModelState.AddModelError(string.Empty, text["Esta conta entra pelo Google e não tem senha para trocar."].Value);
+                    break;
+                default:
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(nameof(model.NewPassword), text[error].Value);
+                    }
+
+                    break;
+            }
+        }
+
+        ViewData["Account"] = await accounts.GetSummaryAsync(customerId, cancellationToken);
+        return View(model);
+    }
+
+    [Authorize]
+    [HttpGet]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public async Task<IActionResult> Data(CancellationToken cancellationToken)
+    {
+        var data = await personalData.ExportAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!, cancellationToken);
+
+        return File(JsonSerializer.SerializeToUtf8Bytes(data, ExportOptions), "application/json", "keycapstore-meus-dados.json");
+    }
+
     [HttpGet]
     public IActionResult Deleted() => View();
 
@@ -238,5 +306,6 @@ public sealed class AccountController(
         var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         ViewData["SavedAddress"] = await savedAddresses.GetAsync(customerId, cancellationToken);
         ViewData["Account"] = await accounts.GetSummaryAsync(customerId, cancellationToken);
+        ViewData["RecentOrders"] = (await orders.ListForCustomerAsync(customerId, cancellationToken)).Take(3).ToList();
     }
 }
