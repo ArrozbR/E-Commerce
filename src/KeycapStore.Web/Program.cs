@@ -114,9 +114,13 @@ if (args.Contains("reset-admin-password"))
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Error/500");
     app.UseHsts();
 }
+
+app.UseWhen(
+    context => !context.Request.Path.StartsWithSegments("/webhooks"),
+    branch => branch.UseStatusCodePagesWithReExecute("/Error/{0}"));
 
 app.UseHttpsRedirection();
 
