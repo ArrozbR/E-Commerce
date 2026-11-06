@@ -2,10 +2,34 @@
 
 > Atualizado pelo comando `/encerrar`. Lido pelo `/retomar`.
 
-**Marco atual:** 🎉 **v2 concluída em 04/11/2026** (os 8 itens da segunda parte em produção; o fechamento automático da pré-venda conferido nos dois sentidos). Depois dela, **auditoria de segurança** (só leitura do código, 32 agentes, nenhuma falha confirmada, 6 pontos a validar) e as **correções dos 6 pontos** (ADR 0044, branch `fix/auditoria-seguranca`, 2 commits, **juntados nos PRs #99, #100 e #103 e testados em produção pelo autor**). Próxima etapa: **V3** (interface; ADR a escrever, com a skill ui-ux-pro-max). 🎉 **v2, parte legal (ADR 0025) concluída em 21/10/2026**: cancelamento (ADR 0031), direito de arrependimento (ADR 0032) e exclusão de conta (ADR 0033), todos em produção. O go-live ainda depende de itens fora do código (prazo de guarda, termos, política de privacidade, nota fiscal; `DEFINICOES.md` §11). 🎉 **v1 concluída em 15/10/2026**: todos os critérios de pronto do `DEFINICOES.md` §1 cumpridos em produção. **M6 concluído em 15/10/2026** (`/health`, Serilog, Dependabot, backup diário criptografado na Cloudflare R2 com restauração testada, healthchecks.io, UptimeRobot). **M5 concluído em 15/10/2026** (página mínima de envio só para o papel Admin, separar → enviar com rastreio → entregar, comando `reset-admin-password`; pedido levado até "Entregue" em produção). **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
+**Marco atual:** 🎨 **V3 (interface) em andamento desde 05/11/2026**: Tailwind no lugar do Bootstrap (ADR 0045), ilustração de cada kit pelo tipo (ADR 0046) e a rodada "juicy" com GSAP (ADRs 0047 e 0048) concluída: página de cada kit, home com vitrine, carrinho/checkout/pagamento modernos, detalhes do pedido e agradecimento. Próxima meta: **e-mails transacionais** (serviço a escolher, ADR a escrever). 🎉 **v2 concluída em 04/11/2026** (os 8 itens da segunda parte em produção; o fechamento automático da pré-venda conferido nos dois sentidos). Depois dela, **auditoria de segurança** (só leitura do código, 32 agentes, nenhuma falha confirmada, 6 pontos a validar) e as **correções dos 6 pontos** (ADR 0044, branch `fix/auditoria-seguranca`, 2 commits, **juntados nos PRs #99, #100 e #103 e testados em produção pelo autor**). Próxima etapa: **V3** (interface; ADR a escrever, com a skill ui-ux-pro-max). 🎉 **v2, parte legal (ADR 0025) concluída em 21/10/2026**: cancelamento (ADR 0031), direito de arrependimento (ADR 0032) e exclusão de conta (ADR 0033), todos em produção. O go-live ainda depende de itens fora do código (prazo de guarda, termos, política de privacidade, nota fiscal; `DEFINICOES.md` §11). 🎉 **v1 concluída em 15/10/2026**: todos os critérios de pronto do `DEFINICOES.md` §1 cumpridos em produção. **M6 concluído em 15/10/2026** (`/health`, Serilog, Dependabot, backup diário criptografado na Cloudflare R2 com restauração testada, healthchecks.io, UptimeRobot). **M5 concluído em 15/10/2026** (página mínima de envio só para o papel Admin, separar → enviar com rastreio → entregar, comando `reset-admin-password`; pedido levado até "Entregue" em produção). **M4 concluído em 14/10/2026** (concorrência otimista, expiração, Pix, pedidos órfãos, pagamento atrasado com reembolso automático, filtro 409/404/400). **M3 concluído em 12/10/2026** (sessão do Checkout, webhook assinado e idempotente, confirmação do pagamento, página de retorno; compra paga com cartão em produção). **M2 concluído em 08/10/2026** (carrinho, pedido com snapshot e endereço, "Finalizar" com reserva atômica, teste de concorrência). **M1 concluído em 06/10/2026.** **M0 concluído em 01/10/2026.** Loja no ar em https://keycapstore.duckdns.org.
 **Data de início da v1:** 30/09/2026
-**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · M5: 3h (estimativa era 8–12h) · M6: 2h (estimativa era 15–20h) · **total da v1: 37h** · **v2: 18,5h** (parte legal: 3,5h; segunda parte: 15h) · **auditoria e correções: 3h** · **total do projeto: 58,5h**
+**Horas acumuladas:** M0: 7h (estimativa era 25–35h) · M1: 8,5h (estimativa era 15–25h) · M2: 6h (estimativa era 20–30h) · M3: 5h (estimativa era 20–30h) · M4: 5,5h (estimativa era 15–25h) · M5: 3h (estimativa era 8–12h) · M6: 2h (estimativa era 15–20h) · **total da v1: 37h** · **v2: 18,5h** (parte legal: 3,5h; segunda parte: 15h) · **auditoria e correções: 3h** · **V3: 6h** (05/11) · **total do projeto: 64,5h**
 **Estimativa da v1:** ~~120–180h~~ → ~~55–85h (08/10)~~ → ~~45–60h (12/10)~~ → ~~40–50h (14/10)~~ → ~~40–45h (15/10)~~ → **real: 37h em 16 dias** (30/09 a 15/10). Todos os marcos saíram com 10% a 30% do estimado. Para a v2, estimar com esse histórico.
+
+## V3: interface (ADRs 0045 a 0048)
+
+- [x] **Base visual** (ADR 0045): Tailwind 4 pelo npm (CSS gerado no Dockerfile, fora do git), fontes na própria loja, tema claro/escuro/automático, paleta e contraste ≥ 4,5:1, todas as páginas sem Bootstrap
+- [x] **Ilustração dos kits** (PRs #108 a #110, ADR 0046): `KitPalette` (3 cores, editáveis no admin) e `KitKind` (base, novelties, modificadores, funções), desenho próprio por tipo; migrations `AddProductPalette`, `UpdateKitPalettes`, `AddProductKitKind`
+- [x] **Tátil com brilho + GSAP** (PR #111, ADR 0047): botões e cartões que afundam, brilho laranja, cabeçalho translúcido, GSAP 3.15.1 travado (copiado do npm no build), menos movimento respeitado, contador do carrinho no menu
+- [x] **Página de cada kit** (PR #112, ADR 0048): `/Catalog/{id}/{slug}` com 301 para o endereço certo, "Adicionar" sem recarregar (JSON + fallback sem JavaScript, `IsLocalUrl`), teclas clicáveis e que respondem ao teclado físico, "Veja também" pelo conjunto de cores
+- [x] **Home com vitrine** (PR #113): teclado 60% que digita e troca de conjunto, contorno neon nos palcos, "Como funciona"; correção das teclas claras e do `translate: none` do GSAP
+- [x] **Carrinho e checkout** (PR #114): etapas, resumo ao lado, − e + sem recarregar, frete em cartões, contagem regressiva da reserva, Stripe nas cores da loja (`appearance` + `changeAppearance`, documentação conferida); home sorteia 3 kits
+- [x] **Pedido e agradecimento** (branch `feat/v3-pedido-e-agradecimento`, commit `d77ecea`): trilha de andamento, selo colorido, explicação das situações fora do caminho, **código de rastreio visível ao cliente**, confete quando a Stripe confirma. **272 + 422 testes.** PR a confirmar
+- [ ] "Meus pedidos" (lista) no estilo novo
+- [ ] Páginas de erro amigáveis (404, 403, 409)
+- [ ] "Minha conta" repaginada e com mais opções (ex.: trocar a senha, pedidos recentes, baixar meus dados)
+- [ ] Busca e filtros no catálogo (nome, tipo, conjunto de cores, "em estoque"; filtros no endereço)
+
+## V4: contas, e-mails e operação (planejada em 06/11, ADR a escrever)
+
+- [ ] Serviço de e-mail + e-mails da loja (pago, enviado com rastreio, lote, reembolso, desistência); plano gratuito e domínio próprio a conferir na documentação oficial
+- [ ] "Esqueci minha senha" (depende do e-mail)
+- [ ] "Avise-me quando voltar" (depende do e-mail)
+- [ ] Reforços da auditoria: CSP (exige tirar os scripts das páginas) e limite de tentativas no login e no cadastro
+- [ ] Painel do admin: vendas do dia, mais vendidos, estoque baixo, e o admin no visual novo
+- [ ] Reposição automática de estoque (ideia do autor: a cada 2 semanas, voltar ao nível combinado ou repor pelo consumo); decidir no ADR
+- [ ] Cupom de desconto (mexe no total e na Stripe; ADR cuidadoso, por último)
 
 ## v2 (ADR 0025)
 
@@ -154,15 +178,17 @@
 
 ## Próximos passos
 
-1. **Limpeza em produção:** reativar o "Kit Aurora (base)" se ainda estiver inativo e cancelar o pedido de teste `33f8f489` (Lote Sai).
-2. **Próximo teste de restauração até 05/12/2026** (runbook `docs/runbooks/backup.md`).
-3. **Começar a V3:** instalar a skill ui-ux-pro-max e escrever o ADR da interface (Bootstrap atual × Tailwind), antes de mexer em qualquer tela.
+1. **Fechar a V3:** revisar com o autor o que ainda falta (ex.: "Meus pedidos" no estilo novo, páginas de erro amigáveis, fonte do formulário da Stripe, neon na home) e juntar o PR do `feat/v3-pedido-e-agradecimento`, se ainda não foi.
+2. **Planejar a V4:** escolher as metas com o autor (candidata principal: e-mails transacionais, com os planos gratuitos e a questão do domínio próprio conferidos na documentação oficial antes) e escrever o ADR.
+3. **Próximo teste de restauração até 05/12/2026** (runbook `docs/runbooks/backup.md`); limpeza em produção pendente (Kit Aurora inativo? pedido de teste `33f8f489`).
 
 ## Bloqueios
 
 _Nenhum._
 
 ## Questões em aberto
+
+- **V3 (ADRs 0047 e 0048):** o formulário da Stripe usa a fonte do sistema (usar a DM Sans exige CORS nas fontes da loja, não decidido); o contorno neon foi para a home também (o autor pediu "só nos detalhes"; tirar é uma linha de CSS); a página do kit lê o catálogo inteiro (trocar por consulta própria se o catálogo crescer); a descrição "O que vem no kit" é fixa por tipo; GSAP e CSS gerados ficam fora do git (no PC, `npm run dev`).
 
 - **Exclusão de conta, pendente para o go-live (ADR 0033):** prazo de guarda (Q5) e o **job de anonimização** de nome e endereço; **avisar a Stripe** da eliminação (LGPD art. 18, § 6º; conferir na documentação dela o que dá para apagar); os dados da conta ficam nos **backups** até 29 dias (informar na política de privacidade). Corrida conhecida: pedido criado em outra aba no instante da exclusão.
 - **`.gitleaksignore`** (21/10): um falso positivo registrado (senha de teste `Senha-Forte-123` no commit `330c28f`, regra `generic-api-key`). Senhas de teste usam `PageClient.Password`.
@@ -209,6 +235,12 @@ _Nenhum._
 **Decisões de 05/10 (2ª sessão):** os branches **não** são apagados no GitHub (só localmente, depois do merge), para guardar o histórico; o nome do `Product` limitado a 150 caracteres **é regra de negócio**; atualizações automáticas diárias (ADR 0021).
 
 ## Diário de sessões
+
+### 05/11/2026: restauração da R2 e **V3 inteira** do Tailwind ao agradecimento (6h)
+- Restauração mensal a partir da R2 (contagem igual à de produção). V3: Tailwind no lugar do Bootstrap (ADR 0045, estilo minimalista técnico escolhido pelo autor com a skill ui-ux-pro-max), ilustração por tipo de kit (ADR 0046; a primeira versão não agradou, a segunda, com referências reais, sim).
+- Rodada "juicy" (ADRs 0047 e 0048), pedidos do autor: tátil + brilho, GSAP, página do kit, home com vitrine, carrinho e checkout, pedido e agradecimento. Ajustes no teste do autor: o "piscar" ao adicionar (agora sem recarregar), teclas clicáveis, barra de espaço clara que não parecia afundar, 3 kits sorteados na home. Tudo feito pelo Claude a pedido do autor ("não quero pôr a mão no código até a V3"). PRs #108 a #114 juntados; o último branch ficou com o commit `d77ecea`.
+- Tropeços: o GSAP grava `translate: none` no elemento e anulava o "afundar" do CSS (trocado por classes); `.Value` de texto traduzido não troca o `{0}`; `@page` é palavra reservada do Razor; um teste que desativava o kit do seed quebrava outro da mesma classe (de novo); o `.dockerignore` tinha duas linhas grudadas desde o passo 1; o terminal comia barras invertidas (scripts com `chr(92)`).
+- Verificações (sem resposta, o autor seguiu): `IsLocalUrl`, formulário sem JavaScript, `translate: none`, total do frete no servidor, "Pago" só depois do `/status`. O autor diz que nada ficou confuso.
 
 ### 04/11/2026 (2ª sessão): fechamento da pré-venda conferido (**v2 concluída**), ajustes pequenos, **auditoria de segurança** e correções (3h)
 - Fechamento automático conferido em produção nos dois sentidos (lote confirmado e lote cancelado com reembolso). Ajustes pequenos (PR #98): singular no catálogo, pré-venda fechada não volta à venda, sem "Finalizar" com item indisponível, texto da exclusão só Google.
@@ -272,18 +304,11 @@ _Nenhum._
 - Tropeços: senha de teste com hífens escrita pelo Claude disparou o gitleaks (`generic-api-key`; corrigido com `PageClient.Password` + `.gitleaksignore`); o job do gitleaks ficou travado "em andamento" no GitHub (resolvido com "Re-run all jobs").
 - Verificações: `Cancelled` conta como finalizado (sem resposta), conferir tudo antes de tirar o dono (respondida pelo código), pedido sem dono invisível para clientes (explicada com o resultado do `psql`). O autor diz que nada ficou confuso.
 
-### 19/10/2026: v2 começou: cancelamento e direito de arrependimento em produção (2,5h)
-- Pasta de memórias apagada do repositório (era só para sincronizar PC e notebook). O autor dispensou a revisão e o README e foi direto para a v2.
-- **Cancelamento** (PR #73, ADR 0031): o autor escolheu "Pago ou Em separação" e "guardar o `pi_` + buscar pela sessão" para os pedidos antigos. Escreveu `Order` (lacunas certas), `RefundProcessor` e `CancellationService`. Em produção, o pedido `6ea74fa5` foi cancelado e reembolsado pela busca da sessão (o Claude tinha dito que esse caminho não seria testado em produção, e foi).
-- **Arrependimento** (PR #74, ADR 0032): o Planalto recusou a conexão do Claude e **o autor colou os textos da lei**; decisões do autor: reembolso na hora, admin decide o estoque, vale também a caminho. Escreveu 5/5 lacunas do `Order` de primeira, `RefundProcessor`, `WithdrawalService` (faltou o `cancellationToken` no `SaveChangesAsync`; commit de correção) e o `ConfirmReturnAsync` **sem esqueleto**, só pela explicação. Refatoração `CanWithdraw` (De Morgan) para a página e o domínio usarem a mesma regra. **256 testes.** Teste em produção completo (compra → entrega → desistência → reembolso → devolução com estoque).
-- Tropeços: `if(` sem espaço (o `dotnet format` corrige); commit feito antes da correção (resolvido com outro commit); explicação resumida demais do passo 4 ("Que?"; refeita com tabela comparando com o `CancellationService`); o CI da `main` demorou a aparecer depois do merge do #74 (apareceu sozinho).
-- Achados no teste: falta "Meus pedidos" no menu; "Últimas 1 unidades".
-- Verificações: por que o reembolso fica no job (sem resposta), `is not null` antes do `.Value`, 302 × 409 no esqueleto e estoque com `ConfirmReturn` recusado (sem resposta). O autor diz que nada ficou confuso.
-
 ## Histórico
 
 _(sessões antigas resumidas em uma linha cada)_
 
+- **19/10/2026 (2,5h):** v2 começou: cancelamento (PR #73, ADR 0031) e direito de arrependimento (PR #74, ADR 0032, textos da lei colados pelo autor), quase tudo escrito pelo autor; 256 testes; testados em produção.
 - **15/10/2026 (2ª sessão, 2h):** Q4 respondida (R2, ADR 0030), `/health` (PR #67), backup com `age` e restauração no PC (PR #68), envio para a R2 + timer + Serilog + Dependabot (PR #69), correção do `rclone` (PR #71), healthchecks.io e UptimeRobot, compra com Pix pela loja; **M6 e v1 concluídos**; 221 testes.
 - **15/10/2026 (3h):** pedidos presos de 12/10 resolvidos (2 por reenvio de evento, 1 à mão), teste instável investigado (PR #63), página mínima de envio com o `ShippingService` do autor (PR #64, ADR 0028), `reset-admin-password` (PR #65, ADR 0029); **M5 concluído**; 216 testes.
 - **14/10/2026 (1,5h):** .NET 10.0.13 pelo alerta de segurança (PR #59), reembolso automático com o `OutOfStockRefunder` escrito pelo autor e reembolso real no sandbox (PR #60), filtro 409/404/400 (PR #61); **M4 concluído**; 196 testes.
