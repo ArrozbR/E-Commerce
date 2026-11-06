@@ -36,12 +36,12 @@
         }
     }
 
-    function setupSpotlight() {
+    function setupSpotlight(container) {
         if (reduced || !window.matchMedia("(pointer: fine)").matches) {
             return;
         }
 
-        document.querySelectorAll(".card-interactive").forEach((card) => {
+        (container ?? document).querySelectorAll(".card-interactive").forEach((card) => {
             card.addEventListener("pointermove", (event) => {
                 const box = card.getBoundingClientRect();
                 card.style.setProperty("--spot-x", `${event.clientX - box.left}px`);
@@ -413,8 +413,22 @@
         });
     }
 
+    function enhance(container) {
+        const items = container.querySelectorAll("[data-reveal]");
+        if (animate && root.classList.contains("motion-ready")) {
+            gsap.fromTo(items, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out", stagger: 0.05 });
+        } else {
+            items.forEach((item) => {
+                item.style.opacity = "1";
+            });
+        }
+
+        setupSpotlight(container);
+    }
+
     window.keycapStore = {
         animate,
+        enhance,
         showToast,
         setCartCount,
         flyToCart,
@@ -427,7 +441,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         revealItems();
         setupInitialToast();
-        setupSpotlight();
+        setupSpotlight(document);
         setupKeycaps();
         setupTyping();
         setupShowcase();

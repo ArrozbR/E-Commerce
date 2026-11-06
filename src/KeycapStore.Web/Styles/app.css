@@ -720,9 +720,15 @@
     translate: 0 2px;
   }
 
+  .option-input:checked + .choice,
   .choice[aria-pressed="true"] {
     @apply border-brand font-medium text-brand;
     box-shadow: 0 2px 0 0 var(--brand-edge), 0 0 16px -6px var(--glow);
+  }
+
+  .option-input:focus-visible + .choice {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
   }
 
   .card-danger {

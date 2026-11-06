@@ -120,4 +120,52 @@
   <data name="Catálogo" xml:space="preserve">
     <value>Catalog</value>
   </data>
+  <data name="Filtros do catálogo" xml:space="preserve">
+    <value>Catalog filters</value>
+  </data>
+  <data name="Buscar" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Ex.: Aurora" xml:space="preserve">
+    <value>E.g.: Aurora</value>
+  </data>
+  <data name="Tipo" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Todos" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Ordenar" xml:space="preserve">
+    <value>Sort by</value>
+  </data>
+  <data name="Nome" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Menor preço" xml:space="preserve">
+    <value>Lowest price</value>
+  </data>
+  <data name="Maior preço" xml:space="preserve">
+    <value>Highest price</value>
+  </data>
+  <data name="Conjunto de cores" xml:space="preserve">
+    <value>Colorway</value>
+  </data>
+  <data name="Só os disponíveis" xml:space="preserve">
+    <value>Available only</value>
+  </data>
+  <data name="Limpar filtros" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
+  <data name="Filtrar" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="1 kit" xml:space="preserve">
+    <value>1 kit</value>
+  </data>
+  <data name="{0} kits" xml:space="preserve">
+    <value>{0} kits</value>
+  </data>
+  <data name="Nenhum kit encontrado com esses filtros." xml:space="preserve">
+    <value>No kits match these filters.</value>
+  </data>
 </root>
