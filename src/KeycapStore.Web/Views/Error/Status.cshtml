@@ -1,0 +1,23 @@
+@model ErrorPageViewModel
+@{
+    ViewData["Title"] = Localizer[Model.Title].Value;
+}
+
+<section class="mx-auto flex max-w-xl flex-col items-center py-8 text-center md:py-16">
+    <div class="mb-10 flex gap-3" aria-hidden="true">
+        @foreach (var digit in Model.Digits)
+        {
+            <span class="error-key">@digit</span>
+        }
+    </div>
+    <h1 class="mb-3 text-4xl">@Localizer[Model.Title]</h1>
+    <p class="mb-8 text-lg text-muted">@Localizer[Model.Message]</p>
+    <div class="flex flex-wrap justify-center gap-3">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">@Localizer["Voltar ao início"]</a>
+        <a asp-controller="Catalog" asp-action="Index" class="btn btn-secondary">@Localizer["Ver o catálogo"]</a>
+    </div>
+    @if (Model.SupportCode is { } supportCode)
+    {
+        <p class="mt-10 mb-0 text-xs text-muted">@Localizer["Código para suporte: {0}", supportCode]</p>
+    }
+</section>

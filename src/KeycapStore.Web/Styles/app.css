@@ -686,6 +686,30 @@
     @apply inline-block rounded-md border border-line bg-surface px-2 py-1 font-mono text-sm text-fg select-all;
   }
 
+  .error-key {
+    @apply grid size-16 place-items-center rounded-2xl border border-line bg-surface font-display text-4xl font-bold text-fg sm:size-24 sm:text-6xl;
+    box-shadow: 0 6px 0 0 var(--edge);
+  }
+
+  .error-key:nth-child(2) {
+    @apply border-transparent bg-brand text-on-brand;
+    box-shadow: 0 6px 0 0 var(--brand-edge), 0 0 40px -8px var(--glow);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .error-key {
+      animation: error-key-press 3.2s ease-in-out infinite;
+    }
+
+    .error-key:nth-child(2) {
+      animation-delay: 0.18s;
+    }
+
+    .error-key:nth-child(3) {
+      animation-delay: 0.36s;
+    }
+  }
+
   .fly-cap {
     position: fixed;
     z-index: 60;
@@ -701,6 +725,18 @@
 @keyframes keycap-tap {
   45% {
     translate: 0 var(--press, 2px);
+  }
+}
+
+@keyframes error-key-press {
+  0%,
+  12%,
+  100% {
+    translate: 0 0;
+  }
+
+  6% {
+    translate: 0 5px;
   }
 }
 
