@@ -25,4 +25,4 @@ public sealed record OrderView(
     DateTimeOffset? PreOrderCurrentShipsAt = null,
     string? TrackingCode = null);
 
-public sealed record OrderSummaryView(Guid Id, OrderStatus Status, DateTimeOffset CreatedAt, decimal Total);
+public sealed record OrderSummaryView(Guid Id, OrderStatus Status, DateTimeOffset CreatedAt, decimal Total, IReadOnlyList<OrderLineView> Lines);

@@ -18,7 +18,7 @@
 - [x] **Pedido e agradecimento** (branch `feat/v3-pedido-e-agradecimento`, commit `d77ecea`): trilha de andamento, selo colorido, explicação das situações fora do caminho, **código de rastreio visível ao cliente**, confete quando a Stripe confirma. **272 + 422 testes.** PR a confirmar
 - [ ] "Meus pedidos" (lista) no estilo novo
 - [ ] Páginas de erro amigáveis (404, 403, 409)
-- [ ] "Minha conta" repaginada e com mais opções (ex.: trocar a senha, pedidos recentes, baixar meus dados)
+- [ ] "Minha conta" repaginada: trocar a senha, pedidos recentes, endereço e Google em cartões, baixar meus dados, preferências de idioma e tema, zona de perigo
 - [ ] Busca e filtros no catálogo (nome, tipo, conjunto de cores, "em estoque"; filtros no endereço)
 
 ## V4: contas, e-mails e operação (planejada em 06/11, ADR a escrever)
@@ -26,6 +26,7 @@
 - [ ] Serviço de e-mail + e-mails da loja (pago, enviado com rastreio, lote, reembolso, desistência); plano gratuito e domínio próprio a conferir na documentação oficial
 - [ ] "Esqueci minha senha" (depende do e-mail)
 - [ ] "Avise-me quando voltar" (depende do e-mail)
+- [ ] Na "Minha conta": ligar e desligar os e-mails periódicos de novidades (consentimento) e trocar o e-mail (com confirmação)
 - [ ] Reforços da auditoria: CSP (exige tirar os scripts das páginas) e limite de tentativas no login e no cadastro
 - [ ] Painel do admin: vendas do dia, mais vendidos, estoque baixo, e o admin no visual novo
 - [ ] Reposição automática de estoque (ideia do autor: a cada 2 semanas, voltar ao nível combinado ou repor pelo consumo); decidir no ADR

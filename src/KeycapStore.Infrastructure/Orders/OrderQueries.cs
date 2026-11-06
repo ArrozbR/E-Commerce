@@ -17,10 +17,7 @@ internal sealed class OrderQueries(AppDbContext db, TimeProvider clock) : IOrder
             return null;
         }
 
-        var lines = order.Items
-            .Select(i => new OrderLineView(i.ProductName, i.UnitPrice, i.Quantity))
-            .OrderBy(l => l.ProductName)
-            .ToList();
+        var lines = LinesOf(order);
 
         return new OrderView(order.Id, order.Status, order.CreatedAt, lines, order.ShippingFee, order.Total, order.ShippingAddress,
             order.CanWithdraw(clock.GetUtcNow()), order.DeliveredAt + Order.WithdrawalPeriod, order.ShippingService, order.ShippingDeliveryDays, order.PreOrderShipsAt,
@@ -34,6 +31,11 @@ internal sealed class OrderQueries(AppDbContext db, TimeProvider clock) : IOrder
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        return orders.Select(o => new OrderSummaryView(o.Id, o.Status, o.CreatedAt, o.Total)).ToList();
+        return orders.Select(o => new OrderSummaryView(o.Id, o.Status, o.CreatedAt, o.Total, LinesOf(o))).ToList();
     }
+
+    private static List<OrderLineView> LinesOf(Order order) => order.Items
+        .Select(i => new OrderLineView(i.ProductName, i.UnitPrice, i.Quantity))
+        .OrderBy(l => l.ProductName)
+        .ToList();
 }

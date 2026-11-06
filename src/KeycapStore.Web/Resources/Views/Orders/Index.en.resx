@@ -21,16 +21,16 @@
   <data name="Ver o catálogo" xml:space="preserve">
     <value>Browse the catalog</value>
   </data>
-  <data name="Data" xml:space="preserve">
-    <value>Date</value>
-  </data>
-  <data name="Situação" xml:space="preserve">
-    <value>Status</value>
-  </data>
   <data name="Total" xml:space="preserve">
     <value>Total</value>
   </data>
   <data name="Ver o pedido" xml:space="preserve">
     <value>View order</value>
+  </data>
+  <data name="Pedido {0}" xml:space="preserve">
+    <value>Order {0}</value>
+  </data>
+  <data name="Continuar o pagamento" xml:space="preserve">
+    <value>Continue payment</value>
   </data>
 </root>
