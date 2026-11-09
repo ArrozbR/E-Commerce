@@ -31,6 +31,8 @@
 - [ ] Painel do admin: vendas do dia, mais vendidos, estoque baixo, e o admin no visual novo
 - [ ] Reposição automática de estoque (ideia do autor: a cada 2 semanas, voltar ao nível combinado ou repor pelo consumo); decidir no ADR
 - [ ] Cupom de desconto (mexe no total e na Stripe; ADR cuidadoso, por último)
+- [ ] Ícone da loja na aba do navegador (*favicon*) com a tecla "K" do logo (pedido do autor em 09/11)
+- [ ] "Cancelar o pagamento" de uma sessão que a Stripe já expirou: hoje mostra "tente de novo em alguns minutos" (nunca vai funcionar); conferir o pedido na Stripe na hora em vez de esperar a conciliação (visto em 09/11 com o pedido `fef52a15` do PC)
 
 ## v2 (ADR 0025)
 
