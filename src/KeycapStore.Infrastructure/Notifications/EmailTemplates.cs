@@ -23,9 +23,7 @@ internal static class EmailTemplates
 
     public static EmailMessage Compose(EmailKind kind, Order order, string to, Uri orderLink, DateTimeOffset queuedAt, bool batchCancelled)
     {
-        var english = order.Language == StripeCheckoutSessionFactory.EnglishLanguage;
-        var culture = CultureInfo.GetCultureInfo(english ? "en-US" : "pt-BR");
-        var text = new Writer(english, culture);
+        var text = WriterFor(order.Language);
         var number = order.Id.ToString()[..8];
 
         var content = kind switch
@@ -37,19 +35,110 @@ internal static class EmailTemplates
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Tipo de e-mail desconhecido."),
         };
 
+        return Render(text, to, content, text.Pick($"Pedido {number}", $"Order {number}"), text.Pick("Ver o pedido", "View the order"), orderLink);
+    }
+
+    public static EmailMessage PasswordReset(string language, string to, Uri resetLink, TimeSpan lifetime)
+    {
+        var text = WriterFor(language);
+        var minutes = (int)lifetime.TotalMinutes;
+        var content = new Content(
+            text.Pick("Trocar a senha da sua conta", "Reset your password"),
+            text.Pick("Trocar a senha", "Reset your password"),
+            [
+                text.Pick("Recebemos um pedido para trocar a senha da sua conta na KeycapStore.", "We received a request to reset the password of your KeycapStore account."),
+                text.Pick(
+                    $"Use o botão abaixo para escolher uma senha nova. O link vale por {minutes} minutos e só funciona uma vez.",
+                    $"Use the button below to choose a new password. The link is valid for {minutes} minutes and works only once."),
+                text.Pick("Se não foi você que pediu, ignore este e-mail: a sua senha continua a mesma.", "If you did not ask for this, ignore this e-mail: your password stays the same."),
+            ],
+            [],
+            null,
+            null);
+
+        return Render(text, to, content, AccountLabel(text), text.Pick("Escolher a senha nova", "Choose a new password"), resetLink);
+    }
+
+    public static EmailMessage PasswordResetForGoogle(string language, string to, Uri loginLink)
+    {
+        var text = WriterFor(language);
+        var content = new Content(
+            text.Pick("Trocar a senha da sua conta", "Reset your password"),
+            text.Pick("Sua conta entra pelo Google", "Your account signs in with Google"),
+            [
+                text.Pick(
+                    "Recebemos um pedido para trocar a senha da sua conta, mas ela não tem senha: você entra pelo botão \"Entrar com o Google\" na página de entrar.",
+                    "We received a request to reset the password of your account, but it has no password: you sign in with the \"Sign in with Google\" button on the sign-in page."),
+                text.Pick("Se não foi você que pediu, ignore este e-mail.", "If you did not ask for this, ignore this e-mail."),
+            ],
+            [],
+            null,
+            null);
+
+        return Render(text, to, content, AccountLabel(text), text.Pick("Ir para a página de entrar", "Go to the sign-in page"), loginLink);
+    }
+
+    public static EmailMessage PasswordResetForAdmin(string language, string to)
+    {
+        var text = WriterFor(language);
+        var content = new Content(
+            text.Pick("Trocar a senha da sua conta", "Reset your password"),
+            text.Pick("Conta de administrador", "Administrator account"),
+            [
+                text.Pick(
+                    "Recebemos um pedido para trocar a senha desta conta pelo e-mail. Contas de administrador não trocam a senha assim: use o comando reset-admin-password no servidor.",
+                    "We received a request to reset the password of this account by e-mail. Administrator accounts cannot do that: use the reset-admin-password command on the server."),
+                text.Pick(
+                    "Se não foi você que pediu, alguém digitou o e-mail desta conta na página \"Esqueci minha senha\". Nada foi mudado.",
+                    "If you did not ask for this, someone typed the e-mail of this account on the \"Forgot your password\" page. Nothing was changed."),
+            ],
+            [],
+            null,
+            null);
+
+        return Render(text, to, content, AccountLabel(text), null, null);
+    }
+
+    public static EmailMessage PasswordChanged(string language, string to, Uri loginLink, DateTimeOffset changedAt)
+    {
+        var text = WriterFor(language);
+        var content = new Content(
+            text.Pick("A senha da sua conta foi trocada", "Your password was changed"),
+            text.Pick("Senha trocada", "Password changed"),
+            [
+                text.Pick(
+                    $"A senha da sua conta na KeycapStore foi trocada em {text.DateAndTime(changedAt)}. As sessões abertas em outros aparelhos foram encerradas.",
+                    $"The password of your KeycapStore account was changed on {text.DateAndTime(changedAt)}. Sessions open on other devices were signed out."),
+                text.Pick(
+                    "Se não foi você, peça uma senha nova em \"Esqueci minha senha\" agora e confira quem tem acesso à sua caixa de e-mail.",
+                    "If this was not you, ask for a new password on \"Forgot your password\" right away and check who has access to your mailbox."),
+            ],
+            [],
+            null,
+            null);
+
+        return Render(text, to, content, AccountLabel(text), text.Pick("Entrar", "Sign in"), loginLink);
+    }
+
+    private static Writer WriterFor(string language)
+    {
+        var english = language == StripeCheckoutSessionFactory.EnglishLanguage;
+        return new Writer(english, CultureInfo.GetCultureInfo(english ? "en-US" : "pt-BR"));
+    }
+
+    private static string AccountLabel(Writer text) => text.Pick("Sua conta", "Your account");
+
+    private static EmailMessage Render(Writer text, string to, Content content, string eyebrow, string? linkLabel, Uri? link)
+    {
         var frame = new Frame(
-            english ? "en" : "pt-BR",
-            text.Pick($"Pedido {number}", $"Order {number}"),
-            text.Pick("Ver o pedido", "View the order"),
+            text.HtmlLanguage,
+            eyebrow,
+            linkLabel,
             text.Pick(
                 "KeycapStore é uma loja de portfólio em modo de teste: nenhum valor é cobrado de verdade.",
                 "KeycapStore is a portfolio store in test mode: no real money is charged."));
 
-        return new EmailMessage(
-            to,
-            content.Subject,
-            PlainText(content, frame, orderLink),
-            Html(content, frame, orderLink));
+        return new EmailMessage(to, content.Subject, PlainText(content, frame, link), Html(content, frame, link));
     }
 
     private static Content Paid(Writer text, Order order, string number)
@@ -134,10 +223,10 @@ internal static class EmailTemplates
             null,
             null);
 
-    private static string PlainText(Content content, Frame frame, Uri link)
+    private static string PlainText(Content content, Frame frame, Uri? link)
     {
         var body = new StringBuilder();
-        body.Append(content.Heading).Append(" · ").Append(frame.OrderLabel).Append("\r\n\r\n");
+        body.Append(content.Heading).Append(" · ").Append(frame.Eyebrow).Append("\r\n\r\n");
 
         foreach (var paragraph in content.Paragraphs)
         {
@@ -160,18 +249,22 @@ internal static class EmailTemplates
             body.Append(code.Label).Append(": ").Append(code.Value).Append("\r\n\r\n");
         }
 
-        body.Append(frame.LinkLabel).Append(": ").Append(link).Append("\r\n\r\n");
+        if (link is not null && frame.LinkLabel is not null)
+        {
+            body.Append(frame.LinkLabel).Append(": ").Append(link).Append("\r\n\r\n");
+        }
+
         body.Append("--\r\n").Append(frame.Footer).Append("\r\n");
 
         return body.ToString();
     }
 
-    private static string Html(Content content, Frame frame, Uri link)
+    private static string Html(Content content, Frame frame, Uri? link)
     {
         static string E(string value) => WebUtility.HtmlEncode(value);
 
         var html = new StringBuilder();
-        html.Append("<!DOCTYPE html><html lang=\"").Append(frame.Language).Append("\"><head>")
+        html.Append("<!DOCTYPE html><html lang=\"").Append(frame.HtmlLanguage).Append("\"><head>")
             .Append("<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">")
             .Append("<meta name=\"color-scheme\" content=\"light\"><meta name=\"supported-color-schemes\" content=\"light\">")
             .Append("<title>").Append(E(content.Subject)).Append("</title></head>")
@@ -194,7 +287,7 @@ internal static class EmailTemplates
             .Append("; border-bottom: 4px solid #d4d4d8; border-radius: 16px; padding: 32px 28px;\">");
 
         html.Append("<p style=\"margin: 0 0 6px; ").Append(FontFamily).Append(" font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: ").Append(Brand).Append(";\">")
-            .Append(E(frame.OrderLabel)).Append("</p>");
+            .Append(E(frame.Eyebrow)).Append("</p>");
         html.Append("<h1 style=\"margin: 0 0 20px; ").Append(FontFamily).Append(" font-size: 26px; font-weight: 700; line-height: 1.25; color: ").Append(Ink).Append(";\">")
             .Append(E(content.Heading)).Append("</h1>");
 
@@ -231,11 +324,14 @@ internal static class EmailTemplates
                 .Append("</td></tr></table>");
         }
 
-        html.Append("<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" style=\"margin-top: 8px;\"><tr>")
-            .Append("<td style=\"background-color: ").Append(Brand).Append("; border-radius: 10px; border-bottom: 4px solid ").Append(BrandEdge).Append(";\">")
-            .Append("<a href=\"").Append(E(link.ToString())).Append("\" style=\"display: inline-block; padding: 12px 24px; ").Append(FontFamily)
-            .Append(" font-size: 15px; font-weight: 700; color: #ffffff; text-decoration: none;\">")
-            .Append(E(frame.LinkLabel)).Append("</a></td></tr></table>");
+        if (link is not null && frame.LinkLabel is not null)
+        {
+            html.Append("<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" style=\"margin-top: 8px;\"><tr>")
+                .Append("<td style=\"background-color: ").Append(Brand).Append("; border-radius: 10px; border-bottom: 4px solid ").Append(BrandEdge).Append(";\">")
+                .Append("<a href=\"").Append(E(link.ToString())).Append("\" style=\"display: inline-block; padding: 12px 24px; ").Append(FontFamily)
+                .Append(" font-size: 15px; font-weight: 700; color: #ffffff; text-decoration: none;\">")
+                .Append(E(frame.LinkLabel)).Append("</a></td></tr></table>");
+        }
 
         html.Append("</td></tr>");
 
@@ -262,10 +358,12 @@ internal static class EmailTemplates
 
     private sealed record Row(string Label, string Value);
 
-    private sealed record Frame(string Language, string OrderLabel, string LinkLabel, string Footer);
+    private sealed record Frame(string HtmlLanguage, string Eyebrow, string? LinkLabel, string Footer);
 
     private sealed class Writer(bool english, CultureInfo culture)
     {
+        public string HtmlLanguage => english ? "en" : "pt-BR";
+
         public string Pick(string portuguese, string englishText) => english ? englishText : portuguese;
 
         public string Price(decimal amount)

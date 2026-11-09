@@ -84,7 +84,11 @@ public static class DependencyInjection
         .AddRoles<IdentityRole>()
         .AddErrorDescriber<PortugueseIdentityErrorDescriber>()
         .AddSignInManager()
-        .AddEntityFrameworkStores<AppDbContext>();
+        .AddEntityFrameworkStores<AppDbContext>()
+        .AddDefaultTokenProviders();
+
+        services.Configure<DataProtectionTokenProviderOptions>(options => options.TokenLifespan = PasswordResetService.LinkLifetime);
+        services.AddScoped<IPasswordResetService, PasswordResetService>();
 
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IAccountDeletionService, AccountDeletionService>();

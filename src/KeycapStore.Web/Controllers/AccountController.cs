@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Globalization;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
@@ -20,6 +21,7 @@ public sealed class AccountController(
     ISavedAddressService savedAddresses,
     IOrderQueries orders,
     IPersonalDataExport personalData,
+    IPasswordResetService passwordResets,
     IStringLocalizer<SharedResource> text) : Controller
 {
     private static readonly JsonSerializerOptions ExportOptions = new(JsonSerializerDefaults.Web)
@@ -81,6 +83,72 @@ public sealed class AccountController(
         }
 
         return RedirectToAction("Index", "Catalog");
+    }
+
+    [HttpGet]
+    public IActionResult ForgotPassword() => View(new ForgotPasswordViewModel());
+
+    [HttpPost]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        await passwordResets.RequestAsync(model.Email, CultureInfo.CurrentUICulture.Name, cancellationToken);
+
+        TempData["Message"] = text["Se existir uma conta com esse e-mail, enviamos um link para trocar a senha. Ele vale por 30 minutos; confira também a caixa de spam."].Value;
+        return RedirectToAction(nameof(ForgotPassword));
+    }
+
+    [HttpGet]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult ResetPassword(string? userId, string? token)
+    {
+        Response.Headers["Referrer-Policy"] = "no-referrer";
+
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+        {
+            return View("ResetPasswordInvalid");
+        }
+
+        return View(new ResetPasswordViewModel { UserId = userId, Token = token });
+    }
+
+    [HttpPost]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model, CancellationToken cancellationToken)
+    {
+        Response.Headers["Referrer-Policy"] = "no-referrer";
+
+        if (string.IsNullOrEmpty(model.UserId) || string.IsNullOrEmpty(model.Token))
+        {
+            return View("ResetPasswordInvalid");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var result = await passwordResets.ResetAsync(model.UserId, model.Token, model.NewPassword, CultureInfo.CurrentUICulture.Name, cancellationToken);
+
+        switch (result.Status)
+        {
+            case PasswordResetStatus.Reset:
+                TempData["Message"] = text["Senha trocada. Entre com a senha nova."].Value;
+                return RedirectToAction(nameof(Login));
+            case PasswordResetStatus.InvalidLink:
+                return View("ResetPasswordInvalid");
+            default:
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, text[error].Value);
+                }
+
+                return View(model);
+        }
     }
 
     [HttpPost]

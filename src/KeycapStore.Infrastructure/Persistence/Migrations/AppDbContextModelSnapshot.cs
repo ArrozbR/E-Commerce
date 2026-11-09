@@ -304,6 +304,10 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("CustomerId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
                     b.Property<DateTimeOffset?>("FinishedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -312,10 +316,14 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("Language")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
                     b.Property<DateTimeOffset>("NextAttemptAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("OrderId")
+                    b.Property<Guid?>("OrderId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Status")
@@ -332,7 +340,12 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Status", "NextAttemptAt");
 
-                    b.ToTable("outbox_emails", (string)null);
+                    b.HasIndex("CustomerId", "Kind", "CreatedAt");
+
+                    b.ToTable("outbox_emails", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_outbox_emails_order_or_customer", "\"OrderId\" IS NOT NULL OR \"CustomerId\" IS NOT NULL");
+                        });
                 });
 
             modelBuilder.Entity("KeycapStore.Infrastructure.Payments.ProcessedStripeEvent", b =>
@@ -776,8 +789,7 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.HasOne("KeycapStore.Domain.Orders.Order", null)
                         .WithMany()
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
