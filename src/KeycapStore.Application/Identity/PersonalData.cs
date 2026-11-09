@@ -13,7 +13,8 @@ public sealed record PersonalData(
     PersonalAccount Account,
     ShippingAddress? SavedAddress,
     IReadOnlyList<PersonalOrder> Orders,
-    IReadOnlyList<PersonalStockAlert> StockAlerts);
+    IReadOnlyList<PersonalStockAlert> StockAlerts,
+    DateTimeOffset? NewsletterSubscribedAt);
 
 public sealed record PersonalStockAlert(string Product, DateTimeOffset RequestedAt);
 

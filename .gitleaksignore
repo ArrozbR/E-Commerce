@@ -3,3 +3,4 @@
 9b8c9c5745f3493cdf6af131cf85368daf39e6ab:tests/KeycapStore.IntegrationTests/Identity/PasswordResetTests.cs:generic-api-key:22
 9b8c9c5745f3493cdf6af131cf85368daf39e6ab:tests/KeycapStore.IntegrationTests/Identity/PasswordResetTests.cs:generic-api-key:154
 f70df6c03b571c78a24732e6c9f3dcb67054a357:tests/KeycapStore.IntegrationTests/Identity/PasswordResetPageTests.cs:generic-api-key:140
+9d6a6266eea830f4c093a69834a75e7409a0ee6b:tests/KeycapStore.IntegrationTests/Notifications/NewsletterUnsubscribeTests.cs:generic-api-key:87

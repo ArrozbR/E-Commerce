@@ -34,6 +34,11 @@ internal sealed class PersonalDataExport(AppDbContext db, UserManager<IdentityUs
             .Join(db.Products, a => a.ProductId, p => p.Id, (a, p) => new PersonalStockAlert(p.Name, a.CreatedAt))
             .ToListAsync(cancellationToken);
 
+        var newsletter = await db.NewsletterSubscriptions.AsNoTracking()
+            .Where(s => s.CustomerId == customerId)
+            .Select(s => (DateTimeOffset?)s.SubscribedAt)
+            .SingleOrDefaultAsync(cancellationToken);
+
         return new PersonalData(clock.GetUtcNow(), account, saved, [.. orders.Select(o => new PersonalOrder(
             o.Id,
             o.CreatedAt,
@@ -44,6 +49,6 @@ internal sealed class PersonalDataExport(AppDbContext db, UserManager<IdentityUs
             o.Total,
             o.ShippingAddress,
             o.TrackingCode,
-            o.Language))], alerts);
+            o.Language))], alerts, newsletter);
     }
 }

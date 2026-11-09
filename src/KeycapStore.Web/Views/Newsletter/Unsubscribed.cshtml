@@ -1,0 +1,10 @@
+@{
+    ViewData["Title"] = Localizer["Novidades desligadas"].Value;
+}
+
+<h1>@Localizer["Novidades desligadas"]</h1>
+
+<div class="card max-w-xl" data-unsubscribed>
+    <p>@Localizer["Pronto: você não recebe mais os e-mails de kits novos e pré-vendas. Se mudar de ideia, dá para ligar de novo na Minha conta."]</p>
+    <a asp-controller="Catalog" asp-action="Index" class="btn btn-secondary">@Localizer["Ver o catálogo"]</a>
+</div>

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <data name="Link inválido" xml:space="preserve">
+    <value>Invalid link</value>
+  </data>
+  <data name="Este link de descadastro não é válido. Para desligar as novidades, entre na sua conta e use a Minha conta." xml:space="preserve">
+    <value>This unsubscribe link is not valid. To turn news off, sign in and use My account.</value>
+  </data>
+  <data name="Entrar" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+</root>

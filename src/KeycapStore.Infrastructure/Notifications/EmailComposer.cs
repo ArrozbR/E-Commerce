@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace KeycapStore.Infrastructure.Notifications;
 
-internal sealed class EmailComposer(AppDbContext db, UserManager<IdentityUser> users, IOptions<PublicSiteOptions> site)
+internal sealed class EmailComposer(AppDbContext db, UserManager<IdentityUser> users, INewsletterService newsletter, IOptions<PublicSiteOptions> site)
 {
     public Task<EmailMessage?> ComposeAsync(OutboxEmail email, CancellationToken cancellationToken = default) =>
         email.CustomerId is null ? ComposeForOrderAsync(email, cancellationToken) : ComposeForAccountAsync(email);
@@ -75,6 +75,31 @@ internal sealed class EmailComposer(AppDbContext db, UserManager<IdentityUser> u
             return product is null
                 ? null
                 : EmailTemplates.BackInStock(language, to, product.Name, product.Price, Link($"Catalog/{product.Id}"));
+        }
+
+        if (email.Kind is EmailKind.NewKit or EmailKind.PreOrderOpened)
+        {
+            if (!await db.NewsletterSubscriptions.AnyAsync(s => s.CustomerId == user.Id))
+            {
+                return null;
+            }
+
+            var kit = await db.Products
+                .AsNoTracking()
+                .Where(p => p.Id == email.ProductId && p.IsActive)
+                .Select(p => new { p.Id, p.Name, p.Price, p.PreOrderEndsAt, p.PreOrderShipsAt })
+                .SingleOrDefaultAsync();
+
+            if (kit is null)
+            {
+                return null;
+            }
+
+            var kitLink = Link($"Catalog/{kit.Id}");
+            var unsubscribe = Link($"Newsletter/Unsubscribe?token={Uri.EscapeDataString(newsletter.UnsubscribeTokenFor(user.Id))}");
+            return email.Kind == EmailKind.PreOrderOpened && kit.PreOrderEndsAt is { } endsAt && kit.PreOrderShipsAt is { } shipsAt
+                ? EmailTemplates.PreOrderOpened(language, to, kit.Name, kit.Price, endsAt, shipsAt, kitLink, unsubscribe)
+                : EmailTemplates.NewKit(language, to, kit.Name, kit.Price, kitLink, unsubscribe);
         }
 
         if (email.Kind != EmailKind.PasswordReset)

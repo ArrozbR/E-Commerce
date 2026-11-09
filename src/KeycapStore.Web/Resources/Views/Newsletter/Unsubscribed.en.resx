@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <data name="Novidades desligadas" xml:space="preserve">
+    <value>News turned off</value>
+  </data>
+  <data name="Pronto: você não recebe mais os e-mails de kits novos e pré-vendas. Se mudar de ideia, dá para ligar de novo na Minha conta." xml:space="preserve">
+    <value>Done: you no longer get e-mails about new kits and pre-orders. If you change your mind, you can turn them back on in My account.</value>
+  </data>
+  <data name="Ver o catálogo" xml:space="preserve">
+    <value>Browse the catalog</value>
+  </data>
+</root>

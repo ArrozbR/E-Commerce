@@ -317,6 +317,25 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.ToTable("stock_alerts", (string)null);
                 });
 
+            modelBuilder.Entity("KeycapStore.Infrastructure.Notifications.NewsletterSubscription", b =>
+                {
+                    b.Property<string>("CustomerId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<DateTimeOffset>("SubscribedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CustomerId");
+
+                    b.ToTable("newsletter_subscriptions", (string)null);
+                });
+
             modelBuilder.Entity("KeycapStore.Infrastructure.Notifications.OutboxEmail", b =>
                 {
                     b.Property<Guid>("Id")
@@ -375,6 +394,20 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("CK_outbox_emails_order_or_customer", "\"OrderId\" IS NOT NULL OR \"CustomerId\" IS NOT NULL");
                         });
+                });
+
+            modelBuilder.Entity("KeycapStore.Infrastructure.Notifications.ProductAnnouncement", b =>
+                {
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("AnnouncedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ProductId")
+                        .HasName("PK_product_announcements");
+
+                    b.ToTable("product_announcements", (string)null);
                 });
 
             modelBuilder.Entity("KeycapStore.Infrastructure.Payments.ProcessedStripeEvent", b =>
@@ -833,6 +866,15 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("KeycapStore.Infrastructure.Notifications.ProductAnnouncement", b =>
+                {
+                    b.HasOne("KeycapStore.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

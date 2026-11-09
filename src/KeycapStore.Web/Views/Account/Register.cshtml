@@ -28,6 +28,11 @@
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
             </div>
 
+            <div class="check mb-4">
+                <input id="ReceiveNews" name="ReceiveNews" type="checkbox" value="true" class="check-input" checked="@Model?.ReceiveNews" />
+                <label for="ReceiveNews" class="check-label">@Localizer["Quero receber e-mails de kits novos e pré-vendas"]</label>
+            </div>
+
             <button type="submit" class="btn btn-primary">@Localizer["Criar conta"]</button>
         </form>
     </div>

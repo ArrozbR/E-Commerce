@@ -1,8 +1,10 @@
 using System.Globalization;
 
 using KeycapStore.Application.Notifications;
+using KeycapStore.Domain.Catalog;
 using KeycapStore.Infrastructure;
 using KeycapStore.Infrastructure.Notifications;
+using KeycapStore.Infrastructure.Persistence;
 using KeycapStore.IntegrationTests.Fixtures;
 
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -48,6 +50,33 @@ public class MailKitEmailSenderTests(PostgresFixture postgres, MailpitFixture ma
 
         Assert.Equal(OutboxEmailStatus.Sent, (await FindAsync(factory, emailId))!.Status);
         Assert.Contains(await mailpit.MessagesAsync(), m => m.To == address && m.Subject.Contains(orderId.ToString()[..8]));
+    }
+
+    [Fact]
+    public async Task NewsEmail_LeavesWithTheOneClickUnsubscribeHeaders_AndOrderEmailsDoNot()
+    {
+        await using var factory = await CreateFactoryWithRealSenderAsync();
+        var (newsCustomer, newsAddress) = await CreateCustomerAsync(factory, MailpitFixture.AllowedDomain);
+        var (orderCustomer, orderAddress) = await CreateCustomerAsync(factory, MailpitFixture.AllowedDomain);
+        await using (var scope = factory.Services.CreateAsyncScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<INewsletterService>().SubscribeAsync(newsCustomer, "pt-BR");
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Products.Add(new Product("Kit Cabeçalhos", 99.90m, 3, TestPackage.Standard));
+            await db.SaveChangesAsync();
+            await scope.ServiceProvider.GetRequiredService<IProductAnnouncer>().AnnounceAsync();
+        }
+
+        var orderId = await SaveOrderAsync(factory, orderCustomer);
+        await QueueAsync(factory, EmailKind.OrderPaid, orderId);
+        await DispatchAsync(factory);
+
+        var news = await mailpit.HeadersOfMessageToAsync(newsAddress);
+        Assert.Matches(@"^<https://localhost:7290/Newsletter/Unsubscribe\?token=[^>]+>$", news["List-Unsubscribe"]);
+        Assert.Equal("List-Unsubscribe=One-Click", news["List-Unsubscribe-Post"]);
+
+        var order = await mailpit.HeadersOfMessageToAsync(orderAddress);
+        Assert.False(order.ContainsKey("List-Unsubscribe"));
     }
 
     [Fact]

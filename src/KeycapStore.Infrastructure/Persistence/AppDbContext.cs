@@ -29,6 +29,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<StockAlert> StockAlerts => Set<StockAlert>();
 
+    public DbSet<NewsletterSubscription> NewsletterSubscriptions => Set<NewsletterSubscription>();
+
+    public DbSet<ProductAnnouncement> ProductAnnouncements => Set<ProductAnnouncement>();
+
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

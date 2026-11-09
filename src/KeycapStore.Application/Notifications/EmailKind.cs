@@ -9,4 +9,6 @@ public enum EmailKind
     PasswordReset,
     PasswordChanged,
     BackInStock,
+    NewKit,
+    PreOrderOpened,
 }

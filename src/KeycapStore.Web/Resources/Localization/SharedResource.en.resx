@@ -435,4 +435,10 @@
   <data name="Aviso cancelado." xml:space="preserve">
     <value>Alert cancelled.</value>
   </data>
+  <data name="Novidades ligadas. Avisamos você de kits novos e pré-vendas." xml:space="preserve">
+    <value>News turned on. We will tell you about new kits and pre-orders.</value>
+  </data>
+  <data name="Novidades desligadas." xml:space="preserve">
+    <value>News turned off.</value>
+  </data>
 </root>

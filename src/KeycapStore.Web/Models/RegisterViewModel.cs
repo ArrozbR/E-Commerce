@@ -19,4 +19,6 @@ public sealed class RegisterViewModel
     [Compare(nameof(Password), ErrorMessage = "As senhas não conferem.")]
     [Display(Name = "Confirmar senha")]
     public string ConfirmPassword { get; set; } = string.Empty;
+
+    public bool ReceiveNews { get; set; }
 }

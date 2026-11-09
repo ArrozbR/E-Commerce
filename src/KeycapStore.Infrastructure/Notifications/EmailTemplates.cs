@@ -142,6 +142,52 @@ internal static class EmailTemplates
         return Render(text, to, content, text.Pick("Avise-me quando voltar", "Back-in-stock alert"), text.Pick("Ver o kit", "View the kit"), productLink);
     }
 
+    public static EmailMessage NewKit(string language, string to, string productName, decimal price, Uri productLink, Uri unsubscribeLink)
+    {
+        var text = WriterFor(language);
+        var content = new Content(
+            text.Pick($"Kit novo na loja: {productName}", $"New kit in the store: {productName}"),
+            text.Pick("Kit novo na loja", "New kit in the store"),
+            [
+                text.Pick($"O {productName} acabou de entrar à venda.", $"The {productName} is now on sale."),
+                text.Pick("Os lotes são limitados: quando acabam, só voltam se houver reposição.", "Batches are limited: once they sell out, they only come back if restocked."),
+                NewsReason(text),
+            ],
+            [new Row(productName, text.Price(price))],
+            null,
+            null);
+
+        return Render(text, to, content, NewsLabel(text), text.Pick("Ver o kit", "View the kit"), productLink, unsubscribeLink);
+    }
+
+    public static EmailMessage PreOrderOpened(string language, string to, string productName, decimal price, DateTimeOffset endsAt, DateTimeOffset shipsAt, Uri productLink, Uri unsubscribeLink)
+    {
+        var text = WriterFor(language);
+        var content = new Content(
+            text.Pick($"Pré-venda aberta: {productName}", $"Pre-order open: {productName}"),
+            text.Pick("Pré-venda aberta", "Pre-order open"),
+            [
+                text.Pick(
+                    $"A pré-venda do {productName} está aberta até {text.DateAndTime(endsAt)}, com envio previsto para {text.Date(shipsAt)}.",
+                    $"The pre-order for {productName} is open until {text.DateAndTime(endsAt)}, with shipping expected on {text.Date(shipsAt)}."),
+                text.Pick(
+                    "O pagamento é na hora. Se o lote não atingir o mínimo de vendas, todo mundo recebe o valor de volta.",
+                    "You pay right away. If the batch does not reach the minimum number of sales, everyone gets their money back."),
+                NewsReason(text),
+            ],
+            [new Row(productName, text.Price(price))],
+            null,
+            null);
+
+        return Render(text, to, content, NewsLabel(text), text.Pick("Ver a pré-venda", "View the pre-order"), productLink, unsubscribeLink);
+    }
+
+    private static string NewsLabel(Writer text) => text.Pick("Novidades", "News");
+
+    private static string NewsReason(Writer text) => text.Pick(
+        "Você recebe este e-mail porque ligou as novidades na Minha conta. Para desligar, use o link no fim deste e-mail ou a Minha conta.",
+        "You get this e-mail because you turned on news in My account. To turn it off, use the link at the end of this e-mail or My account.");
+
     private static Writer WriterFor(string language)
     {
         var english = language == StripeCheckoutSessionFactory.EnglishLanguage;
@@ -150,7 +196,7 @@ internal static class EmailTemplates
 
     private static string AccountLabel(Writer text) => text.Pick("Sua conta", "Your account");
 
-    private static EmailMessage Render(Writer text, string to, Content content, string eyebrow, string? linkLabel, Uri? link)
+    private static EmailMessage Render(Writer text, string to, Content content, string eyebrow, string? linkLabel, Uri? link, Uri? unsubscribe = null)
     {
         var frame = new Frame(
             text.HtmlLanguage,
@@ -158,9 +204,11 @@ internal static class EmailTemplates
             linkLabel,
             text.Pick(
                 "KeycapStore é uma loja de portfólio em modo de teste: nenhum valor é cobrado de verdade.",
-                "KeycapStore is a portfolio store in test mode: no real money is charged."));
+                "KeycapStore is a portfolio store in test mode: no real money is charged."),
+            unsubscribe,
+            text.Pick("Não quero mais receber estes e-mails", "Stop receiving these e-mails"));
 
-        return new EmailMessage(to, content.Subject, PlainText(content, frame, link), Html(content, frame, link));
+        return new EmailMessage(to, content.Subject, PlainText(content, frame, link), Html(content, frame, link), unsubscribe);
     }
 
     private static Content Paid(Writer text, Order order, string number)
@@ -277,6 +325,10 @@ internal static class EmailTemplates
         }
 
         body.Append("--\r\n").Append(frame.Footer).Append("\r\n");
+        if (frame.Unsubscribe is { } unsubscribe)
+        {
+            body.Append(frame.UnsubscribeLabel).Append(": ").Append(unsubscribe).Append("\r\n");
+        }
 
         return body.ToString();
     }
@@ -358,7 +410,14 @@ internal static class EmailTemplates
         html.Append("</td></tr>");
 
         html.Append("<tr><td align=\"center\" style=\"padding: 20px 12px 0; ").Append(FontFamily).Append(" font-size: 12px; line-height: 1.5; color: ").Append(Muted).Append(";\">")
-            .Append(E(frame.Footer)).Append("</td></tr>");
+            .Append(E(frame.Footer));
+        if (frame.Unsubscribe is { } unsubscribe)
+        {
+            html.Append("<br /><a href=\"").Append(E(unsubscribe.ToString())).Append("\" style=\"color: ").Append(Muted).Append("; text-decoration: underline;\">")
+                .Append(E(frame.UnsubscribeLabel)).Append("</a>");
+        }
+
+        html.Append("</td></tr>");
 
         html.Append("</table></td></tr></table></body></html>");
 
@@ -380,7 +439,7 @@ internal static class EmailTemplates
 
     private sealed record Row(string Label, string Value);
 
-    private sealed record Frame(string HtmlLanguage, string Eyebrow, string? LinkLabel, string Footer);
+    private sealed record Frame(string HtmlLanguage, string Eyebrow, string? LinkLabel, string Footer, Uri? Unsubscribe, string UnsubscribeLabel);
 
     private sealed class Writer(bool english, CultureInfo culture)
     {

@@ -6,6 +6,7 @@
     var account = (AccountSummary)ViewData["Account"]!;
     var recent = (IReadOnlyList<OrderSummaryView>)ViewData["RecentOrders"]!;
     var email = User.Identity?.Name ?? "";
+    var newsletterOn = ViewData["Newsletter"] is true;
 }
 
 <div class="mb-8 flex flex-wrap items-center gap-4">
@@ -118,7 +119,25 @@
             <button type="button" class="choice" data-theme-choice="light" aria-pressed="false">@Localizer["Claro"]</button>
             <button type="button" class="choice" data-theme-choice="dark" aria-pressed="false">@Localizer["Escuro"]</button>
         </div>
-        <p class="mt-4 mb-0 text-xs text-muted">@Localizer["O idioma e o tema ficam guardados neste navegador."]</p>
+        <p class="mt-4 text-xs text-muted">@Localizer["O idioma e o tema ficam guardados neste navegador."]</p>
+
+        <h3 class="mt-6 text-base">@Localizer["E-mails de novidades"]</h3>
+        @if (newsletterOn)
+        {
+            <p class="text-sm" data-newsletter-on><span class="badge badge-success">@Localizer["Ligado"]</span> @Localizer["Você recebe um e-mail quando entra um kit novo ou abre uma pré-venda."]</p>
+            <form asp-action="Newsletter" method="post">
+                <input type="hidden" name="receive" value="false" />
+                <button type="submit" class="btn btn-secondary btn-sm">@Localizer["Desligar as novidades"]</button>
+            </form>
+        }
+        else
+        {
+            <p class="text-sm text-muted" data-newsletter-off>@Localizer["Receba um e-mail quando entrar um kit novo ou abrir uma pré-venda. Dá para desligar a qualquer momento."]</p>
+            <form asp-action="Newsletter" method="post">
+                <input type="hidden" name="receive" value="true" />
+                <button type="submit" class="btn btn-secondary btn-sm">@Localizer["Ligar as novidades"]</button>
+            </form>
+        }
     </section>
 
     <section class="card" aria-labelledby="data-title">
