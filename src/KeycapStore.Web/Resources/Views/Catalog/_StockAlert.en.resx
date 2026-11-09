@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <data name="Esgotado por enquanto. Entre na sua conta para receber um e-mail quando este kit voltar." xml:space="preserve">
+    <value>Sold out for now. Sign in to get an e-mail when this kit is back.</value>
+  </data>
+  <data name="Entrar para ser avisado" xml:space="preserve">
+    <value>Sign in to be notified</value>
+  </data>
+  <data name="Aviso ligado" xml:space="preserve">
+    <value>Alert on</value>
+  </data>
+  <data name="Vamos avisar você por e-mail quando este kit voltar. É um aviso só: depois dele, peça de novo se precisar." xml:space="preserve">
+    <value>We will e-mail you when this kit is back. It is a single alert: after it, ask again if you need to.</value>
+  </data>
+  <data name="Cancelar o aviso" xml:space="preserve">
+    <value>Cancel the alert</value>
+  </data>
+  <data name="Esgotado por enquanto. Quer receber um e-mail quando este kit voltar?" xml:space="preserve">
+    <value>Sold out for now. Want an e-mail when this kit is back?</value>
+  </data>
+  <data name="Avise-me quando voltar" xml:space="preserve">
+    <value>Notify me when it is back</value>
+  </data>
+</root>
