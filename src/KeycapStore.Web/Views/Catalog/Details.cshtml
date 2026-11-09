@@ -35,7 +35,17 @@
             <partial name="_Availability" model="product" />
         </div>
 
+        @if (TempData[KeycapStore.Web.Controllers.CatalogController.AlertMessageKey] is string alertMessage)
+        {
+            <div class="alert alert-success mb-4" role="status">@alertMessage</div>
+        }
+
         <partial name="_AddToCart" model="product" />
+
+        @if (Model.OffersAlert)
+        {
+            <partial name="_StockAlert" model="Model" />
+        }
 
         <h2>@Localizer["O que vem no kit"]</h2>
         <p class="text-muted">@description</p>

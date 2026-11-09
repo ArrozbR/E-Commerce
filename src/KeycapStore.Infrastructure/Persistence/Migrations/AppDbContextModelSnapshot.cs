@@ -293,6 +293,30 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.ToTable("saved_addresses", (string)null);
                 });
 
+            modelBuilder.Entity("KeycapStore.Infrastructure.Catalog.StockAlert", b =>
+                {
+                    b.Property<string>("CustomerId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.HasKey("CustomerId", "ProductId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("stock_alerts", (string)null);
+                });
+
             modelBuilder.Entity("KeycapStore.Infrastructure.Notifications.OutboxEmail", b =>
                 {
                     b.Property<Guid>("Id")
@@ -326,6 +350,9 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("OrderId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -334,6 +361,8 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("Kind", "OrderId")
                         .IsUnique();
@@ -784,11 +813,25 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("KeycapStore.Infrastructure.Catalog.StockAlert", b =>
+                {
+                    b.HasOne("KeycapStore.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("KeycapStore.Infrastructure.Notifications.OutboxEmail", b =>
                 {
                     b.HasOne("KeycapStore.Domain.Orders.Order", null)
                         .WithMany()
                         .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("KeycapStore.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 

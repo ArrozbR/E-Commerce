@@ -1,0 +1,26 @@
+@model ProductPageViewModel
+
+<div id="avise-me" class="card mb-6 scroll-mt-24" data-stock-alert>
+    @if (Model.AlertRequested is null)
+    {
+        <p class="text-sm text-muted">@Localizer["Esgotado por enquanto. Entre na sua conta para receber um e-mail quando este kit voltar."]</p>
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary w-full">@Localizer["Entrar para ser avisado"]</a>
+    }
+    else if (Model.AlertRequested == true)
+    {
+        <p class="text-sm" data-alert-requested>
+            <span class="badge badge-success">@Localizer["Aviso ligado"]</span>
+            @Localizer["Vamos avisar você por e-mail quando este kit voltar. É um aviso só: depois dele, peça de novo se precisar."]
+        </p>
+        <form asp-controller="Catalog" asp-action="CancelAlert" asp-route-id="@Model.Product.Id" method="post">
+            <button type="submit" class="btn btn-secondary w-full">@Localizer["Cancelar o aviso"]</button>
+        </form>
+    }
+    else
+    {
+        <p class="text-sm text-muted">@Localizer["Esgotado por enquanto. Quer receber um e-mail quando este kit voltar?"]</p>
+        <form asp-controller="Catalog" asp-action="RequestAlert" asp-route-id="@Model.Product.Id" method="post">
+            <button type="submit" class="btn btn-primary w-full">@Localizer["Avise-me quando voltar"]</button>
+        </form>
+    }
+</div>

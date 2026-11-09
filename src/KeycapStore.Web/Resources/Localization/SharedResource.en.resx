@@ -426,4 +426,13 @@
   <data name="Senha trocada. Entre com a senha nova." xml:space="preserve">
     <value>Password changed. Sign in with the new password.</value>
   </data>
+  <data name="Este kit não recebe aviso agora: ele já está à venda ou não é um kit normal." xml:space="preserve">
+    <value>This kit does not take alerts right now: it is already on sale or it is not a regular kit.</value>
+  </data>
+  <data name="Pronto! Avisamos você por e-mail quando este kit voltar." xml:space="preserve">
+    <value>Done! We will e-mail you when this kit is back.</value>
+  </data>
+  <data name="Aviso cancelado." xml:space="preserve">
+    <value>Alert cancelled.</value>
+  </data>
 </root>

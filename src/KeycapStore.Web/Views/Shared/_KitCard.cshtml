@@ -36,4 +36,10 @@
             <partial name="_AddToCart" model="product" />
         </div>
     }
+    else if (Model.OffersAlert)
+    {
+        <div class="mt-5">
+            <a class="btn btn-secondary w-full" href="@(address)#avise-me" data-alert-link>@Localizer["Avise-me quando voltar"]</a>
+        </div>
+    }
 </article>

@@ -120,6 +120,28 @@ internal static class EmailTemplates
         return Render(text, to, content, AccountLabel(text), text.Pick("Entrar", "Sign in"), loginLink);
     }
 
+    public static EmailMessage BackInStock(string language, string to, string productName, decimal price, Uri productLink)
+    {
+        var text = WriterFor(language);
+        var content = new Content(
+            text.Pick($"{productName} voltou ao estoque", $"{productName} is back in stock"),
+            text.Pick("Voltou ao estoque", "Back in stock"),
+            [
+                text.Pick($"O {productName} que você pediu para acompanhar voltou ao estoque.", $"The {productName} you asked us to watch is back in stock."),
+                text.Pick(
+                    "As unidades são limitadas: avisamos todo mundo que pediu ao mesmo tempo, e elas ficam com quem finalizar a compra primeiro.",
+                    "Units are limited: everyone who asked was told at the same time, and they go to whoever checks out first."),
+                text.Pick(
+                    "Este foi o único aviso. Se ele esgotar de novo, peça outro na página do kit.",
+                    "This was the only alert. If it sells out again, ask for another one on the kit page."),
+            ],
+            [new Row(productName, text.Price(price))],
+            null,
+            null);
+
+        return Render(text, to, content, text.Pick("Avise-me quando voltar", "Back-in-stock alert"), text.Pick("Ver o kit", "View the kit"), productLink);
+    }
+
     private static Writer WriterFor(string language)
     {
         var english = language == StripeCheckoutSessionFactory.EnglishLanguage;

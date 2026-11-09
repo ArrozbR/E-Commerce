@@ -55,6 +55,8 @@ public sealed class OutboxEmail
 
     public string? Language { get; private set; }
 
+    public Guid? ProductId { get; private set; }
+
     public OutboxEmailStatus Status { get; private set; }
 
     public int Attempts { get; private set; }
@@ -64,6 +66,13 @@ public sealed class OutboxEmail
     public DateTimeOffset NextAttemptAt { get; private set; }
 
     public DateTimeOffset? FinishedAt { get; private set; }
+
+    public static OutboxEmail AboutProduct(EmailKind kind, string customerId, Guid productId, string language, DateTimeOffset createdAt)
+    {
+        var email = ForCustomer(kind, customerId, language, createdAt);
+        email.ProductId = productId;
+        return email;
+    }
 
     public static OutboxEmail ForCustomer(EmailKind kind, string customerId, string language, DateTimeOffset createdAt)
     {

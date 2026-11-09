@@ -8,7 +8,14 @@ public interface IPersonalDataExport
     Task<PersonalData> ExportAsync(string customerId, CancellationToken cancellationToken = default);
 }
 
-public sealed record PersonalData(DateTimeOffset GeneratedAt, PersonalAccount Account, ShippingAddress? SavedAddress, IReadOnlyList<PersonalOrder> Orders);
+public sealed record PersonalData(
+    DateTimeOffset GeneratedAt,
+    PersonalAccount Account,
+    ShippingAddress? SavedAddress,
+    IReadOnlyList<PersonalOrder> Orders,
+    IReadOnlyList<PersonalStockAlert> StockAlerts);
+
+public sealed record PersonalStockAlert(string Product, DateTimeOffset RequestedAt);
 
 public sealed record PersonalAccount(string Email, bool HasPassword, IReadOnlyList<string> ConnectedLogins);
 
