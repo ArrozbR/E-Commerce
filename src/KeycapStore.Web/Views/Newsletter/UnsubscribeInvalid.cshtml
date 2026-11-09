@@ -1,0 +1,10 @@
+@{
+    ViewData["Title"] = Localizer["Link inválido"].Value;
+}
+
+<h1>@Localizer["Link inválido"]</h1>
+
+<div class="card max-w-xl" data-unsubscribe-invalid>
+    <p>@Localizer["Este link de descadastro não é válido. Para desligar as novidades, entre na sua conta e use a Minha conta."]</p>
+    <a asp-controller="Account" asp-action="Login" class="btn btn-primary">@Localizer["Entrar"]</a>
+</div>

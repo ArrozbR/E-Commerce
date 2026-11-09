@@ -1,3 +1,3 @@
 namespace KeycapStore.Application.Notifications;
 
-public sealed record EmailMessage(string To, string Subject, string TextBody, string HtmlBody);
+public sealed record EmailMessage(string To, string Subject, string TextBody, string HtmlBody, Uri? UnsubscribeLink = null);

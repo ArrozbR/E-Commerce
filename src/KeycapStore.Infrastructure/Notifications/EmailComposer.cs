@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace KeycapStore.Infrastructure.Notifications;
 
-internal sealed class EmailComposer(AppDbContext db, UserManager<IdentityUser> users, IOptions<PublicSiteOptions> site)
+internal sealed class EmailComposer(AppDbContext db, UserManager<IdentityUser> users, INewsletterService newsletter, IOptions<PublicSiteOptions> site)
 {
     public Task<EmailMessage?> ComposeAsync(OutboxEmail email, CancellationToken cancellationToken = default) =>
         email.CustomerId is null ? ComposeForOrderAsync(email, cancellationToken) : ComposeForAccountAsync(email);
@@ -96,9 +96,10 @@ internal sealed class EmailComposer(AppDbContext db, UserManager<IdentityUser> u
             }
 
             var kitLink = Link($"Catalog/{kit.Id}");
+            var unsubscribe = Link($"Newsletter/Unsubscribe?token={Uri.EscapeDataString(newsletter.UnsubscribeTokenFor(user.Id))}");
             return email.Kind == EmailKind.PreOrderOpened && kit.PreOrderEndsAt is { } endsAt && kit.PreOrderShipsAt is { } shipsAt
-                ? EmailTemplates.PreOrderOpened(language, to, kit.Name, kit.Price, endsAt, shipsAt, kitLink)
-                : EmailTemplates.NewKit(language, to, kit.Name, kit.Price, kitLink);
+                ? EmailTemplates.PreOrderOpened(language, to, kit.Name, kit.Price, endsAt, shipsAt, kitLink, unsubscribe)
+                : EmailTemplates.NewKit(language, to, kit.Name, kit.Price, kitLink, unsubscribe);
         }
 
         if (email.Kind != EmailKind.PasswordReset)

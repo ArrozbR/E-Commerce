@@ -56,6 +56,12 @@ internal sealed class MailKitEmailSender(IOptions<EmailOptions> options) : IEmai
         mime.From.Add(new MailboxAddress(settings.FromName, settings.FromAddress));
         mime.To.Add(to);
         mime.Subject = message.Subject;
+        if (message.UnsubscribeLink is { } unsubscribe)
+        {
+            mime.Headers.Add("List-Unsubscribe", $"<{unsubscribe.AbsoluteUri}>");
+            mime.Headers.Add("List-Unsubscribe-Post", "List-Unsubscribe=One-Click");
+        }
+
         mime.Body = new BodyBuilder { TextBody = message.TextBody, HtmlBody = message.HtmlBody }.ToMessageBody();
 
         return mime;

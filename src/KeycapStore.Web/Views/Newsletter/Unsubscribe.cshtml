@@ -1,0 +1,14 @@
+@model string
+@{
+    ViewData["Title"] = Localizer["Desligar as novidades"].Value;
+}
+
+<h1>@Localizer["Desligar as novidades"]</h1>
+
+<div class="card max-w-xl" data-unsubscribe>
+    <p>@Localizer["Você vai parar de receber os e-mails de kits novos e pré-vendas. Os e-mails dos seus pedidos continuam chegando normalmente."]</p>
+    <form asp-controller="Newsletter" asp-action="ConfirmUnsubscribe" method="post">
+        <input type="hidden" name="token" value="@Model" />
+        <button type="submit" class="btn btn-primary">@Localizer["Não quero mais receber"]</button>
+    </form>
+</div>

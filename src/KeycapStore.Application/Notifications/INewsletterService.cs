@@ -7,6 +7,12 @@ public interface INewsletterService
     Task UnsubscribeAsync(string customerId, CancellationToken cancellationToken = default);
 
     Task<bool> IsSubscribedAsync(string customerId, CancellationToken cancellationToken = default);
+
+    string UnsubscribeTokenFor(string customerId);
+
+    bool IsValidUnsubscribeToken(string token);
+
+    Task<bool> UnsubscribeWithTokenAsync(string token, CancellationToken cancellationToken = default);
 }
 
 public interface IProductAnnouncer

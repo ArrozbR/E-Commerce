@@ -28,6 +28,19 @@ public sealed class MailpitFixture : IAsyncLifetime
 
     public Task DisposeAsync() => Container.DisposeAsync().AsTask();
 
+    public async Task<IReadOnlyDictionary<string, string>> HeadersOfMessageToAsync(string address)
+    {
+        using var http = new HttpClient { BaseAddress = new Uri($"http://{Container.Hostname}:{Container.GetMappedPublicPort(ApiPort)}") };
+        using var list = JsonDocument.Parse(await http.GetStringAsync("/api/v1/messages"));
+        var id = list.RootElement.GetProperty("messages").EnumerateArray()
+            .First(message => message.GetProperty("To").EnumerateArray().Any(to => to.GetProperty("Address").GetString() == address))
+            .GetProperty("ID").GetString();
+
+        using var headers = JsonDocument.Parse(await http.GetStringAsync($"/api/v1/message/{id}/headers"));
+        return headers.RootElement.EnumerateObject()
+            .ToDictionary(h => h.Name, h => string.Join(" ", h.Value.EnumerateArray().Select(v => v.GetString())), StringComparer.OrdinalIgnoreCase);
+    }
+
     public async Task<IReadOnlyList<(string Subject, string To)>> MessagesAsync()
     {
         using var http = new HttpClient { BaseAddress = new Uri($"http://{Container.Hostname}:{Container.GetMappedPublicPort(ApiPort)}") };

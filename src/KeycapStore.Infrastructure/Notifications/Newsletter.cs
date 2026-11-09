@@ -1,7 +1,10 @@
+using System.Security.Cryptography;
+
 using KeycapStore.Application.Notifications;
 using KeycapStore.Domain.Catalog;
 using KeycapStore.Infrastructure.Persistence;
 
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Logging;
@@ -53,8 +56,39 @@ internal sealed class ProductAnnouncementConfiguration : IEntityTypeConfiguratio
     }
 }
 
-internal sealed class NewsletterService(AppDbContext db, TimeProvider clock) : INewsletterService
+internal sealed class NewsletterService(AppDbContext db, TimeProvider clock, IDataProtectionProvider protection) : INewsletterService
 {
+    public const string UnsubscribePurpose = "KeycapStore.Newsletter.Unsubscribe.v1";
+
+    private IDataProtector Protector => protection.CreateProtector(UnsubscribePurpose);
+
+    public string UnsubscribeTokenFor(string customerId) => Protector.Protect(customerId);
+
+    public bool IsValidUnsubscribeToken(string token) => CustomerIdFrom(token) is not null;
+
+    public async Task<bool> UnsubscribeWithTokenAsync(string token, CancellationToken cancellationToken = default)
+    {
+        if (CustomerIdFrom(token) is not { } customerId)
+        {
+            return false;
+        }
+
+        await UnsubscribeAsync(customerId, cancellationToken);
+        return true;
+    }
+
+    private string? CustomerIdFrom(string token)
+    {
+        try
+        {
+            return Protector.Unprotect(token);
+        }
+        catch (CryptographicException)
+        {
+            return null;
+        }
+    }
+
     public async Task SubscribeAsync(string customerId, string language, CancellationToken cancellationToken = default)
     {
         if (await IsSubscribedAsync(customerId, cancellationToken))
