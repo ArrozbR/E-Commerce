@@ -6,4 +6,6 @@ public enum EmailKind
     OrderShipped,
     OrderRefunded,
     WithdrawalReceived,
+    PasswordReset,
+    PasswordChanged,
 }

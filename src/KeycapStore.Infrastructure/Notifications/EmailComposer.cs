@@ -1,16 +1,26 @@
+using System.Text;
+
+using KeycapStore.Application.Identity;
 using KeycapStore.Application.Notifications;
 using KeycapStore.Domain.Catalog;
+using KeycapStore.Domain.Orders;
+using KeycapStore.Infrastructure.Identity;
 using KeycapStore.Infrastructure.Orders;
 using KeycapStore.Infrastructure.Persistence;
 
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace KeycapStore.Infrastructure.Notifications;
 
-internal sealed class EmailComposer(AppDbContext db, IOptions<PublicSiteOptions> store)
+internal sealed class EmailComposer(AppDbContext db, UserManager<IdentityUser> users, IOptions<PublicSiteOptions> site)
 {
-    public async Task<EmailMessage?> ComposeAsync(OutboxEmail email, CancellationToken cancellationToken = default)
+    public Task<EmailMessage?> ComposeAsync(OutboxEmail email, CancellationToken cancellationToken = default) =>
+        email.CustomerId is null ? ComposeForOrderAsync(email, cancellationToken) : ComposeForAccountAsync(email);
+
+    private async Task<EmailMessage?> ComposeForOrderAsync(OutboxEmail email, CancellationToken cancellationToken)
     {
         var order = await db.Orders
             .AsNoTracking()
@@ -35,8 +45,45 @@ internal sealed class EmailComposer(AppDbContext db, IOptions<PublicSiteOptions>
             && order.PreOrderShipsAt is not null
             && await db.PreOrderOutcomeAsync(order, cancellationToken) == PreOrderOutcome.Cancelled;
 
-        var link = new Uri(new Uri(store.Value.PublicUrl), $"Orders/Details/{order.Id}");
-
-        return EmailTemplates.Compose(email.Kind, order, to, link, email.CreatedAt, batchCancelled);
+        return EmailTemplates.Compose(email.Kind, order, to, Link($"Orders/Details/{order.Id}"), email.CreatedAt, batchCancelled);
     }
+
+    private async Task<EmailMessage?> ComposeForAccountAsync(OutboxEmail email)
+    {
+        var user = await users.FindByIdAsync(email.CustomerId!);
+        if (user?.Email is not { Length: > 0 } to)
+        {
+            return null;
+        }
+
+        var language = email.Language ?? Order.DefaultLanguage;
+        var login = Link("Account/Login");
+
+        if (email.Kind == EmailKind.PasswordChanged)
+        {
+            return EmailTemplates.PasswordChanged(language, to, login, email.CreatedAt);
+        }
+
+        if (email.Kind != EmailKind.PasswordReset)
+        {
+            throw new ArgumentOutOfRangeException(nameof(email), email.Kind, "Tipo de e-mail de conta desconhecido.");
+        }
+
+        if (await users.IsInRoleAsync(user, Roles.Admin))
+        {
+            return EmailTemplates.PasswordResetForAdmin(language, to);
+        }
+
+        if (!await users.HasPasswordAsync(user))
+        {
+            return EmailTemplates.PasswordResetForGoogle(language, to, login);
+        }
+
+        var token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(await users.GeneratePasswordResetTokenAsync(user)));
+        var resetLink = Link($"Account/ResetPassword?userId={Uri.EscapeDataString(user.Id)}&token={token}");
+
+        return EmailTemplates.PasswordReset(language, to, resetLink, PasswordResetService.LinkLifetime);
+    }
+
+    private Uri Link(string relative) => new(new Uri(site.Value.PublicUrl), relative);
 }

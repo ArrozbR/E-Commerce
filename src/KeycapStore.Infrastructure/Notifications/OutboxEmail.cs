@@ -22,21 +22,38 @@ public sealed class OutboxEmail
         TimeSpan.FromHours(12),
     ];
 
+    public const int MaxCustomerIdLength = 450;
+
+    public const int MaxLanguageLength = 10;
+
     public OutboxEmail(EmailKind kind, Guid orderId, DateTimeOffset createdAt)
+        : this(kind, createdAt)
+    {
+        OrderId = orderId;
+    }
+
+    private OutboxEmail(EmailKind kind, DateTimeOffset createdAt)
     {
         Id = Guid.NewGuid();
         Kind = kind;
-        OrderId = orderId;
         Status = OutboxEmailStatus.Pending;
         CreatedAt = createdAt;
         NextAttemptAt = createdAt;
+    }
+
+    private OutboxEmail()
+    {
     }
 
     public Guid Id { get; private set; }
 
     public EmailKind Kind { get; private set; }
 
-    public Guid OrderId { get; private set; }
+    public Guid? OrderId { get; private set; }
+
+    public string? CustomerId { get; private set; }
+
+    public string? Language { get; private set; }
 
     public OutboxEmailStatus Status { get; private set; }
 
@@ -47,6 +64,16 @@ public sealed class OutboxEmail
     public DateTimeOffset NextAttemptAt { get; private set; }
 
     public DateTimeOffset? FinishedAt { get; private set; }
+
+    public static OutboxEmail ForCustomer(EmailKind kind, string customerId, string language, DateTimeOffset createdAt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(customerId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(language);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(customerId.Length, MaxCustomerIdLength, nameof(customerId));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(language.Length, MaxLanguageLength, nameof(language));
+
+        return new OutboxEmail(kind, createdAt) { CustomerId = customerId, Language = language };
+    }
 
     public void MarkSent(DateTimeOffset now)
     {
