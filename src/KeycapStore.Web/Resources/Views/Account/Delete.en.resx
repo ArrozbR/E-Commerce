@@ -141,4 +141,22 @@
   <data name="Zona de perigo" xml:space="preserve">
     <value>Danger zone</value>
   </data>
+  <data name="E-mails de novidades" xml:space="preserve">
+    <value>News e-mails</value>
+  </data>
+  <data name="Ligado" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="Você recebe um e-mail quando entra um kit novo ou abre uma pré-venda." xml:space="preserve">
+    <value>You get an e-mail when a new kit arrives or a pre-order opens.</value>
+  </data>
+  <data name="Desligar as novidades" xml:space="preserve">
+    <value>Turn news off</value>
+  </data>
+  <data name="Receba um e-mail quando entrar um kit novo ou abrir uma pré-venda. Dá para desligar a qualquer momento." xml:space="preserve">
+    <value>Get an e-mail when a new kit arrives or a pre-order opens. You can turn it off at any time.</value>
+  </data>
+  <data name="Ligar as novidades" xml:space="preserve">
+    <value>Turn news on</value>
+  </data>
 </root>

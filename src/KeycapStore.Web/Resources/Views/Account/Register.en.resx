@@ -18,4 +18,7 @@
   <data name="Criar conta com o Google" xml:space="preserve">
     <value>Sign up with Google</value>
   </data>
+  <data name="Quero receber e-mails de kits novos e pré-vendas" xml:space="preserve">
+    <value>I want to get e-mails about new kits and pre-orders</value>
+  </data>
 </root>

@@ -16,7 +16,7 @@ internal sealed class AccountService(UserManager<IdentityUser> userManager, Sign
         var result = await userManager.CreateAsync(user, password);
 
         return result.Succeeded
-            ? AccountResult.Success()
+            ? AccountResult.Success(user.Id)
             : AccountResult.Failure(result.Errors.Select(e => e.Description).Distinct());
     }
 

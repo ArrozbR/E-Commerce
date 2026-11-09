@@ -4,6 +4,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 
 using KeycapStore.Application.Identity;
+using KeycapStore.Application.Notifications;
 using KeycapStore.Application.Orders;
 using KeycapStore.Web.Localization;
 using KeycapStore.Web.Models;
@@ -22,6 +23,7 @@ public sealed class AccountController(
     IOrderQueries orders,
     IPersonalDataExport personalData,
     IPasswordResetService passwordResets,
+    INewsletterService newsletter,
     IStringLocalizer<SharedResource> text) : Controller
 {
     private static readonly JsonSerializerOptions ExportOptions = new(JsonSerializerDefaults.Web)
@@ -53,9 +55,33 @@ public sealed class AccountController(
             return View(model);
         }
 
+        if (model.ReceiveNews && result.CustomerId is { } newCustomerId)
+        {
+            await newsletter.SubscribeAsync(newCustomerId, CultureInfo.CurrentUICulture.Name, cancellationToken);
+        }
+
         await accounts.SignInAsync(model.Email, model.Password, cancellationToken);
 
         return RedirectToAction("Index", "Catalog");
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> Newsletter(bool receive, CancellationToken cancellationToken)
+    {
+        var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        if (receive)
+        {
+            await newsletter.SubscribeAsync(customerId, CultureInfo.CurrentUICulture.Name, cancellationToken);
+            TempData["Message"] = text["Novidades ligadas. Avisamos você de kits novos e pré-vendas."].Value;
+        }
+        else
+        {
+            await newsletter.UnsubscribeAsync(customerId, cancellationToken);
+            TempData["Message"] = text["Novidades desligadas."].Value;
+        }
+
+        return RedirectToAction(nameof(Delete));
     }
 
 
@@ -375,5 +401,6 @@ public sealed class AccountController(
         ViewData["SavedAddress"] = await savedAddresses.GetAsync(customerId, cancellationToken);
         ViewData["Account"] = await accounts.GetSummaryAsync(customerId, cancellationToken);
         ViewData["RecentOrders"] = (await orders.ListForCustomerAsync(customerId, cancellationToken)).Take(3).ToList();
+        ViewData["Newsletter"] = await newsletter.IsSubscribedAsync(customerId, cancellationToken);
     }
 }

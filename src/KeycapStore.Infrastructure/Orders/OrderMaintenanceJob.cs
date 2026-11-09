@@ -34,6 +34,7 @@ public sealed class OrderMaintenanceJob(IServiceScopeFactory scopes, ILogger<Ord
             }
 
             await RunAsync<IStockAlertNotifier>((alerts, ct) => alerts.NotifyAsync(ct), stoppingToken);
+            await RunAsync<IProductAnnouncer>((announcer, ct) => announcer.AnnounceAsync(ct), stoppingToken);
             await RunAsync<IEmailOutboxDispatcher>((outbox, ct) => outbox.SendPendingAsync(ct), stoppingToken);
         }
     }

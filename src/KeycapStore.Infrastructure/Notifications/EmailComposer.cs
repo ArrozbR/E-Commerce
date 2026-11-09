@@ -77,6 +77,30 @@ internal sealed class EmailComposer(AppDbContext db, UserManager<IdentityUser> u
                 : EmailTemplates.BackInStock(language, to, product.Name, product.Price, Link($"Catalog/{product.Id}"));
         }
 
+        if (email.Kind is EmailKind.NewKit or EmailKind.PreOrderOpened)
+        {
+            if (!await db.NewsletterSubscriptions.AnyAsync(s => s.CustomerId == user.Id))
+            {
+                return null;
+            }
+
+            var kit = await db.Products
+                .AsNoTracking()
+                .Where(p => p.Id == email.ProductId && p.IsActive)
+                .Select(p => new { p.Id, p.Name, p.Price, p.PreOrderEndsAt, p.PreOrderShipsAt })
+                .SingleOrDefaultAsync();
+
+            if (kit is null)
+            {
+                return null;
+            }
+
+            var kitLink = Link($"Catalog/{kit.Id}");
+            return email.Kind == EmailKind.PreOrderOpened && kit.PreOrderEndsAt is { } endsAt && kit.PreOrderShipsAt is { } shipsAt
+                ? EmailTemplates.PreOrderOpened(language, to, kit.Name, kit.Price, endsAt, shipsAt, kitLink)
+                : EmailTemplates.NewKit(language, to, kit.Name, kit.Price, kitLink);
+        }
+
         if (email.Kind != EmailKind.PasswordReset)
         {
             throw new ArgumentOutOfRangeException(nameof(email), email.Kind, "Tipo de e-mail de conta desconhecido.");

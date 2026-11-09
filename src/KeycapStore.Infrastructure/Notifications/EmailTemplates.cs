@@ -142,6 +142,52 @@ internal static class EmailTemplates
         return Render(text, to, content, text.Pick("Avise-me quando voltar", "Back-in-stock alert"), text.Pick("Ver o kit", "View the kit"), productLink);
     }
 
+    public static EmailMessage NewKit(string language, string to, string productName, decimal price, Uri productLink)
+    {
+        var text = WriterFor(language);
+        var content = new Content(
+            text.Pick($"Kit novo na loja: {productName}", $"New kit in the store: {productName}"),
+            text.Pick("Kit novo na loja", "New kit in the store"),
+            [
+                text.Pick($"O {productName} acabou de entrar à venda.", $"The {productName} is now on sale."),
+                text.Pick("Os lotes são limitados: quando acabam, só voltam se houver reposição.", "Batches are limited: once they sell out, they only come back if restocked."),
+                NewsReason(text),
+            ],
+            [new Row(productName, text.Price(price))],
+            null,
+            null);
+
+        return Render(text, to, content, NewsLabel(text), text.Pick("Ver o kit", "View the kit"), productLink);
+    }
+
+    public static EmailMessage PreOrderOpened(string language, string to, string productName, decimal price, DateTimeOffset endsAt, DateTimeOffset shipsAt, Uri productLink)
+    {
+        var text = WriterFor(language);
+        var content = new Content(
+            text.Pick($"Pré-venda aberta: {productName}", $"Pre-order open: {productName}"),
+            text.Pick("Pré-venda aberta", "Pre-order open"),
+            [
+                text.Pick(
+                    $"A pré-venda do {productName} está aberta até {text.DateAndTime(endsAt)}, com envio previsto para {text.Date(shipsAt)}.",
+                    $"The pre-order for {productName} is open until {text.DateAndTime(endsAt)}, with shipping expected on {text.Date(shipsAt)}."),
+                text.Pick(
+                    "O pagamento é na hora. Se o lote não atingir o mínimo de vendas, todo mundo recebe o valor de volta.",
+                    "You pay right away. If the batch does not reach the minimum number of sales, everyone gets their money back."),
+                NewsReason(text),
+            ],
+            [new Row(productName, text.Price(price))],
+            null,
+            null);
+
+        return Render(text, to, content, NewsLabel(text), text.Pick("Ver a pré-venda", "View the pre-order"), productLink);
+    }
+
+    private static string NewsLabel(Writer text) => text.Pick("Novidades", "News");
+
+    private static string NewsReason(Writer text) => text.Pick(
+        "Você recebe este e-mail porque ligou as novidades na Minha conta. Dá para desligar lá a qualquer momento.",
+        "You get this e-mail because you turned on news in My account. You can turn it off there at any time.");
+
     private static Writer WriterFor(string language)
     {
         var english = language == StripeCheckoutSessionFactory.EnglishLanguage;

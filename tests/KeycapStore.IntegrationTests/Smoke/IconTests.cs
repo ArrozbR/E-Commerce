@@ -27,8 +27,8 @@ public class IconTests(PostgresFixture postgres) : IClassFixture<PostgresFixture
 
         var html = await PageClient.Anonymous(factory).GetStringAsync("/Catalog");
 
-        Assert.Contains("rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\"", html);
-        Assert.Contains("rel=\"icon\" href=\"/favicon.ico\"", html);
-        Assert.Contains("rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png\"", html);
+        Assert.Matches("rel=\"icon\" href=\"/icon\\.svg\\?v=[^\"]+\" type=\"image/svg\\+xml\"", html);
+        Assert.Matches("rel=\"icon\" href=\"/favicon\\.ico\\?v=[^\"]+\"", html);
+        Assert.Matches("rel=\"apple-touch-icon\" href=\"/apple-touch-icon\\.png\\?v=[^\"]+\"", html);
     }
 }
