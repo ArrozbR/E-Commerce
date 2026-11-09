@@ -1,7 +1,9 @@
-﻿using KeycapStore.Application.Orders;
+﻿using KeycapStore.Application.Notifications;
+using KeycapStore.Application.Orders;
 using KeycapStore.Domain.Carts;
 using KeycapStore.Domain.Catalog;
 using KeycapStore.Domain.Orders;
+using KeycapStore.Infrastructure.Notifications;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +29,11 @@ internal sealed class ShippingService(AppDbContext db, TimeProvider clock) : ISh
     }
 
     public Task ShipAsync(Guid orderId, string trackingCode, CancellationToken cancellationToken = default) =>
-        ApplyAsync(orderId, order => order.MarkShipped(trackingCode), cancellationToken);
+        ApplyAsync(orderId, order =>
+        {
+            order.MarkShipped(trackingCode);
+            db.QueueEmail(EmailKind.OrderShipped, order.Id, clock.GetUtcNow());
+        }, cancellationToken);
 
     public Task DeliverAsync(Guid orderId, CancellationToken cancellationToken = default) =>
         ApplyAsync(orderId, order => order.MarkDelivered(clock.GetUtcNow()), cancellationToken);

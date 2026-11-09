@@ -44,7 +44,7 @@ Conferido na documentação oficial (09/11):
 4. **Os quatro primeiros e-mails** (escolhidos pelo autor):
    - **Pagamento confirmado:** quando o pedido vira `Paid`, pelo webhook ou pela conciliação, que usam o mesmo código (`CheckoutSessionTransitions`). Na pré-venda, o e-mail traz o envio previsto.
    - **Pedido enviado:** quando o admin marca `Shipped`, com o código de rastreio.
-   - **Reembolso feito:** quando o pedido vira `Refunded` (`RefundProcessor`, depois de a Stripe aceitar o reembolso). O motivo vem no texto: cancelamento pelo cliente, falta de estoque ou lote da pré-venda cancelado.
+   - **Reembolso feito:** quando o pedido vira `Refunded` (`RefundProcessor`, depois de a Stripe aceitar o reembolso). O texto diz que o pedido foi cancelado e o valor devolvido; quando foi o lote da pré-venda que não atingiu o mínimo, ele diz isso. O pedido não guarda se foi o cliente ou a falta de estoque, então esses dois casos têm o mesmo texto (a página do pedido mostra a situação). O reembolso de uma desistência (`AwaitingReturn`) não gera e-mail novo: o da desistência já avisou.
    - **Desistência recebida:** quando o cliente desiste (`Withdraw`). É a confirmação exigida pelo Decreto 7.962, com o reembolso e o que acontece depois.
 5. **O job envia.** É uma tarefa nova no `OrderMaintenanceJob` (a cada minuto, no seu próprio `try`). Ela pega até 20 e-mails `Pending` com a próxima tentativa vencida, do mais antigo ao mais novo.
    - **Deu certo** → `Sent`.
@@ -52,17 +52,18 @@ Conferido na documentação oficial (09/11):
    - **Recusa permanente do servidor** (endereço inválido, por exemplo) → `Failed` na hora.
    - O pedido nunca é afetado por um e-mail que falhou.
    - Os logs registram só o id do e-mail, o tipo e o id do pedido, **nunca o endereço** (ADR 0015).
-6. **Pelo menos uma vez, não exatamente uma vez.** Se o Gmail aceitar o e-mail e a gravação do `Sent` falhar logo depois, o e-mail sai de novo na rodada seguinte. Um e-mail repetido é aceitável; um e-mail perdido não.
-7. **Formato:** texto simples e uma versão HTML sem imagens, sem rastreamento de abertura e sem links de terceiros, no idioma do pedido. O link para o pedido usa um endereço público em configuração (`Store:PublicUrl`), porque o job não tem uma requisição de onde tirar o endereço.
-8. **Configuração e segredos** (ADR 0014):
+6. **Corridas:** se duas execuções anotam o mesmo e-mail ao mesmo tempo (dois eventos de pagamento, duas rodadas de reembolso), o índice único recusa a segunda, e a transação inteira dela é desfeita, como já acontecia com o token de concorrência do pedido: o webhook responde 500 e a Stripe reenvia, e o job de reembolso ignora o pedido nessa rodada.
+7. **Pelo menos uma vez, não exatamente uma vez.** Se o Gmail aceitar o e-mail e a gravação do `Sent` falhar logo depois, o e-mail sai de novo na rodada seguinte. Um e-mail repetido é aceitável; um e-mail perdido não.
+8. **Formato:** texto simples e uma versão HTML sem imagens, sem rastreamento de abertura e sem links de terceiros, no idioma do pedido. O link para o pedido usa um endereço público em configuração (`Store:PublicUrl`, validado na subida), porque o job não tem uma requisição de onde tirar o endereço.
+9. **Configuração e segredos** (ADR 0014):
    - O servidor, a porta e o nome do remetente ficam no `appsettings.json`.
    - O usuário (o endereço da conta) e a **senha de app** são segredos: `user-secrets` no PC e `.env` na VM (`EMAIL_USERNAME`, `EMAIL_PASSWORD`), exigidos pelo `compose.prod.yaml`, com `ValidateOnStart`.
    - A senha de app nunca aparece no chat, em log ou em print.
-9. **Desenvolvimento e testes:**
+10. **Desenvolvimento e testes:**
    - No PC, o e-mail vai para o **Mailpit** (`compose.override.yaml`, publicado só em `127.0.0.1`); o PC nunca manda e-mail de verdade.
    - Nos testes, um `FakeEmailSender`. Os testes de integração conferem as linhas da caixa de saída e as tentativas (sucesso, falha temporária, recusa permanente, conta excluída, transição repetida sem segunda linha).
    - Nenhum teste fala com o Gmail.
-10. **Limpeza:** linhas `Sent`, `Failed` e `Discarded` com mais de 30 dias são apagadas pelo mesmo job.
+11. **Limpeza:** linhas `Sent`, `Failed` e `Discarded` com mais de 30 dias são apagadas pelo mesmo job.
 
 ## Alternativas consideradas
 
@@ -89,7 +90,7 @@ Conferido na documentação oficial (09/11):
   - o primeiro tráfego de saída por SMTP da VM (a porta 587 abriu no teste de 09/11, mas a Oracle pode mudar a regra);
   - um pacote novo (MailKit), uma imagem nova no PC (Mailpit), dois segredos novos e uma tabela nova;
   - textos novos nos dois idiomas;
-  - e-mails repetidos são possíveis (decisão 6);
+  - e-mails repetidos são possíveis (decisão 7);
   - contas de teste com e-mail inventado (`pedro2@test.com`) geram e-mails devolvidos ao Gmail da loja.
 - **Como saber se deu errado:**
   - linhas `Failed` se acumulando ou erros de envio no log;

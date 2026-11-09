@@ -1,5 +1,7 @@
-﻿using KeycapStore.Application.Payments;
+﻿using KeycapStore.Application.Notifications;
+using KeycapStore.Application.Payments;
 using KeycapStore.Domain.Orders;
+using KeycapStore.Infrastructure.Notifications;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KeycapStore.Infrastructure.Payments;
 
-internal sealed class RefundProcessor(AppDbContext db, IPaymentGateway payments, ILogger<RefundProcessor> logger) : IRefundProcessor
+internal sealed class RefundProcessor(AppDbContext db, IPaymentGateway payments, TimeProvider clock, ILogger<RefundProcessor> logger) : IRefundProcessor
 {
     public async Task<int> RefundPendingAsync(CancellationToken cancellationToken = default)
     {
@@ -33,6 +35,11 @@ internal sealed class RefundProcessor(AppDbContext db, IPaymentGateway payments,
                 await payments.RefundAsync(order.Id, paymentIntentId, cancellationToken);
 
                 order.MarkRefunded();
+                if (order.Status is OrderStatus.Refunded)
+                {
+                    db.QueueEmail(EmailKind.OrderRefunded, order.Id, clock.GetUtcNow());
+                }
+
                 await db.SaveChangesAsync(cancellationToken);
 
                 refunded++;
@@ -42,7 +49,7 @@ internal sealed class RefundProcessor(AppDbContext db, IPaymentGateway payments,
             {
                 logger.LogError("Reembolso do pedido {OrderId} falhou; ele continua aguardando reembolso e será tentado de novo", orderId);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateException ex) when (ex is DbUpdateConcurrencyException || EmailOutbox.IsAlreadyQueued(ex))
             {
                 db.ChangeTracker.Clear();
                 logger.LogInformation("Pedido {OrderId} mudou durante o reembolso; ignorado", orderId);

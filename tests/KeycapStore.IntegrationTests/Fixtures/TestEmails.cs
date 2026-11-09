@@ -31,9 +31,13 @@ public static class TestEmails
     }
 
     public static async Task<Guid> SaveOrderAsync(
-        WebApplicationFactory<Program> factory, string customerId, Action<Order>? change = null)
+        WebApplicationFactory<Program> factory,
+        string customerId,
+        Action<Order>? change = null,
+        string language = Order.DefaultLanguage,
+        DateTimeOffset? preOrderShipsAt = null)
     {
-        var order = new Order(customerId, DateTimeOffset.UtcNow, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Recife, TestShipping.Pac);
+        var order = new Order(customerId, DateTimeOffset.UtcNow, [new OrderItem(KitAurora, "Kit Aurora (base)", 349.90m, 1)], Recife, TestShipping.Pac, language, preOrderShipsAt);
         change?.Invoke(order);
 
         await using var scope = factory.Services.CreateAsyncScope();

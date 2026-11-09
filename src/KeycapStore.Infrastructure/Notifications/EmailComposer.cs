@@ -1,19 +1,20 @@
 using KeycapStore.Application.Notifications;
+using KeycapStore.Domain.Catalog;
+using KeycapStore.Infrastructure.Orders;
 using KeycapStore.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace KeycapStore.Infrastructure.Notifications;
 
-internal sealed class EmailComposer(AppDbContext db)
+internal sealed class EmailComposer(AppDbContext db, IOptions<PublicSiteOptions> store)
 {
     public async Task<EmailMessage?> ComposeAsync(OutboxEmail email, CancellationToken cancellationToken = default)
     {
         var order = await db.Orders
             .AsNoTracking()
-            .Where(o => o.Id == email.OrderId)
-            .Select(o => new { o.Id, o.CustomerId })
-            .SingleOrDefaultAsync(cancellationToken);
+            .SingleOrDefaultAsync(o => o.Id == email.OrderId, cancellationToken);
 
         if (order?.CustomerId is null)
         {
@@ -30,16 +31,12 @@ internal sealed class EmailComposer(AppDbContext db)
             return null;
         }
 
-        var number = order.Id.ToString()[..8];
-        var subject = email.Kind switch
-        {
-            EmailKind.OrderPaid => $"Pagamento confirmado: pedido {number}",
-            EmailKind.OrderShipped => $"Pedido {number} enviado",
-            EmailKind.OrderRefunded => $"Reembolso do pedido {number}",
-            EmailKind.WithdrawalReceived => $"Desistência do pedido {number} recebida",
-            _ => throw new ArgumentOutOfRangeException(nameof(email), email.Kind, "Tipo de e-mail desconhecido."),
-        };
+        var batchCancelled = email.Kind == EmailKind.OrderRefunded
+            && order.PreOrderShipsAt is not null
+            && await db.PreOrderOutcomeAsync(order, cancellationToken) == PreOrderOutcome.Cancelled;
 
-        return new EmailMessage(to, subject, subject, $"<p>{subject}</p>");
+        var link = new Uri(new Uri(store.Value.PublicUrl), $"Orders/Details/{order.Id}");
+
+        return EmailTemplates.Compose(email.Kind, order, to, link, email.CreatedAt, batchCancelled);
     }
 }

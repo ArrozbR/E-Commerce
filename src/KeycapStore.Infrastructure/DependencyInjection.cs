@@ -67,6 +67,10 @@ public static class DependencyInjection
             .Bind(configuration.GetSection(EmailOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
+        services.AddOptions<PublicSiteOptions>()
+            .Bind(configuration.GetSection(PublicSiteOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         services.AddSingleton<IEmailSender, MailKitEmailSender>();
         services.AddScoped<EmailComposer>();
         services.AddScoped<IEmailOutboxDispatcher, EmailOutboxDispatcher>();
