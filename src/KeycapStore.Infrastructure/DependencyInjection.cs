@@ -1,11 +1,13 @@
 ﻿using KeycapStore.Application.Carts;
 using KeycapStore.Application.Catalog;
 using KeycapStore.Application.Identity;
+using KeycapStore.Application.Notifications;
 using KeycapStore.Application.Orders;
 using KeycapStore.Application.Payments;
 using KeycapStore.Infrastructure.Carts;
 using KeycapStore.Infrastructure.Catalog;
 using KeycapStore.Infrastructure.Identity;
+using KeycapStore.Infrastructure.Notifications;
 using KeycapStore.Infrastructure.Orders;
 using KeycapStore.Infrastructure.Payments;
 using KeycapStore.Infrastructure.Persistence;
@@ -61,6 +63,8 @@ public static class DependencyInjection
         services.AddScoped<IPaymentWebhookHandler, StripeWebhookHandler>();
         services.AddScoped<IRefundProcessor, RefundProcessor>();
         services.AddScoped<IPaymentReconciler, PaymentReconciler>();
+        services.AddScoped<EmailComposer>();
+        services.AddScoped<IEmailOutboxDispatcher, EmailOutboxDispatcher>();
 
         services.AddIdentityCore<IdentityUser>(options =>
         {

@@ -1,6 +1,7 @@
 ﻿using KeycapStore.Domain.Carts;
 using KeycapStore.Domain.Catalog;
 using KeycapStore.Domain.Orders;
+using KeycapStore.Infrastructure.Notifications;
 using KeycapStore.Infrastructure.Payments;
 
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
@@ -22,6 +23,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<SavedAddress> SavedAddresses => Set<SavedAddress>();
 
     public DbSet<ProcessedStripeEvent> ProcessedStripeEvents => Set<ProcessedStripeEvent>();
+
+    public DbSet<OutboxEmail> OutboxEmails => Set<OutboxEmail>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
