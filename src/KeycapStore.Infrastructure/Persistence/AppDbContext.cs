@@ -1,6 +1,7 @@
 ﻿using KeycapStore.Domain.Carts;
 using KeycapStore.Domain.Catalog;
 using KeycapStore.Domain.Orders;
+using KeycapStore.Infrastructure.Catalog;
 using KeycapStore.Infrastructure.Notifications;
 using KeycapStore.Infrastructure.Payments;
 
@@ -25,6 +26,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ProcessedStripeEvent> ProcessedStripeEvents => Set<ProcessedStripeEvent>();
 
     public DbSet<OutboxEmail> OutboxEmails => Set<OutboxEmail>();
+
+    public DbSet<StockAlert> StockAlerts => Set<StockAlert>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 

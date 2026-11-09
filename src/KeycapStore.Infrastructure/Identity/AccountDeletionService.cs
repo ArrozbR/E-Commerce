@@ -65,6 +65,7 @@ internal sealed class AccountDeletionService(
         }
 
         await db.SavedAddresses.Where(a => a.CustomerId == customerId).ExecuteDeleteAsync(cancellationToken);
+        await db.StockAlerts.Where(a => a.CustomerId == customerId).ExecuteDeleteAsync(cancellationToken);
 
         await db.SaveChangesAsync(cancellationToken);
 

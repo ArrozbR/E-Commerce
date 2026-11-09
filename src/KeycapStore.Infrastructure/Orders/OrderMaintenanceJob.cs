@@ -1,4 +1,5 @@
-﻿using KeycapStore.Application.Notifications;
+﻿using KeycapStore.Application.Catalog;
+using KeycapStore.Application.Notifications;
 using KeycapStore.Application.Orders;
 using KeycapStore.Application.Payments;
 
@@ -32,6 +33,7 @@ public sealed class OrderMaintenanceJob(IServiceScopeFactory scopes, ILogger<Ord
                 await RunAsync<IPaymentReconciler>((reconciler, ct) => reconciler.ReconcileAsync(ct), stoppingToken);
             }
 
+            await RunAsync<IStockAlertNotifier>((alerts, ct) => alerts.NotifyAsync(ct), stoppingToken);
             await RunAsync<IEmailOutboxDispatcher>((outbox, ct) => outbox.SendPendingAsync(ct), stoppingToken);
         }
     }

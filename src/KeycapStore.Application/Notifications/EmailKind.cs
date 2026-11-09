@@ -8,4 +8,5 @@ public enum EmailKind
     WithdrawalReceived,
     PasswordReset,
     PasswordChanged,
+    BackInStock,
 }

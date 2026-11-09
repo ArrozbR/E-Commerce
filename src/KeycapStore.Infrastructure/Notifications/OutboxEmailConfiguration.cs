@@ -1,3 +1,4 @@
+using KeycapStore.Domain.Catalog;
 using KeycapStore.Domain.Orders;
 
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,11 @@ internal sealed class OutboxEmailConfiguration : IEntityTypeConfiguration<Outbox
         builder.HasOne<Order>()
             .WithMany()
             .HasForeignKey(e => e.OrderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<Product>()
+            .WithMany()
+            .HasForeignKey(e => e.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

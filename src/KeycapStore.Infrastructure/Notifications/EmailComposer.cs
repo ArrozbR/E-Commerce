@@ -64,6 +64,19 @@ internal sealed class EmailComposer(AppDbContext db, UserManager<IdentityUser> u
             return EmailTemplates.PasswordChanged(language, to, login, email.CreatedAt);
         }
 
+        if (email.Kind == EmailKind.BackInStock)
+        {
+            var product = await db.Products
+                .AsNoTracking()
+                .Where(p => p.Id == email.ProductId && p.IsActive)
+                .Select(p => new { p.Id, p.Name, p.Price })
+                .SingleOrDefaultAsync();
+
+            return product is null
+                ? null
+                : EmailTemplates.BackInStock(language, to, product.Name, product.Price, Link($"Catalog/{product.Id}"));
+        }
+
         if (email.Kind != EmailKind.PasswordReset)
         {
             throw new ArgumentOutOfRangeException(nameof(email), email.Kind, "Tipo de e-mail de conta desconhecido.");
