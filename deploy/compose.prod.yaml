@@ -13,6 +13,9 @@ services:
       Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:?defina GOOGLE_CLIENT_SECRET no .env}
       MelhorEnvio__Token: ${MELHOR_ENVIO_TOKEN:?defina MELHOR_ENVIO_TOKEN no .env}
       MelhorEnvio__ContactEmail: ${MELHOR_ENVIO_CONTACT_EMAIL:?defina MELHOR_ENVIO_CONTACT_EMAIL no .env}
+      Email__Username: ${EMAIL_USERNAME:?defina EMAIL_USERNAME no .env}
+      Email__Password: ${EMAIL_PASSWORD:?defina EMAIL_PASSWORD no .env}
+      Email__FromAddress: ${EMAIL_USERNAME:?defina EMAIL_USERNAME no .env}
     depends_on:
       db:
         condition: service_healthy

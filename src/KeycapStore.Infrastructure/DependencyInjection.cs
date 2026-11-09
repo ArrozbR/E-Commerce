@@ -63,6 +63,11 @@ public static class DependencyInjection
         services.AddScoped<IPaymentWebhookHandler, StripeWebhookHandler>();
         services.AddScoped<IRefundProcessor, RefundProcessor>();
         services.AddScoped<IPaymentReconciler, PaymentReconciler>();
+        services.AddOptions<EmailOptions>()
+            .Bind(configuration.GetSection(EmailOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddSingleton<IEmailSender, MailKitEmailSender>();
         services.AddScoped<EmailComposer>();
         services.AddScoped<IEmailOutboxDispatcher, EmailOutboxDispatcher>();
 
