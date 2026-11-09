@@ -10,7 +10,7 @@ public interface INewsletterService
 
     string UnsubscribeTokenFor(string customerId);
 
-    bool IsValidUnsubscribeToken(string token);
+    Task<string?> EmailForUnsubscribeTokenAsync(string token, CancellationToken cancellationToken = default);
 
     Task<bool> UnsubscribeWithTokenAsync(string token, CancellationToken cancellationToken = default);
 }

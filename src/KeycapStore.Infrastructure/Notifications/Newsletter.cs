@@ -64,7 +64,10 @@ internal sealed class NewsletterService(AppDbContext db, TimeProvider clock, IDa
 
     public string UnsubscribeTokenFor(string customerId) => Protector.Protect(customerId);
 
-    public bool IsValidUnsubscribeToken(string token) => CustomerIdFrom(token) is not null;
+    public async Task<string?> EmailForUnsubscribeTokenAsync(string token, CancellationToken cancellationToken = default) =>
+        CustomerIdFrom(token) is { } customerId
+            ? await db.Users.Where(u => u.Id == customerId).Select(u => u.Email).SingleOrDefaultAsync(cancellationToken)
+            : null;
 
     public async Task<bool> UnsubscribeWithTokenAsync(string token, CancellationToken cancellationToken = default)
     {

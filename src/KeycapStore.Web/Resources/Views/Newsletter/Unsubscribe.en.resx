@@ -12,4 +12,7 @@
   <data name="Não quero mais receber" xml:space="preserve">
     <value>Stop receiving them</value>
   </data>
+  <data name="Desligar as novidades de {0}" xml:space="preserve">
+    <value>Turn news off for {0}</value>
+  </data>
 </root>

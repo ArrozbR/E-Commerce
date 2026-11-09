@@ -1,4 +1,5 @@
 using KeycapStore.Application.Notifications;
+using KeycapStore.Web.Models;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,16 +10,16 @@ public sealed class NewsletterController(INewsletterService newsletter) : Contro
 {
     [HttpGet("Unsubscribe")]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Unsubscribe(string? token)
+    public async Task<IActionResult> Unsubscribe(string? token, CancellationToken cancellationToken)
     {
         Response.Headers["Referrer-Policy"] = "no-referrer";
 
-        if (string.IsNullOrEmpty(token) || !newsletter.IsValidUnsubscribeToken(token))
+        if (string.IsNullOrEmpty(token) || await newsletter.EmailForUnsubscribeTokenAsync(token, cancellationToken) is not { } email)
         {
             return Invalid();
         }
 
-        return View(model: token);
+        return View(new UnsubscribePageViewModel(token, EmailMask.Mask(email)));
     }
 
     [HttpPost("Unsubscribe")]

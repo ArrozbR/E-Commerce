@@ -21,6 +21,12 @@ public partial class NewsletterUnsubscribeTests(PostgresFixture postgres) : ICla
 
     private static async Task<(string CustomerId, string Path)> SubscriberWithLinkAsync(WebApplicationFactory<Program> factory, FakeEmailSender sender)
     {
+        var (customerId, _, path) = await SubscriberWithAddressAsync(factory, sender);
+        return (customerId, path);
+    }
+
+    private static async Task<(string CustomerId, string Address, string Path)> SubscriberWithAddressAsync(WebApplicationFactory<Program> factory, FakeEmailSender sender)
+    {
         var (customerId, address) = await CreateCustomerAsync(factory);
         await using (var scope = factory.Services.CreateAsyncScope())
         {
@@ -37,7 +43,21 @@ public partial class NewsletterUnsubscribeTests(PostgresFixture postgres) : ICla
         var match = UnsubscribeLink().Match(message.TextBody);
         Assert.True(match.Success, "O e-mail de novidades não tem o link de descadastro no texto.");
         Assert.Contains("Não quero mais receber estes e-mails", WebUtility.HtmlDecode(message.HtmlBody));
-        return (customerId, match.Groups["path"].Value);
+        return (customerId, address, match.Groups["path"].Value);
+    }
+
+    [Fact]
+    public async Task ThePage_SaysWhoseNewsWillBeTurnedOff_WithTheAddressPartlyHidden()
+    {
+        var sender = new FakeEmailSender();
+        await using var factory = await postgres.CreateMigratedFactoryAsync(sender);
+        var (_, address, path) = await SubscriberWithAddressAsync(factory, sender);
+        var local = address[..address.IndexOf('@')];
+
+        var html = WebUtility.HtmlDecode(await PageClient.Anonymous(factory).GetStringAsync(path));
+
+        Assert.Contains($"Desligar as novidades de {local[0]}****{local[^1]}@example.com", html);
+        Assert.DoesNotContain(address, html);
     }
 
     private static async Task<bool> SubscribedAsync(WebApplicationFactory<Program> factory, string customerId)
