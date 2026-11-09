@@ -1,5 +1,7 @@
+using KeycapStore.Application.Notifications;
 using KeycapStore.Application.Payments;
 using KeycapStore.Domain.Orders;
+using KeycapStore.Infrastructure.Notifications;
 using KeycapStore.Infrastructure.Orders;
 using KeycapStore.Infrastructure.Persistence;
 
@@ -24,7 +26,13 @@ internal sealed class CheckoutSessionTransitions(AppDbContext db, TimeProvider c
 
         if (session.PaymentStatus == "paid")
         {
+            var wasPaid = order.Status is OrderStatus.Paid;
             await ApplyPaidAsync(origin, order, session, cancellationToken);
+
+            if (!wasPaid && order.Status is OrderStatus.Paid)
+            {
+                db.QueueEmail(EmailKind.OrderPaid, order.Id, clock.GetUtcNow());
+            }
         }
         else if (session.PaymentStatus == "unpaid" && order.Status is OrderStatus.AwaitingPayment)
         {

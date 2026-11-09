@@ -293,6 +293,48 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                     b.ToTable("saved_addresses", (string)null);
                 });
 
+            modelBuilder.Entity("KeycapStore.Infrastructure.Notifications.OutboxEmail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("Kind", "OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("Status", "NextAttemptAt");
+
+                    b.ToTable("outbox_emails", (string)null);
+                });
+
             modelBuilder.Entity("KeycapStore.Infrastructure.Payments.ProcessedStripeEvent", b =>
                 {
                     b.Property<string>("EventId")
@@ -726,6 +768,15 @@ namespace KeycapStore.Infrastructure.Persistence.Migrations
                         });
 
                     b.Navigation("Address")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("KeycapStore.Infrastructure.Notifications.OutboxEmail", b =>
+                {
+                    b.HasOne("KeycapStore.Domain.Orders.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

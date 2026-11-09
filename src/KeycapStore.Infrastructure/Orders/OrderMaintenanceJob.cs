@@ -1,4 +1,5 @@
-﻿using KeycapStore.Application.Orders;
+﻿using KeycapStore.Application.Notifications;
+using KeycapStore.Application.Orders;
 using KeycapStore.Application.Payments;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,8 @@ public sealed class OrderMaintenanceJob(IServiceScopeFactory scopes, ILogger<Ord
             {
                 await RunAsync<IPaymentReconciler>((reconciler, ct) => reconciler.ReconcileAsync(ct), stoppingToken);
             }
+
+            await RunAsync<IEmailOutboxDispatcher>((outbox, ct) => outbox.SendPendingAsync(ct), stoppingToken);
         }
     }
 

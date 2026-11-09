@@ -1,4 +1,5 @@
 ﻿using KeycapStore.Application.Identity;
+using KeycapStore.Application.Notifications;
 using KeycapStore.Application.Orders;
 using KeycapStore.Application.Payments;
 using KeycapStore.Infrastructure;
@@ -37,6 +38,7 @@ public sealed class PostgresFixture : IAsyncLifetime
         {
             services.AddSingleton<IPaymentGateway>(new FakePaymentGateway());
             services.AddSingleton<IShippingQuotes>(new FakeShippingQuotes());
+            services.AddSingleton<IEmailSender>(new FakeEmailSender());
             services.Remove(services.Single(d => d.ImplementationType == typeof(OrderMaintenanceJob)));
         });
     });
@@ -65,6 +67,14 @@ public sealed class PostgresFixture : IAsyncLifetime
     {
         var factory = CreateFactory()
             .WithWebHostBuilder(builder => builder.ConfigureTestServices(services => services.AddSingleton(payments)));
+        await factory.Services.MigrateDatabaseAsync();
+        return factory;
+    }
+
+    public async Task<WebApplicationFactory<Program>> CreateMigratedFactoryAsync(FakeEmailSender email)
+    {
+        var factory = CreateFactory()
+            .WithWebHostBuilder(builder => builder.ConfigureTestServices(services => services.AddSingleton<IEmailSender>(email)));
         await factory.Services.MigrateDatabaseAsync();
         return factory;
     }
