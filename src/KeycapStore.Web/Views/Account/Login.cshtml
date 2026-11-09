@@ -5,6 +5,11 @@
 
 <h1>@Localizer["Entrar"]</h1>
 
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-success max-w-md" role="status">@message</div>
+}
+
 <div>
     <div class="max-w-md">
         <form asp-action="Login" method="post">
@@ -22,7 +27,10 @@
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary">@Localizer["Entrar"]</button>
+            <div class="flex flex-wrap items-center gap-4">
+                <button type="submit" class="btn btn-primary">@Localizer["Entrar"]</button>
+                <a asp-action="ForgotPassword" class="text-sm font-medium">@Localizer["Esqueci minha senha"]</a>
+            </div>
         </form>
     </div>
 </div>

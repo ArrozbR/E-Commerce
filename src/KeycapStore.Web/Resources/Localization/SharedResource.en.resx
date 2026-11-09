@@ -420,4 +420,10 @@
   <data name="Esta conta entra pelo Google e não tem senha para trocar." xml:space="preserve">
     <value>This account signs in with Google and has no password to change.</value>
   </data>
+  <data name="Se existir uma conta com esse e-mail, enviamos um link para trocar a senha. Ele vale por 30 minutos; confira também a caixa de spam." xml:space="preserve">
+    <value>If there is an account with that e-mail, we sent a link to reset the password. It is valid for 30 minutes; check your spam folder too.</value>
+  </data>
+  <data name="Senha trocada. Entre com a senha nova." xml:space="preserve">
+    <value>Password changed. Sign in with the new password.</value>
+  </data>
 </root>
