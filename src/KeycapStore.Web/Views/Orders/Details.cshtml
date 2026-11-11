@@ -107,7 +107,7 @@ else if (explanation is not null)
                 {
                     <div class="flex flex-wrap gap-3">
                         <a asp-controller="Checkout" asp-action="Pay" asp-route-id="@Model.Id" class="btn btn-primary">@Localizer["Continuar o pagamento"]</a>
-                        <form asp-action="CancelPayment" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Cancelar o pagamento deste pedido? Os itens voltam para a loja."]');">
+                        <form asp-action="CancelPayment" asp-route-id="@Model.Id" method="post" data-confirm="@Localizer["Cancelar o pagamento deste pedido? Os itens voltam para a loja."]">
                             <button type="submit" class="btn btn-secondary">@Localizer["Cancelar o pagamento"]</button>
                         </form>
                     </div>
@@ -116,7 +116,7 @@ else if (explanation is not null)
 
                 @if (canCancel)
                 {
-                    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Cancelar este pedido? O valor pago será devolvido."]');">
+                    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" data-confirm="@Localizer["Cancelar este pedido? O valor pago será devolvido."]">
                         <button type="submit" class="btn btn-danger-outline">@Localizer["Cancelar pedido"]</button>
                     </form>
                     <p class="mt-3 mb-0 text-sm text-muted">@Localizer["Você pode cancelar até o pedido ser enviado. O valor é devolvido automaticamente."]</p>
@@ -124,7 +124,7 @@ else if (explanation is not null)
 
                 @if (Model.CanWithdraw)
                 {
-                    <form asp-action="Withdraw" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('@Localizer["Desistir da compra? O valor pago será devolvido e você precisará devolver o produto."]');">
+                    <form asp-action="Withdraw" asp-route-id="@Model.Id" method="post" data-confirm="@Localizer["Desistir da compra? O valor pago será devolvido e você precisará devolver o produto."]">
                         <button type="submit" class="btn btn-danger-outline">@Localizer["Desistir da compra"]</button>
                     </form>
                     <p class="mt-3 mb-0 text-sm text-muted">

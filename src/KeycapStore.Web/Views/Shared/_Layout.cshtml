@@ -7,17 +7,7 @@
     <link rel="icon" href="~/favicon.ico" sizes="16x16 32x32 48x48" asp-append-version="true" />
     <link rel="icon" href="~/icon.svg" type="image/svg+xml" asp-append-version="true" />
     <link rel="apple-touch-icon" href="~/apple-touch-icon.png" asp-append-version="true" />
-    <script>
-        try {
-            const theme = localStorage.getItem("theme");
-            document.documentElement.classList.toggle("dark", theme === "dark" || (theme === null && window.matchMedia("(prefers-color-scheme: dark)").matches));
-        } catch {
-            document.documentElement.classList.toggle("dark", window.matchMedia("(prefers-color-scheme: dark)").matches);
-        }
-        if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-            document.documentElement.classList.add("motion");
-        }
-    </script>
+    <script src="~/js/theme-init.js" asp-append-version="true"></script>
     <link rel="preload" href="~/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
     @await RenderSectionAsync("Head", required: false)

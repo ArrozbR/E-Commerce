@@ -174,7 +174,7 @@
                 @Localizer["A exclusão só é possível quando todos os seus pedidos estiverem finalizados, inclusive o prazo de 7 dias para desistir depois da entrega."]
             </p>
 
-            <form asp-action="Delete" method="post" onsubmit="return confirm('@Localizer["Excluir a conta? Esta ação não pode ser desfeita."]');">
+            <form asp-action="Delete" method="post" data-confirm="@Localizer["Excluir a conta? Esta ação não pode ser desfeita."]">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                 <div class="mb-4">

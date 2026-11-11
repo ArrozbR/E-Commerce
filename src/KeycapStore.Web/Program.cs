@@ -2,6 +2,7 @@
 using KeycapStore.Infrastructure.Identity;
 using KeycapStore.Web.Localization;
 using KeycapStore.Web.RateLimiting;
+using KeycapStore.Web.Security;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -112,6 +113,8 @@ if (args.Contains("reset-admin-password"))
     Console.WriteLine($"Senha nova do admin (anote agora; ela não será mostrada de novo): {result.NewPassword}");
     return;
 }
+
+app.UseSecurityHeaders();
 
 if (!app.Environment.IsDevelopment())
 {
