@@ -93,6 +93,7 @@ public static class DependencyInjection
 
         services.Configure<DataProtectionTokenProviderOptions>(options => options.TokenLifespan = PasswordResetService.LinkLifetime);
         services.AddScoped<IPasswordResetService, PasswordResetService>();
+        services.AddScoped<IEmailChangeService, EmailChangeService>();
 
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IAccountDeletionService, AccountDeletionService>();

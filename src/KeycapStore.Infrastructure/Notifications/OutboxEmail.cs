@@ -26,6 +26,8 @@ public sealed class OutboxEmail
 
     public const int MaxLanguageLength = 10;
 
+    public const int MaxAddressLength = 256;
+
     public OutboxEmail(EmailKind kind, Guid orderId, DateTimeOffset createdAt)
         : this(kind, createdAt)
     {
@@ -57,6 +59,8 @@ public sealed class OutboxEmail
 
     public Guid? ProductId { get; private set; }
 
+    public string? ToAddress { get; private set; }
+
     public OutboxEmailStatus Status { get; private set; }
 
     public int Attempts { get; private set; }
@@ -71,6 +75,16 @@ public sealed class OutboxEmail
     {
         var email = ForCustomer(kind, customerId, language, createdAt);
         email.ProductId = productId;
+        return email;
+    }
+
+    public static OutboxEmail ToAddressOf(EmailKind kind, string customerId, string toAddress, string language, DateTimeOffset createdAt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(toAddress);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(toAddress.Length, MaxAddressLength, nameof(toAddress));
+
+        var email = ForCustomer(kind, customerId, language, createdAt);
+        email.ToAddress = toAddress;
         return email;
     }
 

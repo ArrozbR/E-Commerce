@@ -11,4 +11,6 @@ public enum EmailKind
     BackInStock,
     NewKit,
     PreOrderOpened,
+    EmailChangeConfirm,
+    EmailChanged,
 }

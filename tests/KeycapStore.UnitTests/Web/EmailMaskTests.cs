@@ -1,4 +1,4 @@
-using KeycapStore.Web.Models;
+using KeycapStore.Application.Notifications;
 
 namespace KeycapStore.UnitTests.Web;
 
