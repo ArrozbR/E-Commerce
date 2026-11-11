@@ -35,6 +35,7 @@ builder.Services.AddControllersWithViews(options =>
         options.DataAnnotationLocalizerProvider = (_, factory) => factory.Create(typeof(SharedResource)));
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddShippingQuoteRateLimit(builder.Configuration);
+builder.Services.AddAccountRateLimit(builder.Configuration);
 
 var authentication = builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme);
 authentication.AddIdentityCookies();
@@ -136,6 +137,8 @@ app.UseRequestLocalization(options =>
 });
 
 app.UseRouting();
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 
