@@ -21,6 +21,7 @@ internal sealed class OutboxEmailConfiguration : IEntityTypeConfiguration<Outbox
 
         builder.Property(e => e.CustomerId).HasMaxLength(OutboxEmail.MaxCustomerIdLength);
         builder.Property(e => e.Language).HasMaxLength(OutboxEmail.MaxLanguageLength);
+        builder.Property(e => e.ToAddress).HasMaxLength(OutboxEmail.MaxAddressLength);
 
         builder.HasIndex(e => new { e.Kind, e.OrderId }).IsUnique();
         builder.HasIndex(e => new { e.Status, e.NextAttemptAt });

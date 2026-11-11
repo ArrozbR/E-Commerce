@@ -182,6 +182,51 @@ internal static class EmailTemplates
         return Render(text, to, content, NewsLabel(text), text.Pick("Ver a pré-venda", "View the pre-order"), productLink, unsubscribeLink);
     }
 
+    public static EmailMessage EmailChangeConfirm(string language, string to, Uri confirmLink, TimeSpan lifetime)
+    {
+        var text = WriterFor(language);
+        var minutes = (int)lifetime.TotalMinutes;
+        var content = new Content(
+            text.Pick("Confirme o seu e-mail novo", "Confirm your new e-mail"),
+            text.Pick("Confirme o e-mail novo", "Confirm the new e-mail"),
+            [
+                text.Pick("Pediram para usar este endereço como o e-mail de uma conta na KeycapStore.", "Someone asked to use this address as the e-mail of a KeycapStore account."),
+                text.Pick(
+                    $"Use o botão abaixo para confirmar. A troca só acontece depois disso. O link vale por {minutes} minutos e só funciona uma vez.",
+                    $"Use the button below to confirm. The change only happens after that. The link is valid for {minutes} minutes and works only once."),
+                text.Pick("Se não foi você, ignore este e-mail: nada muda.", "If this was not you, ignore this e-mail: nothing changes."),
+            ],
+            [],
+            null,
+            null);
+
+        return Render(text, to, content, AccountLabel(text), text.Pick("Confirmar o e-mail novo", "Confirm the new e-mail"), confirmLink);
+    }
+
+    public static EmailMessage EmailChanged(string language, string to, string maskedNewEmail, DateTimeOffset changedAt)
+    {
+        var text = WriterFor(language);
+        var content = new Content(
+            text.Pick("O e-mail da sua conta foi trocado", "The e-mail of your account was changed"),
+            text.Pick("E-mail trocado", "E-mail changed"),
+            [
+                text.Pick(
+                    $"O e-mail da sua conta na KeycapStore foi trocado para {maskedNewEmail} em {text.DateAndTime(changedAt)}. As sessões abertas foram encerradas.",
+                    $"The e-mail of your KeycapStore account was changed to {maskedNewEmail} on {text.DateAndTime(changedAt)}. Open sessions were signed out."),
+                text.Pick(
+                    "A partir de agora, este endereço não recebe mais os e-mails da conta.",
+                    "From now on, this address no longer gets the account e-mails."),
+                text.Pick(
+                    "Se não foi você, responda este e-mail para falar com a loja.",
+                    "If this was not you, reply to this e-mail to contact the store."),
+            ],
+            [],
+            null,
+            null);
+
+        return Render(text, to, content, AccountLabel(text), null, null);
+    }
+
     private static string NewsLabel(Writer text) => text.Pick("Novidades", "News");
 
     private static string NewsReason(Writer text) => text.Pick(

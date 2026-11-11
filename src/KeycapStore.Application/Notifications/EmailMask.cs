@@ -1,4 +1,4 @@
-namespace KeycapStore.Web.Models;
+namespace KeycapStore.Application.Notifications;
 
 public static class EmailMask
 {
@@ -19,4 +19,3 @@ public static class EmailMask
     }
 }
 
-public sealed record UnsubscribePageViewModel(string Token, string MaskedEmail);

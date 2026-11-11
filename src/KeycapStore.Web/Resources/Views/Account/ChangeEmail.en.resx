@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <data name="Trocar o e-mail" xml:space="preserve">
+    <value>Change e-mail</value>
+  </data>
+  <data name="Esta conta não troca o e-mail por aqui: contas que entram só pelo Google usam o e-mail do Google, e contas de administrador são cuidadas pelo servidor." xml:space="preserve">
+    <value>This account cannot change its e-mail here: accounts that sign in only with Google use the Google e-mail, and administrator accounts are handled on the server.</value>
+  </data>
+  <data name="Voltar para Minha conta" xml:space="preserve">
+    <value>Back to My account</value>
+  </data>
+  <data name="Enviamos um link para o e-mail novo. A troca só acontece quando você abrir esse link; até lá, o e-mail atual continua valendo. O e-mail atual recebe um aviso quando a troca acontecer." xml:space="preserve">
+    <value>We send a link to the new e-mail. The change only happens when you open that link; until then, the current e-mail stays valid. The current e-mail gets a notice when the change happens.</value>
+  </data>
+  <data name="Enviar o link" xml:space="preserve">
+    <value>Send the link</value>
+  </data>
+</root>

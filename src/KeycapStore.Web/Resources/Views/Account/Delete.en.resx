@@ -159,4 +159,16 @@
   <data name="Ligar as novidades" xml:space="preserve">
     <value>Turn news on</value>
   </data>
+  <data name="E-mail" xml:space="preserve">
+    <value>E-mail</value>
+  </data>
+  <data name="Trocar o e-mail" xml:space="preserve">
+    <value>Change e-mail</value>
+  </data>
+  <data name="O e-mail de administrador não é trocado por aqui." xml:space="preserve">
+    <value>The administrator e-mail is not changed here.</value>
+  </data>
+  <data name="Contas que entram só pelo Google usam o e-mail do Google." xml:space="preserve">
+    <value>Accounts that sign in only with Google use the Google e-mail.</value>
+  </data>
 </root>

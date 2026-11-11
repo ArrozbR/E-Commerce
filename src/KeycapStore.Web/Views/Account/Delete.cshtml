@@ -80,6 +80,17 @@
     <section class="card" aria-labelledby="security-title">
         <h2 id="security-title" class="mt-0">@Localizer["Acesso e segurança"]</h2>
 
+        <h3 class="text-base">@Localizer["E-mail"]</h3>
+        <p class="text-sm break-words">@email</p>
+        @if (account.HasPassword && !account.IsAdmin)
+        {
+            <a asp-action="ChangeEmail" class="btn btn-secondary btn-sm mb-6" data-change-email-link>@Localizer["Trocar o e-mail"]</a>
+        }
+        else
+        {
+            <p class="mb-6 text-sm text-muted">@(account.IsAdmin ? Localizer["O e-mail de administrador não é trocado por aqui."] : Localizer["Contas que entram só pelo Google usam o e-mail do Google."])</p>
+        }
+
         <h3 class="text-base">@Localizer["Senha"]</h3>
         @if (account.HasPassword)
         {

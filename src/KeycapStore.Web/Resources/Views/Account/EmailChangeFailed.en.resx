@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <data name="E-mail não trocado" xml:space="preserve">
+    <value>E-mail not changed</value>
+  </data>
+  <data name="Este e-mail já é usado por outra conta. Escolha outro na Minha conta." xml:space="preserve">
+    <value>This e-mail is already used by another account. Choose another one in My account.</value>
+  </data>
+  <data name="Este link é inválido ou venceu. Os links valem por 30 minutos e só funcionam uma vez; peça outro na Minha conta." xml:space="preserve">
+    <value>This link is invalid or has expired. Links are valid for 30 minutes and work only once; ask for another one in My account.</value>
+  </data>
+  <data name="Ir para Minha conta" xml:space="preserve">
+    <value>Go to My account</value>
+  </data>
+</root>

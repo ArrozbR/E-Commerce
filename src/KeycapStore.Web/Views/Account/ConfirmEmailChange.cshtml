@@ -1,0 +1,15 @@
+@model ConfirmEmailChangeViewModel
+@{
+    ViewData["Title"] = Localizer["Confirmar o e-mail novo"].Value;
+}
+
+<h1>@Localizer["Confirmar o e-mail novo"]</h1>
+
+<div class="card max-w-xl" data-confirm-email-change>
+    <p>@Localizer["Ao confirmar, este passa a ser o e-mail da sua conta e o login. As sessões abertas são encerradas, e você entra de novo com o e-mail novo."]</p>
+    <form asp-action="ConfirmEmailChange" method="post">
+        <input type="hidden" name="userId" value="@Model.UserId" />
+        <input type="hidden" name="token" value="@Model.Token" />
+        <button type="submit" class="btn btn-primary">@Localizer["Confirmar o e-mail novo"]</button>
+    </form>
+</div>

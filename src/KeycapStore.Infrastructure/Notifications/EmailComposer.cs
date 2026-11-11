@@ -50,6 +50,11 @@ internal sealed class EmailComposer(AppDbContext db, UserManager<IdentityUser> u
 
     private async Task<EmailMessage?> ComposeForAccountAsync(OutboxEmail email)
     {
+        if (email.Kind is EmailKind.EmailChangeConfirm or EmailKind.EmailChanged)
+        {
+            return await ComposeEmailChangeAsync(email);
+        }
+
         var user = await users.FindByIdAsync(email.CustomerId!);
         if (user?.Email is not { Length: > 0 } to)
         {
@@ -121,6 +126,37 @@ internal sealed class EmailComposer(AppDbContext db, UserManager<IdentityUser> u
         var resetLink = Link($"Account/ResetPassword?userId={Uri.EscapeDataString(user.Id)}&token={token}");
 
         return EmailTemplates.PasswordReset(language, to, resetLink, PasswordResetService.LinkLifetime);
+    }
+
+    private async Task<EmailMessage?> ComposeEmailChangeAsync(OutboxEmail email)
+    {
+        var user = await users.FindByIdAsync(email.CustomerId!);
+        if (user?.Email is not { Length: > 0 } current || email.ToAddress is not { } to)
+        {
+            return null;
+        }
+
+        var language = email.Language ?? Order.DefaultLanguage;
+        if (email.Kind == EmailKind.EmailChanged)
+        {
+            return EmailTemplates.EmailChanged(language, to, EmailMask.Mask(current), email.CreatedAt);
+        }
+
+        var latest = await db.OutboxEmails
+            .Where(e => e.CustomerId == user.Id && e.Kind == EmailKind.EmailChangeConfirm)
+            .OrderByDescending(e => e.CreatedAt)
+            .Select(e => e.Id)
+            .FirstAsync();
+
+        if (latest != email.Id || !await users.HasPasswordAsync(user) || await users.IsInRoleAsync(user, Roles.Admin))
+        {
+            return null;
+        }
+
+        var token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(await users.GenerateChangeEmailTokenAsync(user, to)));
+        var confirmLink = Link($"Account/ConfirmEmailChange?userId={Uri.EscapeDataString(user.Id)}&token={token}");
+
+        return EmailTemplates.EmailChangeConfirm(language, to, confirmLink, PasswordResetService.LinkLifetime);
     }
 
     private Uri Link(string relative) => new(new Uri(site.Value.PublicUrl), relative);
