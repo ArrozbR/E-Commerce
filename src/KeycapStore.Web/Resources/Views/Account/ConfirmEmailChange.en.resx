@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <data name="Confirmar o e-mail novo" xml:space="preserve">
+    <value>Confirm the new e-mail</value>
+  </data>
+  <data name="Ao confirmar, este passa a ser o e-mail da sua conta e o login. As sessões abertas são encerradas, e você entra de novo com o e-mail novo." xml:space="preserve">
+    <value>Once you confirm, this becomes your account e-mail and sign-in. Open sessions are signed out, and you sign in again with the new e-mail.</value>
+  </data>
+</root>

@@ -24,6 +24,7 @@ public sealed class AccountController(
     IPersonalDataExport personalData,
     IPasswordResetService passwordResets,
     INewsletterService newsletter,
+    IEmailChangeService emailChanges,
     IStringLocalizer<SharedResource> text) : Controller
 {
     private static readonly JsonSerializerOptions ExportOptions = new(JsonSerializerDefaults.Web)
@@ -109,6 +110,83 @@ public sealed class AccountController(
         }
 
         return RedirectToAction("Index", "Catalog");
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> ChangeEmail(CancellationToken cancellationToken)
+    {
+        var account = await accounts.GetSummaryAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!, cancellationToken);
+        ViewData["CanChange"] = account.HasPassword && !account.IsAdmin;
+        return View(new ChangeEmailViewModel());
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel model, CancellationToken cancellationToken)
+    {
+        var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        ViewData["CanChange"] = true;
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var status = await emailChanges.RequestAsync(customerId, model.NewEmail, model.CurrentPassword, CultureInfo.CurrentUICulture.Name, cancellationToken);
+        switch (status)
+        {
+            case EmailChangeRequestStatus.Requested:
+                TempData["Message"] = text["Enviamos um link para o e-mail novo. A troca só acontece quando você abrir esse link (ele vale por 30 minutos)."].Value;
+                return RedirectToAction(nameof(Delete));
+            case EmailChangeRequestStatus.WrongPassword:
+                ModelState.AddModelError(nameof(model.CurrentPassword), text["Senha atual incorreta."].Value);
+                break;
+            case EmailChangeRequestStatus.LockedOut:
+                ModelState.AddModelError(string.Empty, text["Muitas tentativas erradas. Tente de novo em alguns minutos."].Value);
+                break;
+            case EmailChangeRequestStatus.SameEmail:
+                ModelState.AddModelError(nameof(model.NewEmail), text["Esse já é o e-mail da sua conta."].Value);
+                break;
+            default:
+                ViewData["CanChange"] = false;
+                break;
+        }
+
+        return View(model);
+    }
+
+    [HttpGet]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult ConfirmEmailChange(string? userId, string? token)
+    {
+        Response.Headers["Referrer-Policy"] = "no-referrer";
+
+        return string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token)
+            ? View("EmailChangeFailed", false)
+            : View(new ConfirmEmailChangeViewModel(userId, token));
+    }
+
+    [HttpPost]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public async Task<IActionResult> ConfirmEmailChange(string? userId, string? token, CancellationToken cancellationToken)
+    {
+        Response.Headers["Referrer-Policy"] = "no-referrer";
+
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+        {
+            return View("EmailChangeFailed", false);
+        }
+
+        var status = await emailChanges.ConfirmAsync(userId, token, CultureInfo.CurrentUICulture.Name, cancellationToken);
+        if (status != EmailChangeConfirmStatus.Changed)
+        {
+            return View("EmailChangeFailed", status == EmailChangeConfirmStatus.EmailInUse);
+        }
+
+        await accounts.SignOutAsync(cancellationToken);
+        TempData["Message"] = text["E-mail trocado. Entre com o e-mail novo."].Value;
+        return RedirectToAction(nameof(Login));
     }
 
     [HttpGet]

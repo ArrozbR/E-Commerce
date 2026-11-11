@@ -1,0 +1,42 @@
+@model ChangeEmailViewModel
+@{
+    ViewData["Title"] = Localizer["Trocar o e-mail"].Value;
+}
+
+<h1>@Localizer["Trocar o e-mail"]</h1>
+
+<div class="card max-w-xl">
+    @if (ViewData["CanChange"] is not true)
+    {
+        <p data-change-email-blocked>@Localizer["Esta conta não troca o e-mail por aqui: contas que entram só pelo Google usam o e-mail do Google, e contas de administrador são cuidadas pelo servidor."]</p>
+        <a asp-action="Delete" class="btn btn-secondary">@Localizer["Voltar para Minha conta"]</a>
+    }
+    else
+    {
+        <p class="text-sm text-muted">@Localizer["Enviamos um link para o e-mail novo. A troca só acontece quando você abrir esse link; até lá, o e-mail atual continua valendo. O e-mail atual recebe um aviso quando a troca acontecer."]</p>
+
+        <form asp-action="ChangeEmail" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
+
+            <div class="mb-4">
+                <label asp-for="NewEmail" class="label"></label>
+                <input asp-for="NewEmail" class="input" autocomplete="email" />
+                <span asp-validation-for="NewEmail" class="text-danger"></span>
+            </div>
+            <div class="mb-4">
+                <label asp-for="CurrentPassword" class="label"></label>
+                <input asp-for="CurrentPassword" class="input" autocomplete="current-password" />
+                <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+                <button type="submit" class="btn btn-primary">@Localizer["Enviar o link"]</button>
+                <a asp-action="Delete" class="btn btn-link">@Localizer["Voltar para Minha conta"]</a>
+            </div>
+        </form>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -441,4 +441,16 @@
   <data name="Novidades desligadas." xml:space="preserve">
     <value>News turned off.</value>
   </data>
+  <data name="E-mail novo" xml:space="preserve">
+    <value>New e-mail</value>
+  </data>
+  <data name="Esse já é o e-mail da sua conta." xml:space="preserve">
+    <value>That is already your account e-mail.</value>
+  </data>
+  <data name="Enviamos um link para o e-mail novo. A troca só acontece quando você abrir esse link (ele vale por 30 minutos)." xml:space="preserve">
+    <value>We sent a link to the new e-mail. The change only happens when you open that link (it is valid for 30 minutes).</value>
+  </data>
+  <data name="E-mail trocado. Entre com o e-mail novo." xml:space="preserve">
+    <value>E-mail changed. Sign in with the new e-mail.</value>
+  </data>
 </root>

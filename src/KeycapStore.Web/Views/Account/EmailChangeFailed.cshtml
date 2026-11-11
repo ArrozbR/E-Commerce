@@ -1,0 +1,18 @@
+@model bool
+@{
+    ViewData["Title"] = Localizer["E-mail não trocado"].Value;
+}
+
+<h1>@Localizer["E-mail não trocado"]</h1>
+
+<div class="card max-w-xl" data-email-change-failed>
+    @if (Model)
+    {
+        <p data-email-in-use>@Localizer["Este e-mail já é usado por outra conta. Escolha outro na Minha conta."]</p>
+    }
+    else
+    {
+        <p>@Localizer["Este link é inválido ou venceu. Os links valem por 30 minutos e só funcionam uma vez; peça outro na Minha conta."]</p>
+    }
+    <a asp-action="Delete" class="btn btn-primary">@Localizer["Ir para Minha conta"]</a>
+</div>
