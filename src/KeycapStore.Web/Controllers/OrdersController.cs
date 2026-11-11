@@ -82,6 +82,8 @@ public sealed class OrdersController(
         {
             CancelPaymentResult.Requested => text["Pagamento cancelado. Em alguns segundos o pedido aparece como expirado, os itens voltam para a loja e você já pode fazer outro pedido."],
             CancelPaymentResult.NotAwaitingPayment => text["Este pedido não está mais aguardando pagamento."],
+            CancelPaymentResult.AlreadyExpired => text["O prazo de pagamento deste pedido já tinha acabado. Ele foi encerrado, os itens voltaram para a loja e você já pode fazer outro pedido."],
+            CancelPaymentResult.AlreadyPaid => text["Este pedido já foi pago, então o pagamento não pode ser cancelado. Se quiser, cancele o pedido."],
             _ => text["Não foi possível cancelar o pagamento agora. Tente de novo em alguns minutos."],
         }).Value;
 
