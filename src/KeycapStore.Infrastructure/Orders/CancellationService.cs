@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KeycapStore.Infrastructure.Orders;
 
-internal sealed class CancellationService(AppDbContext db, IPaymentGateway payments) : ICancellationService
+internal sealed class CancellationService(AppDbContext db, IPaymentGateway payments, IPaymentReconciler reconciler) : ICancellationService
 {
     public async Task<CancelPaymentResult> CancelPaymentAsync(Guid orderId, string customerId, CancellationToken cancellationToken = default)
     {
@@ -26,7 +26,12 @@ internal sealed class CancellationService(AppDbContext db, IPaymentGateway payme
         }
         catch (PaymentGatewayException)
         {
-            return CancelPaymentResult.PaymentServiceUnavailable;
+            return await reconciler.ReconcileOrderAsync(order.Id, "Cancelar o pagamento", cancellationToken) switch
+            {
+                OrderStatus.Expired => CancelPaymentResult.AlreadyExpired,
+                OrderStatus.Paid or OrderStatus.PaidOutOfStock => CancelPaymentResult.AlreadyPaid,
+                _ => CancelPaymentResult.PaymentServiceUnavailable,
+            };
         }
 
         return CancelPaymentResult.Requested;
