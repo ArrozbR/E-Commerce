@@ -66,3 +66,11 @@
         }
     });
 })();
+
+document.addEventListener("submit", function (event) {
+    const message = event.target instanceof HTMLFormElement ? event.target.dataset.confirm : undefined;
+    if (message && !window.confirm(message)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+    }
+}, true);
