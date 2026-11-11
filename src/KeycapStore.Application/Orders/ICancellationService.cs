@@ -5,6 +5,8 @@ public enum CancelPaymentResult
     Requested,
     NotAwaitingPayment,
     PaymentServiceUnavailable,
+    AlreadyExpired,
+    AlreadyPaid,
 }
 
 public interface ICancellationService

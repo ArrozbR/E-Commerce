@@ -121,4 +121,55 @@ public class CancelPaymentTests(PostgresFixture postgres) : IClassFixture<Postgr
         Assert.Contains("Não foi possível cancelar o pagamento agora.", WebUtility.HtmlDecode(await client.GetStringAsync(response.Headers.Location)));
         Assert.Equal(OrderStatus.AwaitingPayment, await StatusAsync(factory, orderId));
     }
+
+    private static async Task<long> TotalInCentsAsync(WebApplicationFactory<Program> factory, Guid orderId)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        var order = await scope.ServiceProvider.GetRequiredService<AppDbContext>().Orders.SingleAsync(o => o.Id == orderId);
+        return (long)decimal.Round(order.Total * 100m, 0, MidpointRounding.AwayFromZero);
+    }
+
+    [Fact]
+    public async Task CancelPayment_WhenTheSessionHadAlreadyExpiredAtTheStripe_ExpiresTheOrderNow_AndSaysSo()
+    {
+        var payments = new FakePaymentGateway { FailExpirations = true };
+        await using var factory = await postgres.CreateMigratedFactoryAsync(payments);
+        var client = await PageClient.LoggedInAsync(factory, "sessao-ja-expirada@example.com");
+        var orderId = await PlaceOrderAsync(client);
+        payments.Sessions[$"cs_test_fake_{orderId:N}"] = new("expired", "unpaid", null, null, null, null);
+
+        var response = await CancelPaymentAsync(client, orderId);
+
+        Assert.Equal(OrderStatus.Expired, await StatusAsync(factory, orderId));
+        Assert.Contains("O prazo de pagamento deste pedido já tinha acabado.", WebUtility.HtmlDecode(await client.GetStringAsync(response.Headers.Location)));
+    }
+
+    [Fact]
+    public async Task CancelPayment_WhenTheSessionWasAlreadyPaid_ConfirmsTheOrder_AndSaysSo()
+    {
+        var payments = new FakePaymentGateway { FailExpirations = true };
+        await using var factory = await postgres.CreateMigratedFactoryAsync(payments);
+        var client = await PageClient.LoggedInAsync(factory, "sessao-ja-paga@example.com");
+        var orderId = await PlaceOrderAsync(client);
+        payments.Sessions[$"cs_test_fake_{orderId:N}"] = new("complete", "paid", await TotalInCentsAsync(factory, orderId), "brl", $"pi_test_{orderId:N}", null);
+
+        var response = await CancelPaymentAsync(client, orderId);
+
+        Assert.Equal(OrderStatus.Paid, await StatusAsync(factory, orderId));
+        Assert.Contains("Este pedido já foi pago", WebUtility.HtmlDecode(await client.GetStringAsync(response.Headers.Location)));
+    }
+
+    [Fact]
+    public async Task CancelPayment_WhenTheStripeIsDownForTheLookupToo_KeepsTheTryAgainMessage()
+    {
+        var payments = new FakePaymentGateway { FailExpirations = true, FailSessionLookups = true };
+        await using var factory = await postgres.CreateMigratedFactoryAsync(payments);
+        var client = await PageClient.LoggedInAsync(factory, "stripe-fora-de-vez@example.com");
+        var orderId = await PlaceOrderAsync(client);
+
+        var response = await CancelPaymentAsync(client, orderId);
+
+        Assert.Equal(OrderStatus.AwaitingPayment, await StatusAsync(factory, orderId));
+        Assert.Contains("Não foi possível cancelar o pagamento agora.", WebUtility.HtmlDecode(await client.GetStringAsync(response.Headers.Location)));
+    }
 }

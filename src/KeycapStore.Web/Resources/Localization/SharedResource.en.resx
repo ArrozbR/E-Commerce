@@ -453,4 +453,10 @@
   <data name="E-mail trocado. Entre com o e-mail novo." xml:space="preserve">
     <value>E-mail changed. Sign in with the new e-mail.</value>
   </data>
+  <data name="O prazo de pagamento deste pedido já tinha acabado. Ele foi encerrado, os itens voltaram para a loja e você já pode fazer outro pedido." xml:space="preserve">
+    <value>The payment time for this order had already run out. It was closed, the items went back to the store and you can place another order.</value>
+  </data>
+  <data name="Este pedido já foi pago, então o pagamento não pode ser cancelado. Se quiser, cancele o pedido." xml:space="preserve">
+    <value>This order has already been paid, so the payment cannot be cancelled. If you want, cancel the order.</value>
+  </data>
 </root>
