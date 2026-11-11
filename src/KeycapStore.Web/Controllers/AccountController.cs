@@ -8,10 +8,12 @@ using KeycapStore.Application.Notifications;
 using KeycapStore.Application.Orders;
 using KeycapStore.Web.Localization;
 using KeycapStore.Web.Models;
+using KeycapStore.Web.RateLimiting;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Localization;
 
 namespace KeycapStore.Web.Controllers;
@@ -37,6 +39,7 @@ public sealed class AccountController(
     public IActionResult Register() => View();
 
     [HttpPost]
+    [EnableRateLimiting(AccountRateLimit.Register)]
     public async Task<IActionResult> Register(RegisterViewModel model, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
@@ -90,6 +93,7 @@ public sealed class AccountController(
     public IActionResult Login() => View();
 
     [HttpPost]
+    [EnableRateLimiting(AccountRateLimit.Login)]
     public async Task<IActionResult> Login(LoginViewModel model, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
@@ -193,6 +197,7 @@ public sealed class AccountController(
     public IActionResult ForgotPassword() => View(new ForgotPasswordViewModel());
 
     [HttpPost]
+    [EnableRateLimiting(AccountRateLimit.ForgotPassword)]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)

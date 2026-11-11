@@ -34,6 +34,9 @@ public sealed class PostgresFixture : IAsyncLifetime
         builder.UseSetting("Authentication:Google:ClientSecret", "segredo-de-teste");
         builder.UseSetting("MelhorEnvio:Token", "token-de-teste");
         builder.UseSetting("MelhorEnvio:ContactEmail", "contato-de-teste@example.com");
+        builder.UseSetting("AccountLimits:LoginPerMinute", "1000");
+        builder.UseSetting("AccountLimits:RegisterPerHour", "1000");
+        builder.UseSetting("AccountLimits:ForgotPasswordPer15Minutes", "1000");
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<IPaymentGateway>(new FakePaymentGateway());
