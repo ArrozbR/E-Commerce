@@ -26,7 +26,7 @@ COPY --from=css /web/wwwroot/lib/gsap src/KeycapStore.Web/wwwroot/lib/gsap/
 RUN dotnet publish src/KeycapStore.Web/KeycapStore.Web.csproj \
     --configuration Release --no-restore --output /app/publish
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS runtime
 WORKDIR /app
 
 COPY --from=build /app/publish .
